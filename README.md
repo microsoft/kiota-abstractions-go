@@ -1,14 +1,18 @@
-# Project
+# Kiota Abstractions Library for go
 
-> This repo has been populated by an initial template to help get you started. Please
-> make sure to update the content to build a great experience for community-building.
+![Go](https://github.com/microsoft/kiota-abstractions-go/actions/workflows/go.yml/badge.svg)
 
-As the maintainer of this project, please make a few updates:
+The Kiota abstractions Library for go is the go library defining the basic constructs Kiota projects need once an SDK has been generated from an OpenAPI definition.
 
-- Improving this README.MD file to provide a great experience
-- Updating SUPPORT.MD with content about this project's support experience
-- Understanding the security reporting process in SECURITY.MD
-- Remove this section from the README
+A [Kiota](https://github.com/microsoft/kiota) generated project will need a reference to the abstraction package to build and run.
+
+Read more about Kiota [here](https://github.com/microsoft/kiota/blob/main/README.md).
+
+## Using the Abstractions Library
+
+```Shell
+go get github.com/microsoft/kiota-abstractions-go
+```
 
 ## Contributing
 

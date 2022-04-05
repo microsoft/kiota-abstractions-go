@@ -5,7 +5,7 @@ type Parsable interface {
 	// Serialize writes the objects properties to the current writer.
 	Serialize(writer SerializationWriter) error
 	// GetFieldDeserializers returns the deserialization information for this object.
-	GetFieldDeserializers() map[string]func(interface{}, ParseNode) error
+	GetFieldDeserializers() map[string]func(ParseNode) error
 }
 
 // ParsableFactory is a factory for creating Parsable.

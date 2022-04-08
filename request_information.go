@@ -196,7 +196,7 @@ func (request *RequestInformation) AddQueryParameters(source interface{}) {
 		field := fields.Field(i)
 		fieldName := field.Name
 		fieldValue := valOfP.Field(i)
-		tagValue := field.Tag.Get("uriparamtername")
+		tagValue := field.Tag.Get("uriparametername")
 		if tagValue != "" {
 			fieldName = tagValue
 		}

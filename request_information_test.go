@@ -72,12 +72,12 @@ func TestItSetsTheRawURL(t *testing.T) {
 }
 
 type getQueryParameters struct {
-	Count          *bool    `uriparamtername:"%24count"`
-	Expand         []string `uriparamtername:"%24expand"`
-	Select_escaped []string `uriparamtername:"%24select"`
-	Filter         *string  `uriparamtername:"%24filter"`
-	Orderby        []string `uriparamtername:"%24orderby"`
-	Search         *string  `uriparamtername:"%24search"`
+	Count          *bool    `uriparametername:"%24count"`
+	Expand         []string `uriparametername:"%24expand"`
+	Select_escaped []string `uriparametername:"%24select"`
+	Filter         *string  `uriparametername:"%24filter"`
+	Orderby        []string `uriparametername:"%24orderby"`
+	Search         *string  `uriparametername:"%24search"`
 }
 
 func TestItSetsSelectQueryParameters(t *testing.T) {

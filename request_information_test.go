@@ -1,8 +1,9 @@
 package abstractions
 
 import (
-	assert "github.com/stretchr/testify/assert"
 	"testing"
+
+	assert "github.com/stretchr/testify/assert"
 )
 
 type QueryParameters struct {
@@ -68,4 +69,24 @@ func TestItSetsTheRawURL(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, "https://someurl.com", uri.String())
 	assert.Equal(t, 0, len(requestInformation.QueryParameters))
+}
+
+type getQueryParameters struct {
+	Count          *bool    `uriparametername:"%24count"`
+	Expand         []string `uriparametername:"%24expand"`
+	Select_escaped []string `uriparametername:"%24select"`
+	Filter         *string  `uriparametername:"%24filter"`
+	Orderby        []string `uriparametername:"%24orderby"`
+	Search         *string  `uriparametername:"%24search"`
+}
+
+func TestItSetsSelectQueryParameters(t *testing.T) {
+	requestInformation := NewRequestInformation()
+	requestInformation.UrlTemplate = "http://localhost/me{?%24select}"
+	requestInformation.AddQueryParameters(getQueryParameters{
+		Select_escaped: []string{"id", "displayName"},
+	})
+	resultUri, err := requestInformation.GetUri()
+	assert.Nil(t, err)
+	assert.Equal(t, "http://localhost/me?%24select=id%2CdisplayName", resultUri.String())
 }

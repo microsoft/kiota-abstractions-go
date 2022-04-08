@@ -196,19 +196,27 @@ func (request *RequestInformation) AddQueryParameters(source interface{}) {
 		field := fields.Field(i)
 		fieldName := field.Name
 		fieldValue := valOfP.Field(i)
-		str, ok := fieldValue.Interface().(*string)
+		tagValue := field.Tag.Get("uriparamtername")
+		if tagValue != "" {
+			fieldName = tagValue
+		}
+		value := fieldValue.Interface()
+		if value == nil {
+			continue
+		}
+		str, ok := value.(*string)
 		if ok && str != nil {
 			request.QueryParameters[fieldName] = *str
 		}
-		bl, ok := fieldValue.Interface().(*bool)
+		bl, ok := value.(*bool)
 		if ok && bl != nil {
 			request.QueryParameters[fieldName] = strconv.FormatBool(*bl)
 		}
-		it, ok := fieldValue.Interface().(*int32)
+		it, ok := value.(*int32)
 		if ok && it != nil {
 			request.QueryParameters[fieldName] = strconv.FormatInt(int64(*it), 10)
 		}
-		arr, ok := fieldValue.Interface().([]string)
+		arr, ok := value.([]string)
 		if ok && len(arr) > 0 {
 			request.QueryParameters[fieldName] = strings.Join(arr, ",")
 		}

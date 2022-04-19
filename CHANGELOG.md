@@ -11,6 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+## [0.5.0] - 2022-04-21
+
+### Added
+
+- Added vanity methods to request options to add headers and options to simplify code generation.
+
 ## [0.4.0] - 2022-04-19
 
 ### Changed

@@ -108,9 +108,9 @@ func (request *RequestInformation) SetUri(url u.URL) {
 }
 
 // AddRequestOptions adds an option to the request to be read by the middleware infrastructure.
-func (request *RequestInformation) AddRequestOptions(options ...RequestOption) error {
+func (request *RequestInformation) AddRequestOptions(options []RequestOption) {
 	if options == nil {
-		return errors.New("RequestOptions cannot be nil")
+		return
 	}
 	if request.options == nil {
 		request.options = make(map[string]RequestOption, len(options))
@@ -118,7 +118,6 @@ func (request *RequestInformation) AddRequestOptions(options ...RequestOption) e
 	for _, option := range options {
 		request.options[option.GetKey().Key] = option
 	}
-	return nil
 }
 
 // GetRequestOptions returns the options for this request. Options are unique by type. If an option of the same type is added twice, the last one wins.
@@ -220,5 +219,18 @@ func (request *RequestInformation) AddQueryParameters(source interface{}) {
 		if ok && len(arr) > 0 {
 			request.QueryParameters[fieldName] = strings.Join(arr, ",")
 		}
+	}
+}
+
+//AddRequestHeaders adds request headers to the request.
+func (request *RequestInformation) AddRequestHeaders(headersToAdd map[string]string) {
+	if len(headersToAdd) == 0 {
+		return
+	}
+	if len(request.Headers) == 0 {
+		request.Headers = make(map[string]string, len(headersToAdd))
+	}
+	for key, value := range headersToAdd {
+		request.Headers[key] = value
 	}
 }

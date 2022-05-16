@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+## [0.6.0] - 2022-05-16
+
+- Added a method to set the content from a scalar value in request information.
+
 ## [0.5.0] - 2022-04-21
 
 ### Added

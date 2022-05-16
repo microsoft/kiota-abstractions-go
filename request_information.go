@@ -2,6 +2,7 @@ package abstractions
 
 import (
 	"errors"
+	"time"
 
 	"reflect"
 	"strconv"
@@ -9,6 +10,7 @@ import (
 
 	u "net/url"
 
+	"github.com/google/uuid"
 	s "github.com/microsoft/kiota-abstractions-go/serialization"
 	t "github.com/yosida95/uritemplate/v3"
 )
@@ -143,24 +145,45 @@ func (request *RequestInformation) SetStreamContent(content []byte) {
 	request.Headers[contentTypeHeader] = binaryContentType
 }
 
-// SetContentFromParsable sets the request body from a model with the specified content type.
-func (request *RequestInformation) SetContentFromParsable(requestAdapter RequestAdapter, contentType string, items ...s.Parsable) error {
+func (request *RequestInformation) setContentAndContentType(writer s.SerializationWriter, contentType string) error {
+	content, err := writer.GetSerializedContent()
+	if err != nil {
+		return err
+	} else if content == nil {
+		return errors.New("content cannot be nil")
+	}
+	request.Content = content
+	request.Headers[contentTypeHeader] = contentType
+	return nil
+}
+
+func (request *RequestInformation) getSerializationWriter(requestAdapter RequestAdapter, contentType string, items ...interface{}) (s.SerializationWriter, error) {
 	if contentType == "" {
-		return errors.New("content type cannot be empty")
+		return nil, errors.New("content type cannot be empty")
 	} else if requestAdapter == nil {
-		return errors.New("requestAdapter cannot be nil")
+		return nil, errors.New("requestAdapter cannot be nil")
 	} else if len(items) == 0 {
-		return errors.New("items cannot be nil or empty")
+		return nil, errors.New("items cannot be nil or empty")
 	}
 	factory := requestAdapter.GetSerializationWriterFactory()
 	if factory == nil {
-		return errors.New("factory cannot be nil")
+		return nil, errors.New("factory cannot be nil")
 	}
 	writer, err := factory.GetSerializationWriter(contentType)
 	if err != nil {
-		return err
+		return nil, err
 	} else if writer == nil {
-		return errors.New("writer cannot be nil")
+		return nil, errors.New("writer cannot be nil")
+	} else {
+		return writer, nil
+	}
+}
+
+// SetContentFromParsable sets the request body from a model with the specified content type.
+func (request *RequestInformation) SetContentFromParsable(requestAdapter RequestAdapter, contentType string, items ...s.Parsable) error {
+	writer, err := request.getSerializationWriter(requestAdapter, contentType, items)
+	if err != nil {
+		return err
 	}
 	defer writer.Close()
 	var writeErr error
@@ -172,14 +195,224 @@ func (request *RequestInformation) SetContentFromParsable(requestAdapter Request
 	if writeErr != nil {
 		return writeErr
 	}
-	content, err := writer.GetSerializedContent()
+	err2 := request.setContentAndContentType(writer, contentType)
+	if err2 != nil {
+		return err2
+	}
+	return nil
+}
+
+// SetContentFromParsable sets the request body from a scalar value with the specified content type.
+func (request *RequestInformation) SetContentFromScalar(requestAdapter RequestAdapter, contentType string, items ...interface{}) error {
+	writer, err := request.getSerializationWriter(requestAdapter, contentType, items...)
 	if err != nil {
 		return err
-	} else if content == nil {
-		return errors.New("content cannot be nil")
 	}
-	request.Content = content
-	request.Headers[contentTypeHeader] = contentType
+	defer writer.Close()
+	if len(items) == 1 {
+		value := items[0]
+
+		if sv, ok := value.(*string); ok {
+			if err := writer.WriteStringValue("", sv); err != nil {
+				return err
+			}
+		} else if bv, ok := value.(*bool); ok {
+			if err := writer.WriteBoolValue("", bv); err != nil {
+				return err
+			}
+		} else if byv, ok := value.(*byte); ok {
+			if err := writer.WriteByteValue("", byv); err != nil {
+				return err
+			}
+		} else if i8v, ok := value.(*int8); ok {
+			if err := writer.WriteInt8Value("", i8v); err != nil {
+				return err
+			}
+		} else if i32v, ok := value.(*int32); ok {
+			if err := writer.WriteInt32Value("", i32v); err != nil {
+				return err
+			}
+		} else if i64v, ok := value.(*int64); ok {
+			if err := writer.WriteInt64Value("", i64v); err != nil {
+				return err
+			}
+		} else if f32v, ok := value.(*float32); ok {
+			if err := writer.WriteFloat32Value("", f32v); err != nil {
+				return err
+			}
+		} else if f64v, ok := value.(*float64); ok {
+			if err := writer.WriteFloat64Value("", f64v); err != nil {
+				return err
+			}
+		} else if uv, ok := value.(*uuid.UUID); ok {
+			if err := writer.WriteUUIDValue("", uv); err != nil {
+				return err
+			}
+		} else if tv, ok := value.(*time.Time); ok {
+			if err := writer.WriteTimeValue("", tv); err != nil {
+				return err
+			}
+		} else if dv, ok := value.(*s.ISODuration); ok {
+			if err := writer.WriteISODurationValue("", dv); err != nil {
+				return err
+			}
+		} else if tov, ok := value.(*s.TimeOnly); ok {
+			if err := writer.WriteTimeOnlyValue("", tov); err != nil {
+				return err
+			}
+		} else if dov, ok := value.(*s.DateOnly); ok {
+			if err := writer.WriteDateOnlyValue("", dov); err != nil {
+				return err
+			}
+		}
+	} else if len(items) > 1 {
+		value := items[0]
+		if _, ok := value.(*string); ok {
+			sc := make([]string, len(items))
+			for i, v := range items {
+				if sv, ok := v.(string); ok {
+					sc[i] = sv
+				}
+			}
+			if err := writer.WriteCollectionOfStringValues("", sc); err != nil {
+				return err
+			}
+		} else if _, ok := value.(bool); ok {
+			bc := make([]bool, len(items))
+			for i, v := range items {
+				if sv, ok := v.(bool); ok {
+					bc[i] = sv
+				}
+			}
+			if err := writer.WriteCollectionOfBoolValues("", bc); err != nil {
+				return err
+			}
+		} else if _, ok := value.(byte); ok {
+			byc := make([]byte, len(items))
+			for i, v := range items {
+				if sv, ok := v.(byte); ok {
+					byc[i] = sv
+				}
+			}
+			if err := writer.WriteCollectionOfByteValues("", byc); err != nil {
+				return err
+			}
+		} else if _, ok := value.(int8); ok {
+			i8c := make([]int8, len(items))
+			for i, v := range items {
+				if sv, ok := v.(int8); ok {
+					i8c[i] = sv
+				}
+			}
+			if err := writer.WriteCollectionOfInt8Values("", i8c); err != nil {
+				return err
+			}
+		} else if _, ok := value.(int32); ok {
+			i32c := make([]int32, len(items))
+			for i, v := range items {
+				if sv, ok := v.(int32); ok {
+					i32c[i] = sv
+				}
+			}
+			if err := writer.WriteCollectionOfInt32Values("", i32c); err != nil {
+				return err
+			}
+		} else if _, ok := value.(int64); ok {
+			i64c := make([]int64, len(items))
+			for i, v := range items {
+				if sv, ok := v.(int64); ok {
+					i64c[i] = sv
+				}
+			}
+			if err := writer.WriteCollectionOfInt64Values("", i64c); err != nil {
+				return err
+			}
+		} else if _, ok := value.(float32); ok {
+			f32c := make([]float32, len(items))
+			for i, v := range items {
+				if sv, ok := v.(float32); ok {
+					f32c[i] = sv
+				}
+			}
+			if err := writer.WriteCollectionOfFloat32Values("", f32c); err != nil {
+				return err
+			}
+		} else if _, ok := value.(float64); ok {
+			f64c := make([]float64, len(items))
+			for i, v := range items {
+				if sv, ok := v.(float64); ok {
+					f64c[i] = sv
+				}
+			}
+			if err := writer.WriteCollectionOfFloat64Values("", f64c); err != nil {
+				return err
+			}
+		} else if _, ok := value.(uuid.UUID); ok {
+			uc := make([]uuid.UUID, len(items))
+			for i, v := range items {
+				if sv, ok := v.(uuid.UUID); ok {
+					uc[i] = sv
+				}
+			}
+			if err := writer.WriteCollectionOfUUIDValues("", uc); err != nil {
+				return err
+			}
+		} else if _, ok := value.(time.Time); ok {
+			tc := make([]time.Time, len(items))
+			for i, v := range items {
+				if sv, ok := v.(time.Time); ok {
+					tc[i] = sv
+				}
+			}
+			if err := writer.WriteCollectionOfTimeValues("", tc); err != nil {
+				return err
+			}
+		} else if _, ok := value.(s.ISODuration); ok {
+			dc := make([]s.ISODuration, len(items))
+			for i, v := range items {
+				if sv, ok := v.(s.ISODuration); ok {
+					dc[i] = sv
+				}
+			}
+			if err := writer.WriteCollectionOfISODurationValues("", dc); err != nil {
+				return err
+			}
+		} else if _, ok := value.(s.TimeOnly); ok {
+			toc := make([]s.TimeOnly, len(items))
+			for i, v := range items {
+				if sv, ok := v.(s.TimeOnly); ok {
+					toc[i] = sv
+				}
+			}
+			if err := writer.WriteCollectionOfTimeOnlyValues("", toc); err != nil {
+				return err
+			}
+		} else if _, ok := value.(s.DateOnly); ok {
+			doc := make([]s.DateOnly, len(items))
+			for i, v := range items {
+				if sv, ok := v.(s.DateOnly); ok {
+					doc[i] = sv
+				}
+			}
+			if err := writer.WriteCollectionOfDateOnlyValues("", doc); err != nil {
+				return err
+			}
+		} else if _, ok := value.(byte); ok {
+			ba := make([]byte, len(items))
+			for i, v := range items {
+				if sv, ok := v.(byte); ok {
+					ba[i] = sv
+				}
+			}
+			if err := writer.WriteByteArrayValue("", ba); err != nil {
+				return err
+			}
+		}
+	}
+	err2 := request.setContentAndContentType(writer, contentType)
+	if err2 != nil {
+		return err2
+	}
 	return nil
 }
 

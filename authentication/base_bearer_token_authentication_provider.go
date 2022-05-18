@@ -7,6 +7,7 @@ import (
 )
 
 const authorizationHeader = "Authorization"
+const claimsKey = "claims"
 
 // BaseBearerTokenAuthenticationProvider provides a base class implementing AuthenticationProvider for Bearer token scheme.
 type BaseBearerTokenAuthenticationProvider struct {
@@ -20,7 +21,7 @@ func NewBaseBearerTokenAuthenticationProvider(accessTokenProvider AccessTokenPro
 }
 
 // AuthenticateRequest authenticates the provided RequestInformation instance using the provided authorization token callback.
-func (provider *BaseBearerTokenAuthenticationProvider) AuthenticateRequest(request *abs.RequestInformation) error {
+func (provider *BaseBearerTokenAuthenticationProvider) AuthenticateRequest(request *abs.RequestInformation, additionalAuthenticationContext map[string]interface{}) error {
 	if request == nil {
 		return errors.New("request is nil")
 	}
@@ -30,12 +31,17 @@ func (provider *BaseBearerTokenAuthenticationProvider) AuthenticateRequest(reque
 	if provider.accessTokenProvider == nil {
 		return errors.New("this class needs to be initialized with an access token provider")
 	}
+	if len(additionalAuthenticationContext) > 0 &&
+		additionalAuthenticationContext[claimsKey] != nil &&
+		request.Headers[authorizationHeader] != "" {
+		request.Headers[authorizationHeader] = ""
+	}
 	if request.Headers[authorizationHeader] == "" {
 		uri, err := request.GetUri()
 		if err != nil {
 			return err
 		}
-		token, err := provider.accessTokenProvider.GetAuthorizationToken(uri)
+		token, err := provider.accessTokenProvider.GetAuthorizationToken(uri, additionalAuthenticationContext)
 		if err != nil {
 			return err
 		}

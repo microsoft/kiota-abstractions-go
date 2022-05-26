@@ -11,6 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+## [0.8.0] - 2022-05-26
+
+### Added
+
+- Adds support for enum and enum collections responses.
+
 ## [0.7.0] - 2022-05-18
 
 ### Changed

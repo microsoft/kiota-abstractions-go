@@ -10,3 +10,6 @@ type Parsable interface {
 
 // ParsableFactory is a factory for creating Parsable.
 type ParsableFactory func(parseNode ParseNode) (Parsable, error)
+
+// EnumFactory is a factory for creating Enum.
+type EnumFactory func(string) (interface{}, error)

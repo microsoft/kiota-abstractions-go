@@ -19,8 +19,12 @@ type ErrorMappings map[string]s.ParsableFactory
 type RequestAdapter interface {
 	// SendAsync executes the HTTP request specified by the given RequestInformation and returns the deserialized response model.
 	SendAsync(requestInfo *RequestInformation, constructor s.ParsableFactory, responseHandler ResponseHandler, errorMappings ErrorMappings) (s.Parsable, error)
+	// SendEnumAsync executes the HTTP request specified by the given RequestInformation and returns the deserialized response model.
+	SendEnumAsync(requestInfo *RequestInformation, parser s.EnumFactory, responseHandler ResponseHandler, errorMappings ErrorMappings) (interface{}, error)
 	// SendCollectionAsync executes the HTTP request specified by the given RequestInformation and returns the deserialized response model collection.
 	SendCollectionAsync(requestInfo *RequestInformation, constructor s.ParsableFactory, responseHandler ResponseHandler, errorMappings ErrorMappings) ([]s.Parsable, error)
+	// SendEnumCollectionAsync executes the HTTP request specified by the given RequestInformation and returns the deserialized response model collection.
+	SendEnumCollectionAsync(requestInfo *RequestInformation, parser s.EnumFactory, responseHandler ResponseHandler, errorMappings ErrorMappings) ([]interface{}, error)
 	// SendPrimitiveAsync executes the HTTP request specified by the given RequestInformation and returns the deserialized primitive response model.
 	SendPrimitiveAsync(requestInfo *RequestInformation, typeName string, responseHandler ResponseHandler, errorMappings ErrorMappings) (interface{}, error)
 	// SendPrimitiveCollectionAsync executes the HTTP request specified by the given RequestInformation and returns the deserialized primitive response model collection.

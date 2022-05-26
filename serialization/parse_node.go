@@ -15,7 +15,7 @@ type ParseNode interface {
 	// GetCollectionOfPrimitiveValues returns the collection of primitive values from the node.
 	GetCollectionOfPrimitiveValues(targetType string) ([]interface{}, error)
 	// GetCollectionOfEnumValues returns the collection of Enum values from the node.
-	GetCollectionOfEnumValues(parser func(string) (interface{}, error)) ([]interface{}, error)
+	GetCollectionOfEnumValues(parser EnumFactory) ([]interface{}, error)
 	// GetObjectValue returns the Parsable value from the node.
 	GetObjectValue(ctor ParsableFactory) (Parsable, error)
 	// GetStringValue returns a String value from the nodes.
@@ -45,7 +45,7 @@ type ParseNode interface {
 	// GetUUIDValue returns a UUID value from the nodes.
 	GetUUIDValue() (*uuid.UUID, error)
 	// GetEnumValue returns a Enum value from the nodes.
-	GetEnumValue(parser func(string) (interface{}, error)) (interface{}, error)
+	GetEnumValue(parser EnumFactory) (interface{}, error)
 	// GetByteArrayValue returns a ByteArray value from the nodes.
 	GetByteArrayValue() ([]byte, error)
 }

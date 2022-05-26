@@ -1,10 +1,14 @@
 package serialization
 
 import (
-	assert "github.com/stretchr/testify/assert"
 	"testing"
-    "github.com/stretchr/testify/mock"
+	"time"
+
+	"github.com/google/uuid"
+
+	assert "github.com/stretchr/testify/assert"
 )
+
 type mockSerializer struct {
 }
 
@@ -38,22 +42,22 @@ func (*mockSerializer) WriteByteArrayValue(key string, value []byte) error {
 func (*mockSerializer) WriteTimeValue(key string, value *time.Time) error {
 	return nil
 }
-func (*mockSerializer) WriteISODurationValue(key string, value *serialization.ISODuration) error {
+func (*mockSerializer) WriteISODurationValue(key string, value *ISODuration) error {
 	return nil
 }
-func (*mockSerializer) WriteDateOnlyValue(key string, value *serialization.DateOnly) error {
+func (*mockSerializer) WriteDateOnlyValue(key string, value *DateOnly) error {
 	return nil
 }
-func (*mockSerializer) WriteTimeOnlyValue(key string, value *serialization.TimeOnly) error {
+func (*mockSerializer) WriteTimeOnlyValue(key string, value *TimeOnly) error {
 	return nil
 }
 func (*mockSerializer) WriteUUIDValue(key string, value *uuid.UUID) error {
 	return nil
 }
-func (*mockSerializer) WriteObjectValue(key string, item serialization.Parsable) error {
+func (*mockSerializer) WriteObjectValue(key string, item Parsable) error {
 	return nil
 }
-func (*mockSerializer) WriteCollectionOfObjectValues(key string, collection []serialization.Parsable) error {
+func (*mockSerializer) WriteCollectionOfObjectValues(key string, collection []Parsable) error {
 	return nil
 }
 func (*mockSerializer) WriteCollectionOfStringValues(key string, collection []string) error {
@@ -83,13 +87,13 @@ func (*mockSerializer) WriteCollectionOfFloat64Values(key string, collection []f
 func (*mockSerializer) WriteCollectionOfTimeValues(key string, collection []time.Time) error {
 	return nil
 }
-func (*mockSerializer) WriteCollectionOfISODurationValues(key string, collection []serialization.ISODuration) error {
+func (*mockSerializer) WriteCollectionOfISODurationValues(key string, collection []ISODuration) error {
 	return nil
 }
-func (*mockSerializer) WriteCollectionOfDateOnlyValues(key string, collection []serialization.DateOnly) error {
+func (*mockSerializer) WriteCollectionOfDateOnlyValues(key string, collection []DateOnly) error {
 	return nil
 }
-func (*mockSerializer) WriteCollectionOfTimeOnlyValues(key string, collection []serialization.TimeOnly) error {
+func (*mockSerializer) WriteCollectionOfTimeOnlyValues(key string, collection []TimeOnly) error {
 	return nil
 }
 func (*mockSerializer) WriteCollectionOfUUIDValues(key string, collection []uuid.UUID) error {
@@ -111,13 +115,17 @@ type mockSerializerFactory struct {
 func (*mockSerializerFactory) GetValidContentType() (string, error) {
 	return "application/json", nil
 }
-func (*mockSerializerFactory) GetSerializationWriter(contentType string) (serialization.SerializationWriter, error) {
+func (*mockSerializerFactory) GetSerializationWriter(contentType string) (SerializationWriter, error) {
 	return &mockSerializer{}, nil
 }
 
 func TestItGetsVendorSpecificSerializationWriter(t *testing.T) {
-    registry := NewSerializationWriterFactoryRegistry()
-    registry.ContentTypeAssociatedFactories["application/json"] = &mockSerializerFactory{}
-    serializationWriter = registry.GetSerializationWriter("application/vnd+json")
-    assert.NotNil(t, serializationWriter)
+	DefaultSerializationWriterFactoryInstance.ContentTypeAssociatedFactories["application/json"] = &mockSerializerFactory{}
+	serializationWriter, err := DefaultSerializationWriterFactoryInstance.GetSerializationWriter("application/vnd+json")
+	assert.Nil(t, err)
+	assert.NotNil(t, serializationWriter)
+}
+
+func TestSerializationWriterFactoryRegistryHonoursInterface(t *testing.T) {
+	assert.Implements(t, (*SerializationWriterFactory)(nil), DefaultSerializationWriterFactoryInstance)
 }

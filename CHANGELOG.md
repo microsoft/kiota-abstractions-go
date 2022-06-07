@@ -11,6 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+## [0.8.1] - 2022-06-07
+
+### Changed
+
+- Updated yaml package version through testify dependency.
+
 ## [0.8.0] - 2022-05-26
 
 ### Added

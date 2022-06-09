@@ -1,5 +1,5 @@
-github.com/cjlapao/common-go v0.0.20 h1:AIZBtuxwJPXFqyxFOlvVDWZgbsuTSquZEUw4KMx8pNg=
-github.com/cjlapao/common-go v0.0.20/go.mod h1:EVLEXIxsBHblPMrhJYOvL4yBCcBj7IYDdW88VlfxpPM=
+github.com/cjlapao/common-go v0.0.21 h1:z4PDFLQG4pJxHEmM8ecmnjDgTcR0Xr/30WZiNZF2oYM=
+github.com/cjlapao/common-go v0.0.21/go.mod h1:QHUcl8KX3RgNVonFJ1WpW4mlr9NyWOHmzqxaRbwooPo=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=

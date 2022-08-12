@@ -63,6 +63,11 @@ func (request *RequestInformation) GetUri() (*u.URL, error) {
 		request.SetUri(*uri)
 		return request.uri, nil
 	} else {
+		_, baseurlExists := request.PathParameters["baseurl"]
+		if !baseurlExists && strings.Contains(strings.ToLower(request.UrlTemplate), "{+baseurl}") {
+			return nil, errors.New("pathParameters must contain a value for \"baseurl\" for the url to be built")
+		}
+
 		uriTemplate, err := t.New(request.UrlTemplate)
 		if err != nil {
 			return nil, err
@@ -202,7 +207,7 @@ func (request *RequestInformation) SetContentFromParsable(requestAdapter Request
 	return nil
 }
 
-// SetContentFromParsable sets the request body from a scalar value with the specified content type.
+// SetContentFromScalar sets the request body from a scalar value with the specified content type.
 func (request *RequestInformation) SetContentFromScalar(requestAdapter RequestAdapter, contentType string, items ...interface{}) error {
 	writer, err := request.getSerializationWriter(requestAdapter, contentType, items...)
 	if err != nil {

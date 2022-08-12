@@ -11,6 +11,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+## [0.8.2] - 2022-08-11
+
+### Added
+
+- Add tests to verify DateTime and DateTimeOffsets default to ISO 8601.
+- Adds check to return error when the baseUrl path parameter is not set when needed.
+
 ## [0.8.1] - 2022-06-07
 
 ### Changed

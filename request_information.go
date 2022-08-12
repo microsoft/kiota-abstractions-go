@@ -64,7 +64,7 @@ func (request *RequestInformation) GetUri() (*u.URL, error) {
 		return request.uri, nil
 	} else {
 		_, baseurlExists := request.PathParameters["baseurl"]
-		if strings.Contains(strings.ToLower(request.UrlTemplate), "{+baseurl}") && !baseurlExists {
+		if !baseurlExists && strings.Contains(strings.ToLower(request.UrlTemplate), "{+baseurl}") {
 			return nil, errors.New("pathParameters must contain a value for \"baseurl\" for the url to be built")
 		}
 

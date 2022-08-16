@@ -39,7 +39,7 @@ type SerializationWriter interface {
 	// WriteUUIDValue writes a UUID value to underlying the byte array.
 	WriteUUIDValue(key string, value *uuid.UUID) error
 	// WriteObjectValue writes a Parsable value to underlying the byte array.
-	WriteObjectValue(key string, item Parsable) error
+	WriteObjectValue(key string, item Parsable, additionalValuesToMerge ...Parsable) error
 	// WriteCollectionOfObjectValues writes a collection of Parsable values to underlying the byte array.
 	WriteCollectionOfObjectValues(key string, collection []Parsable) error
 	// WriteCollectionOfStringValues writes a collection of String values to underlying the byte array.

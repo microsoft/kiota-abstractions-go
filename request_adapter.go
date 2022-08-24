@@ -19,19 +19,19 @@ type ErrorMappings map[string]s.ParsableFactory
 // RequestAdapter is the service responsible for translating abstract RequestInformation into native HTTP requests.
 type RequestAdapter interface {
 	// SendAsync executes the HTTP request specified by the given RequestInformation and returns the deserialized response model.
-	SendAsync(context context.Context, requestInfo *RequestInformation, constructor s.ParsableFactory, responseHandler ResponseHandler, errorMappings ErrorMappings) (s.Parsable, error)
+	SendAsync(context *context.Context, requestInfo *RequestInformation, constructor s.ParsableFactory, responseHandler ResponseHandler, errorMappings ErrorMappings) (s.Parsable, error)
 	// SendEnumAsync executes the HTTP request specified by the given RequestInformation and returns the deserialized response model.
-	SendEnumAsync(context context.Context, requestInfo *RequestInformation, parser s.EnumFactory, responseHandler ResponseHandler, errorMappings ErrorMappings) (interface{}, error)
+	SendEnumAsync(context *context.Context, requestInfo *RequestInformation, parser s.EnumFactory, responseHandler ResponseHandler, errorMappings ErrorMappings) (interface{}, error)
 	// SendCollectionAsync executes the HTTP request specified by the given RequestInformation and returns the deserialized response model collection.
-	SendCollectionAsync(context context.Context, requestInfo *RequestInformation, constructor s.ParsableFactory, responseHandler ResponseHandler, errorMappings ErrorMappings) ([]s.Parsable, error)
+	SendCollectionAsync(context *context.Context, requestInfo *RequestInformation, constructor s.ParsableFactory, responseHandler ResponseHandler, errorMappings ErrorMappings) ([]s.Parsable, error)
 	// SendEnumCollectionAsync executes the HTTP request specified by the given RequestInformation and returns the deserialized response model collection.
-	SendEnumCollectionAsync(context context.Context, requestInfo *RequestInformation, parser s.EnumFactory, responseHandler ResponseHandler, errorMappings ErrorMappings) ([]interface{}, error)
+	SendEnumCollectionAsync(context *context.Context, requestInfo *RequestInformation, parser s.EnumFactory, responseHandler ResponseHandler, errorMappings ErrorMappings) ([]interface{}, error)
 	// SendPrimitiveAsync executes the HTTP request specified by the given RequestInformation and returns the deserialized primitive response model.
-	SendPrimitiveAsync(context context.Context, requestInfo *RequestInformation, typeName string, responseHandler ResponseHandler, errorMappings ErrorMappings) (interface{}, error)
+	SendPrimitiveAsync(context *context.Context, requestInfo *RequestInformation, typeName string, responseHandler ResponseHandler, errorMappings ErrorMappings) (interface{}, error)
 	// SendPrimitiveCollectionAsync executes the HTTP request specified by the given RequestInformation and returns the deserialized primitive response model collection.
-	SendPrimitiveCollectionAsync(context context.Context, requestInfo *RequestInformation, typeName string, responseHandler ResponseHandler, errorMappings ErrorMappings) ([]interface{}, error)
+	SendPrimitiveCollectionAsync(context *context.Context, requestInfo *RequestInformation, typeName string, responseHandler ResponseHandler, errorMappings ErrorMappings) ([]interface{}, error)
 	// SendNoContentAsync executes the HTTP request specified by the given RequestInformation with no return content.
-	SendNoContentAsync(context context.Context, requestInfo *RequestInformation, responseHandler ResponseHandler, errorMappings ErrorMappings) error
+	SendNoContentAsync(context *context.Context, requestInfo *RequestInformation, responseHandler ResponseHandler, errorMappings ErrorMappings) error
 	// GetSerializationWriterFactory returns the serialization writer factory currently in use for the request adapter service.
 	GetSerializationWriterFactory() s.SerializationWriterFactory
 	// EnableBackingStore enables the backing store proxies for the SerializationWriters and ParseNodes in use.

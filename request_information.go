@@ -31,8 +31,6 @@ type RequestInformation struct {
 	// The Url template for the current request.
 	UrlTemplate string
 	options     map[string]RequestOption
-	// The Response Handler.
-	ResponseHandler ResponseHandler
 }
 
 const raw_url_key = "request-raw-url"

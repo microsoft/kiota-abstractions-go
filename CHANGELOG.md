@@ -11,6 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+## [0.9.0] - 2022-08-24
+
+### Changed
+
+- Changes RequestAdapter contract passing a `Context` object as the first parameter for SendAsync
+
 ## [0.8.2] - 2022-08-11
 
 ### Added

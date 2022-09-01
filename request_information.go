@@ -31,8 +31,6 @@ type RequestInformation struct {
 	// The Url template for the current request.
 	UrlTemplate string
 	options     map[string]RequestOption
-	// Response handler to use in place of the default response handling provided by the core service
-	ResponseHandler ResponseHandler
 }
 
 const raw_url_key = "request-raw-url"

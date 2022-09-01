@@ -11,6 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+## [0.9.1] - 2022-09-01
+
+### Changed
+
+- Add `ResponseHandler` to request information struct
+
 ## [0.9.0] - 2022-08-24
 
 ### Changed

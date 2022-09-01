@@ -11,8 +11,8 @@ func testHandler(response interface{}, errorMappings ErrorMappings) (interface{}
 
 func TestRequestHandlerOption(t *testing.T) {
 
-	handlerOption := NewRequestHandlerOption(testHandler)
-
+	handlerOption := NewRequestHandlerOption()
+	handlerOption.SetResponseHandler(testHandler)
 	assert.NotNil(t, handlerOption)
 	assert.NotNil(t, handlerOption.GetKey())
 	assert.NotNil(t, handlerOption.GetResponseHandler())

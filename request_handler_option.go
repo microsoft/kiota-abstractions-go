@@ -16,10 +16,8 @@ type requestHandlerOption struct {
 }
 
 // NewRequestHandlerOption creates a new RequestInformation object with default values.
-func NewRequestHandlerOption(responseHandler ResponseHandler) RequestHandlerOption {
-	return &requestHandlerOption{
-		responseHandler: responseHandler,
-	}
+func NewRequestHandlerOption() RequestHandlerOption {
+	return &requestHandlerOption{}
 }
 
 func (r requestHandlerOption) GetResponseHandler() ResponseHandler {

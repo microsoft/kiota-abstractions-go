@@ -12,9 +12,11 @@ func MergeDeserializersForIntersectionWrapper(targets ...Parsable) (map[string]f
 	}
 	deserializers := make(map[string]func(ParseNode) error)
 	for _, target := range targets {
-		for key, deserializer := range target.GetFieldDeserializers() {
-			if _, ok := deserializers[key]; !ok {
-				deserializers[key] = deserializer
+		if target != nil {
+			for key, deserializer := range target.GetFieldDeserializers() {
+				if _, ok := deserializers[key]; !ok {
+					deserializers[key] = deserializer
+				}
 			}
 		}
 	}

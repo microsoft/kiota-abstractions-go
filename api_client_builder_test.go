@@ -54,7 +54,7 @@ func (*mockSerializer) WriteTimeOnlyValue(key string, value *serialization.TimeO
 func (*mockSerializer) WriteUUIDValue(key string, value *uuid.UUID) error {
 	return nil
 }
-func (*mockSerializer) WriteObjectValue(key string, item serialization.Parsable) error {
+func (*mockSerializer) WriteObjectValue(key string, item serialization.Parsable, additionalValuesToMerge ...serialization.Parsable) error {
 	return nil
 }
 func (*mockSerializer) WriteCollectionOfObjectValues(key string, collection []serialization.Parsable) error {

@@ -1,6 +1,7 @@
 package abstractions
 
 import (
+	"context"
 	"errors"
 	"time"
 
@@ -13,6 +14,9 @@ import (
 	"github.com/google/uuid"
 	s "github.com/microsoft/kiota-abstractions-go/serialization"
 	t "github.com/yosida95/uritemplate/v3"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 )
 
 // RequestInformation represents an abstract HTTP request.
@@ -184,94 +188,91 @@ func (request *RequestInformation) getSerializationWriter(requestAdapter Request
 	}
 }
 
+func (r *RequestInformation) setRequestType(result interface{}, span trace.Span) {
+	if result != nil {
+		span.SetAttributes(attribute.String("com.microsoft.kiota.request.type", reflect.TypeOf(result).String()))
+	}
+}
+
+const observabilityTracerName = "github.com/microsoft/kiota-abstractions-go"
+
 // SetContentFromParsable sets the request body from a model with the specified content type.
-func (request *RequestInformation) SetContentFromParsable(requestAdapter RequestAdapter, contentType string, items ...s.Parsable) error {
+func (request *RequestInformation) SetContentFromParsable(ctx context.Context, requestAdapter RequestAdapter, contentType string, items ...s.Parsable) error {
+	_, span := otel.GetTracerProvider().Tracer(observabilityTracerName).Start(ctx, "SetContentFromParsable")
+	defer span.End()
+
 	writer, err := request.getSerializationWriter(requestAdapter, contentType, items)
 	if err != nil {
+		span.RecordError(err)
 		return err
 	}
 	defer writer.Close()
-	var writeErr error
-	if len(items) == 1 {
-		writeErr = writer.WriteObjectValue("", items[0])
+	itemsLen := len(items)
+	if itemsLen == 1 {
+		request.setRequestType(items[0], span)
+		err = writer.WriteObjectValue("", items[0])
 	} else {
-		writeErr = writer.WriteCollectionOfObjectValues("", items)
+		if itemsLen > 0 {
+			request.setRequestType(items[0], span)
+		}
+		err = writer.WriteCollectionOfObjectValues("", items)
 	}
-	if writeErr != nil {
-		return writeErr
+	if err != nil {
+		span.RecordError(err)
+		return err
 	}
-	err2 := request.setContentAndContentType(writer, contentType)
-	if err2 != nil {
-		return err2
+	err = request.setContentAndContentType(writer, contentType)
+	if err != nil {
+		span.RecordError(err)
+		return err
 	}
 	return nil
 }
 
 // SetContentFromScalar sets the request body from a scalar value with the specified content type.
-func (request *RequestInformation) SetContentFromScalar(requestAdapter RequestAdapter, contentType string, items ...interface{}) error {
+func (request *RequestInformation) SetContentFromScalar(ctx context.Context, requestAdapter RequestAdapter, contentType string, items ...interface{}) error {
+	_, span := otel.GetTracerProvider().Tracer(observabilityTracerName).Start(ctx, "SetContentFromScalar")
+	defer span.End()
 	writer, err := request.getSerializationWriter(requestAdapter, contentType, items...)
 	if err != nil {
+		span.RecordError(err)
 		return err
 	}
 	defer writer.Close()
 	if len(items) == 1 {
 		value := items[0]
+		request.setRequestType(value, span)
 
 		if sv, ok := value.(*string); ok {
-			if err := writer.WriteStringValue("", sv); err != nil {
-				return err
-			}
+			err = writer.WriteStringValue("", sv)
 		} else if bv, ok := value.(*bool); ok {
-			if err := writer.WriteBoolValue("", bv); err != nil {
-				return err
-			}
+			err = writer.WriteBoolValue("", bv)
 		} else if byv, ok := value.(*byte); ok {
-			if err := writer.WriteByteValue("", byv); err != nil {
-				return err
-			}
+			err = writer.WriteByteValue("", byv)
 		} else if i8v, ok := value.(*int8); ok {
-			if err := writer.WriteInt8Value("", i8v); err != nil {
-				return err
-			}
+			err = writer.WriteInt8Value("", i8v)
 		} else if i32v, ok := value.(*int32); ok {
-			if err := writer.WriteInt32Value("", i32v); err != nil {
-				return err
-			}
+			err = writer.WriteInt32Value("", i32v)
 		} else if i64v, ok := value.(*int64); ok {
-			if err := writer.WriteInt64Value("", i64v); err != nil {
-				return err
-			}
+			err = writer.WriteInt64Value("", i64v)
 		} else if f32v, ok := value.(*float32); ok {
-			if err := writer.WriteFloat32Value("", f32v); err != nil {
-				return err
-			}
+			err = writer.WriteFloat32Value("", f32v)
 		} else if f64v, ok := value.(*float64); ok {
-			if err := writer.WriteFloat64Value("", f64v); err != nil {
-				return err
-			}
+			err = writer.WriteFloat64Value("", f64v)
 		} else if uv, ok := value.(*uuid.UUID); ok {
-			if err := writer.WriteUUIDValue("", uv); err != nil {
-				return err
-			}
+			err = writer.WriteUUIDValue("", uv)
 		} else if tv, ok := value.(*time.Time); ok {
-			if err := writer.WriteTimeValue("", tv); err != nil {
-				return err
-			}
+			err = writer.WriteTimeValue("", tv)
 		} else if dv, ok := value.(*s.ISODuration); ok {
-			if err := writer.WriteISODurationValue("", dv); err != nil {
-				return err
-			}
+			err = writer.WriteISODurationValue("", dv)
 		} else if tov, ok := value.(*s.TimeOnly); ok {
-			if err := writer.WriteTimeOnlyValue("", tov); err != nil {
-				return err
-			}
+			err = writer.WriteTimeOnlyValue("", tov)
 		} else if dov, ok := value.(*s.DateOnly); ok {
-			if err := writer.WriteDateOnlyValue("", dov); err != nil {
-				return err
-			}
+			err = writer.WriteDateOnlyValue("", dov)
 		}
 	} else if len(items) > 1 {
 		value := items[0]
+		request.setRequestType(value, span)
 		if _, ok := value.(*string); ok {
 			sc := make([]string, len(items))
 			for i, v := range items {
@@ -279,9 +280,7 @@ func (request *RequestInformation) SetContentFromScalar(requestAdapter RequestAd
 					sc[i] = sv
 				}
 			}
-			if err := writer.WriteCollectionOfStringValues("", sc); err != nil {
-				return err
-			}
+			err = writer.WriteCollectionOfStringValues("", sc)
 		} else if _, ok := value.(bool); ok {
 			bc := make([]bool, len(items))
 			for i, v := range items {
@@ -289,9 +288,7 @@ func (request *RequestInformation) SetContentFromScalar(requestAdapter RequestAd
 					bc[i] = sv
 				}
 			}
-			if err := writer.WriteCollectionOfBoolValues("", bc); err != nil {
-				return err
-			}
+			err = writer.WriteCollectionOfBoolValues("", bc)
 		} else if _, ok := value.(byte); ok {
 			byc := make([]byte, len(items))
 			for i, v := range items {
@@ -299,9 +296,7 @@ func (request *RequestInformation) SetContentFromScalar(requestAdapter RequestAd
 					byc[i] = sv
 				}
 			}
-			if err := writer.WriteCollectionOfByteValues("", byc); err != nil {
-				return err
-			}
+			err = writer.WriteCollectionOfByteValues("", byc)
 		} else if _, ok := value.(int8); ok {
 			i8c := make([]int8, len(items))
 			for i, v := range items {
@@ -309,9 +304,7 @@ func (request *RequestInformation) SetContentFromScalar(requestAdapter RequestAd
 					i8c[i] = sv
 				}
 			}
-			if err := writer.WriteCollectionOfInt8Values("", i8c); err != nil {
-				return err
-			}
+			err = writer.WriteCollectionOfInt8Values("", i8c)
 		} else if _, ok := value.(int32); ok {
 			i32c := make([]int32, len(items))
 			for i, v := range items {
@@ -319,9 +312,7 @@ func (request *RequestInformation) SetContentFromScalar(requestAdapter RequestAd
 					i32c[i] = sv
 				}
 			}
-			if err := writer.WriteCollectionOfInt32Values("", i32c); err != nil {
-				return err
-			}
+			err = writer.WriteCollectionOfInt32Values("", i32c)
 		} else if _, ok := value.(int64); ok {
 			i64c := make([]int64, len(items))
 			for i, v := range items {
@@ -329,9 +320,7 @@ func (request *RequestInformation) SetContentFromScalar(requestAdapter RequestAd
 					i64c[i] = sv
 				}
 			}
-			if err := writer.WriteCollectionOfInt64Values("", i64c); err != nil {
-				return err
-			}
+			err = writer.WriteCollectionOfInt64Values("", i64c)
 		} else if _, ok := value.(float32); ok {
 			f32c := make([]float32, len(items))
 			for i, v := range items {
@@ -339,9 +328,7 @@ func (request *RequestInformation) SetContentFromScalar(requestAdapter RequestAd
 					f32c[i] = sv
 				}
 			}
-			if err := writer.WriteCollectionOfFloat32Values("", f32c); err != nil {
-				return err
-			}
+			err = writer.WriteCollectionOfFloat32Values("", f32c)
 		} else if _, ok := value.(float64); ok {
 			f64c := make([]float64, len(items))
 			for i, v := range items {
@@ -349,9 +336,7 @@ func (request *RequestInformation) SetContentFromScalar(requestAdapter RequestAd
 					f64c[i] = sv
 				}
 			}
-			if err := writer.WriteCollectionOfFloat64Values("", f64c); err != nil {
-				return err
-			}
+			err = writer.WriteCollectionOfFloat64Values("", f64c)
 		} else if _, ok := value.(uuid.UUID); ok {
 			uc := make([]uuid.UUID, len(items))
 			for i, v := range items {
@@ -359,9 +344,7 @@ func (request *RequestInformation) SetContentFromScalar(requestAdapter RequestAd
 					uc[i] = sv
 				}
 			}
-			if err := writer.WriteCollectionOfUUIDValues("", uc); err != nil {
-				return err
-			}
+			err = writer.WriteCollectionOfUUIDValues("", uc)
 		} else if _, ok := value.(time.Time); ok {
 			tc := make([]time.Time, len(items))
 			for i, v := range items {
@@ -369,9 +352,7 @@ func (request *RequestInformation) SetContentFromScalar(requestAdapter RequestAd
 					tc[i] = sv
 				}
 			}
-			if err := writer.WriteCollectionOfTimeValues("", tc); err != nil {
-				return err
-			}
+			err = writer.WriteCollectionOfTimeValues("", tc)
 		} else if _, ok := value.(s.ISODuration); ok {
 			dc := make([]s.ISODuration, len(items))
 			for i, v := range items {
@@ -379,9 +360,7 @@ func (request *RequestInformation) SetContentFromScalar(requestAdapter RequestAd
 					dc[i] = sv
 				}
 			}
-			if err := writer.WriteCollectionOfISODurationValues("", dc); err != nil {
-				return err
-			}
+			err = writer.WriteCollectionOfISODurationValues("", dc)
 		} else if _, ok := value.(s.TimeOnly); ok {
 			toc := make([]s.TimeOnly, len(items))
 			for i, v := range items {
@@ -389,9 +368,7 @@ func (request *RequestInformation) SetContentFromScalar(requestAdapter RequestAd
 					toc[i] = sv
 				}
 			}
-			if err := writer.WriteCollectionOfTimeOnlyValues("", toc); err != nil {
-				return err
-			}
+			err = writer.WriteCollectionOfTimeOnlyValues("", toc)
 		} else if _, ok := value.(s.DateOnly); ok {
 			doc := make([]s.DateOnly, len(items))
 			for i, v := range items {
@@ -399,9 +376,7 @@ func (request *RequestInformation) SetContentFromScalar(requestAdapter RequestAd
 					doc[i] = sv
 				}
 			}
-			if err := writer.WriteCollectionOfDateOnlyValues("", doc); err != nil {
-				return err
-			}
+			err = writer.WriteCollectionOfDateOnlyValues("", doc)
 		} else if _, ok := value.(byte); ok {
 			ba := make([]byte, len(items))
 			for i, v := range items {
@@ -409,14 +384,17 @@ func (request *RequestInformation) SetContentFromScalar(requestAdapter RequestAd
 					ba[i] = sv
 				}
 			}
-			if err := writer.WriteByteArrayValue("", ba); err != nil {
-				return err
-			}
+			err = writer.WriteByteArrayValue("", ba)
 		}
 	}
-	err2 := request.setContentAndContentType(writer, contentType)
-	if err2 != nil {
-		return err2
+	if err != nil {
+		span.RecordError(err)
+		return err
+	}
+	err = request.setContentAndContentType(writer, contentType)
+	if err != nil {
+		span.RecordError(err)
+		return err
 	}
 	return nil
 }
@@ -460,7 +438,7 @@ func (request *RequestInformation) AddQueryParameters(source interface{}) {
 	}
 }
 
-//AddRequestHeaders adds request headers to the request.
+// AddRequestHeaders adds request headers to the request.
 func (request *RequestInformation) AddRequestHeaders(headersToAdd map[string]string) {
 	if len(headersToAdd) == 0 {
 		return

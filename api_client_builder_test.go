@@ -1,10 +1,11 @@
 package abstractions
 
 import (
+	"testing"
+
 	"github.com/microsoft/kiota-abstractions-go/internal"
 	serialization "github.com/microsoft/kiota-abstractions-go/serialization"
 	assert "github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestItCreatesClientConcurrently(t *testing.T) {

@@ -12,7 +12,7 @@ var ResponseHandlerOptionKey = RequestOptionKey{
 }
 
 type requestHandlerOption struct {
-	responseHandler ResponseHandler
+	handler ResponseHandler
 }
 
 // NewRequestHandlerOption creates a new RequestInformation object with default values.
@@ -20,14 +20,14 @@ func NewRequestHandlerOption() RequestHandlerOption {
 	return &requestHandlerOption{}
 }
 
-func (r requestHandlerOption) GetResponseHandler() ResponseHandler {
-	return r.responseHandler
+func (r *requestHandlerOption) GetResponseHandler() ResponseHandler {
+	return r.handler
 }
 
-func (r requestHandlerOption) SetResponseHandler(responseHandler ResponseHandler) {
-	r.responseHandler = responseHandler
+func (r *requestHandlerOption) SetResponseHandler(responseHandler ResponseHandler) {
+	r.handler = responseHandler
 }
 
-func (r requestHandlerOption) GetKey() RequestOptionKey {
+func (r *requestHandlerOption) GetKey() RequestOptionKey {
 	return ResponseHandlerOptionKey
 }

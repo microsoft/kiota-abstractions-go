@@ -141,7 +141,7 @@ func TestSetReferencedEnumValueValueValueWithError(t *testing.T) {
 func TestSetCollectionOfReferencedEnumValueWithoutError(t *testing.T) {
 	person := internal.NewPerson()
 
-	slice := []interface{}{Point(internal.ACTIVE), Point(internal.SUSPEND)}
+	slice := []interface{}{P(internal.ACTIVE), P(internal.SUSPEND)}
 	enumSource := func(parser serialization.EnumFactory) ([]interface{}, error) {
 		return slice, nil
 	}
@@ -167,7 +167,7 @@ func TestSetCollectionOfReferencedEnumValueWithError(t *testing.T) {
 func TestSetCollectionOfReferencedPrimitiveValueWithoutError(t *testing.T) {
 	person := internal.NewPerson()
 
-	slice := []interface{}{Point(1), Point(2), Point(3)}
+	slice := []interface{}{P(1), P(2), P(3)}
 	dataSource := func(targetType string) ([]interface{}, error) {
 		return slice, nil
 	}
@@ -224,6 +224,6 @@ func TestGetValueReturn(t *testing.T) {
 
 	assert.Equal(t, GetValueOrDefault(person.GetDisplayName, "Unknown"), "Unknown")
 
-	person.SetDisplayName(Point("Jane"))
+	person.SetDisplayName(P("Jane"))
 	assert.Equal(t, GetValueOrDefault(person.GetDisplayName, "Unknown"), "Jane")
 }

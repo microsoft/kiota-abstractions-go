@@ -159,10 +159,12 @@ func SetCollectionOfReferencedPrimitiveValue[T interface{}](source func(targetTy
 	return nil
 }
 
-func Point[T interface{}](t T) *T {
+// P converts a values to a pointer
+func P[T interface{}](t T) *T {
 	return &t
 }
 
+// GetValueOrDefault Converts a Pointer to a value or retuns a default value
 func GetValueOrDefault[T interface{}](source func() *T, defaultValue T) T {
 	result := source()
 	if result != nil {

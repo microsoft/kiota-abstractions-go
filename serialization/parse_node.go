@@ -48,4 +48,6 @@ type ParseNode interface {
 	GetEnumValue(parser EnumFactory) (interface{}, error)
 	// GetByteArrayValue returns a ByteArray value from the nodes.
 	GetByteArrayValue() ([]byte, error)
+	// GetRawValue returns the values of the node as an interface of any type.
+	GetRawValue() (interface{}, error)
 }

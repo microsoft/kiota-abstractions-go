@@ -72,6 +72,6 @@ type SerializationWriter interface {
 	GetSerializedContent() ([]byte, error)
 	// WriteAdditionalData writes additional data to underlying the byte array.
 	WriteAdditionalData(value map[string]interface{}) error
-	// WriteAnyValues an object of unknown type as a json value
-	WriteAnyValues(key string, value interface{}) error
+	// WriteAnyValue an object of unknown type as a json value
+	WriteAnyValue(key string, value interface{}) error
 }

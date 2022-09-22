@@ -102,7 +102,7 @@ func (*MockSerializer) GetSerializedContent() ([]byte, error) {
 func (*MockSerializer) WriteAdditionalData(value map[string]interface{}) error {
 	return nil
 }
-func (*MockSerializer) WriteAnyValues(key string, value interface{}) error {
+func (*MockSerializer) WriteAnyValue(key string, value interface{}) error {
 	return nil
 }
 func (*MockSerializer) Close() error {

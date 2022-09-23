@@ -37,31 +37,6 @@ func createCallRecordNode(parseNode serialization.ParseNode) (serialization.Pars
 	return internal.NewCallRecord(), nil
 }
 
-func getObjectValue(ctor serialization.ParsableFactory) (serialization.Parsable, error) {
-	return internal.NewCallRecord(), nil
-}
-
-func getObjectValueWithError(ctor serialization.ParsableFactory) (serialization.Parsable, error) {
-	return nil, errors.New("could not get from factory")
-}
-
-func TestSetObjectValueWithoutError(t *testing.T) {
-
-	person := internal.NewPerson()
-	err := SetObjectValue(getObjectValue, createCallRecordNode, person.SetCallRecord)
-	assert.Nil(t, err)
-	assert.NotNil(t, person.GetCallRecord())
-}
-
-func TestSetObjectValueWithError(t *testing.T) {
-
-	person := internal.NewPerson()
-	err := SetObjectValue(getObjectValueWithError, createCallRecordNode, person.SetCallRecord)
-
-	assert.NotNil(t, err)
-	assert.Nil(t, person.GetCallRecord())
-}
-
 func getObjectsValues(ctor serialization.ParsableFactory) ([]serialization.Parsable, error) {
 	slice := []serialization.Parsable{internal.NewCallRecord(), internal.NewCallRecord(), internal.NewCallRecord()}
 	return slice, nil
@@ -106,22 +81,8 @@ func getEnumValue(parser serialization.EnumFactory) (interface{}, error) {
 	return &status, nil
 }
 
-func TestSetEnumValueValueValueWithoutError(t *testing.T) {
-	person := internal.NewPerson()
-	err := SetEnumValue(getEnumValue, internal.ParsePersonStatus, person.SetStatus)
-	assert.Nil(t, err)
-	assert.Equal(t, person.GetStatus().String(), internal.ACTIVE.String())
-}
-
 func getEnumValueWithError(parser serialization.EnumFactory) (interface{}, error) {
 	return nil, errors.New("could not get from factory")
-}
-
-func TestSetEnumValueValueValueWithError(t *testing.T) {
-	person := internal.NewPerson()
-	err := SetEnumValue(getEnumValueWithError, internal.ParsePersonStatus, person.SetStatus)
-	assert.NotNil(t, err)
-	assert.Nil(t, person.GetStatus())
 }
 
 func TestSetReferencedEnumValueValueValueWithoutError(t *testing.T) {

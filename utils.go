@@ -1,6 +1,10 @@
 package abstractions
 
-import "github.com/microsoft/kiota-abstractions-go/serialization"
+import (
+	"github.com/google/uuid"
+	"github.com/microsoft/kiota-abstractions-go/serialization"
+	"time"
+)
 
 // SetValue receives a source function and applies the results to the setter
 //
@@ -17,11 +21,11 @@ func SetValue[T interface{}](source func() (*T, error), setter func(t *T)) error
 	return nil
 }
 
-// SetObjectValue takes a generic source with a discriminator receiver, reads value and writes it to a setter
+// SetObjectValueFromSource takes a generic source with a discriminator receiver, reads value and writes it to a setter
 //
 // `source func() (*T, error)` is a generic getter with possible error response.
 // `setter func(t *T)` generic function that can write a value from the source
-func SetObjectValue[T interface{}](source func(ctor serialization.ParsableFactory) (serialization.Parsable, error), ctor serialization.ParsableFactory, setter func(t T)) error {
+func SetObjectValueFromSource[T interface{}](source func(ctor serialization.ParsableFactory) (serialization.Parsable, error), ctor serialization.ParsableFactory, setter func(t T)) error {
 	val, err := source(ctor)
 	if err != nil {
 		return err
@@ -63,23 +67,6 @@ func CollectionApply[T any, R interface{}](collection []T, mutator func(t T) R) 
 		cast[i] = mutator(v)
 	}
 	return cast
-}
-
-// SetEnumValue is a utility function that receives an enum getter , EnumFactory and applies the results to a setter
-//
-// source is any function that receives a `EnumFactory` and returns an interface or error
-// parser is an EnumFactory
-// setter is a recipient of the function results
-func SetEnumValue[T interface{}](source func(parser serialization.EnumFactory) (interface{}, error), parser serialization.EnumFactory, setter func(t T)) error {
-	val, err := source(parser)
-	if err != nil {
-		return err
-	}
-	if val != nil {
-		res := (val).(T)
-		setter(res)
-	}
-	return nil
 }
 
 // SetReferencedEnumValue is a utility function that receives an enum getter , EnumFactory and applies a de-referenced result of the factory to a setter
@@ -171,5 +158,178 @@ func GetValueOrDefault[T interface{}](source func() *T, defaultValue T) T {
 		return *result
 	} else {
 		return defaultValue
+	}
+}
+
+// SetCollectionOfObjectValues returns an objects collection prototype for deserialization
+func SetCollectionOfObjectValues[T interface{}](ctor serialization.ParsableFactory, setter func(t []T)) serialization.NodeParser {
+	return func(n serialization.ParseNode) error {
+		val, err := n.GetCollectionOfObjectValues(ctor)
+		if err != nil {
+			return err
+		}
+		if val != nil {
+			res := make([]T, len(val))
+			for i, v := range val {
+				res[i] = v.(T)
+			}
+			setter(res)
+		}
+		return nil
+	}
+}
+
+// SetCollectionOfPrimitiveValues returns a primitive's collection prototype for deserialization
+func SetCollectionOfPrimitiveValues[T interface{}](targetType string, setter func(t []T)) serialization.NodeParser {
+	return func(n serialization.ParseNode) error {
+		val, err := n.GetCollectionOfPrimitiveValues(targetType)
+		if err != nil {
+			return err
+		}
+		if val != nil {
+			res := make([]T, len(val))
+			for i, v := range val {
+				res[i] = *(v.(*T))
+			}
+			setter(res)
+		}
+		return nil
+	}
+}
+
+// SetCollectionOfEnumValues returns an enum prototype for deserialization
+func SetCollectionOfEnumValues[T interface{}](parser serialization.EnumFactory, setter func(t []T)) serialization.NodeParser {
+	return func(n serialization.ParseNode) error {
+		val, err := n.GetCollectionOfEnumValues(parser)
+		if err != nil {
+			return err
+		}
+		if val != nil {
+			res := make([]T, len(val))
+			for i, v := range val {
+				res[i] = *(v.(*T))
+			}
+			setter(res)
+		}
+		return nil
+	}
+}
+
+// SetObjectValue returns an object prototype for deserialization
+func SetObjectValue[T interface{}](ctor serialization.ParsableFactory, setter func(t T)) serialization.NodeParser {
+	return func(n serialization.ParseNode) error {
+		return SetObjectValueFromSource(n.GetObjectValue, ctor, setter)
+	}
+}
+
+// SetStringValue returns a string prototype for deserialization
+func SetStringValue(setter func(t *string)) serialization.NodeParser {
+	return func(n serialization.ParseNode) error {
+		return SetValue(n.GetStringValue, setter)
+	}
+}
+
+// SetBoolValue returns a boolean prototype for deserialization
+func SetBoolValue(setter func(t *bool)) serialization.NodeParser {
+	return func(n serialization.ParseNode) error {
+		return SetValue(n.GetBoolValue, setter)
+	}
+}
+
+// SetInt8Value Returns an int8 prototype for deserialization
+func SetInt8Value(setter func(t *int8)) serialization.NodeParser {
+	return func(n serialization.ParseNode) error {
+		return SetValue(n.GetInt8Value, setter)
+	}
+}
+
+// SetByteValue returns a byte prototype for deserialization
+func SetByteValue(setter func(t *byte)) serialization.NodeParser {
+	return func(n serialization.ParseNode) error {
+		return SetValue(n.GetByteValue, setter)
+	}
+}
+
+// SetFloat32Value returns a float32 prototype for deserialization
+func SetFloat32Value(setter func(t *float32)) serialization.NodeParser {
+	return func(n serialization.ParseNode) error {
+		return SetValue(n.GetFloat32Value, setter)
+	}
+}
+
+// SetFloat64Value returns a float64 prototype for deserialization
+func SetFloat64Value(setter func(t *float64)) serialization.NodeParser {
+	return func(n serialization.ParseNode) error {
+		return SetValue(n.GetFloat64Value, setter)
+	}
+}
+
+// SetInt32Value returns a int32 prototype for deserialization
+func SetInt32Value(setter func(t *int32)) serialization.NodeParser {
+	return func(n serialization.ParseNode) error {
+		return SetValue(n.GetInt32Value, setter)
+	}
+}
+
+// SetInt64Value returns a int64 prototype for deserialization
+func SetInt64Value(setter func(t *int64)) serialization.NodeParser {
+	return func(n serialization.ParseNode) error {
+		return SetValue(n.GetInt64Value, setter)
+	}
+}
+
+// SetTimeValue returns a time.Time prototype for deserialization
+func SetTimeValue(setter func(t *time.Time)) serialization.NodeParser {
+	return func(n serialization.ParseNode) error {
+		return SetValue(n.GetTimeValue, setter)
+	}
+}
+
+// SetISODurationValue returns a ISODuration prototype for deserialization
+func SetISODurationValue(setter func(t *serialization.ISODuration)) serialization.NodeParser {
+	return func(n serialization.ParseNode) error {
+		return SetValue(n.GetISODurationValue, setter)
+	}
+}
+
+// SetTimeOnlyValue returns a TimeOnly prototype for deserialization
+func SetTimeOnlyValue(setter func(t *serialization.TimeOnly)) serialization.NodeParser {
+	return func(n serialization.ParseNode) error {
+		return SetValue(n.GetTimeOnlyValue, setter)
+	}
+}
+
+// SetDateOnlyValue returns a DateOnly prototype for deserialization
+func SetDateOnlyValue(setter func(t *serialization.DateOnly)) serialization.NodeParser {
+	return func(n serialization.ParseNode) error {
+		return SetValue(n.GetDateOnlyValue, setter)
+	}
+}
+
+// SetUUIDValue returns a DateOnly prototype for deserialization
+func SetUUIDValue(setter func(t *uuid.UUID)) serialization.NodeParser {
+	return func(n serialization.ParseNode) error {
+		return SetValue(n.GetUUIDValue, setter)
+	}
+}
+
+// SetEnumValue returns a Enum prototype for deserialization
+func SetEnumValue[T interface{}](parser serialization.EnumFactory, setter func(t *T)) serialization.NodeParser {
+	return func(n serialization.ParseNode) error {
+		return SetReferencedEnumValue(n.GetEnumValue, parser, setter)
+	}
+}
+
+// SetByteArrayValue returns a []byte prototype for deserialization
+func SetByteArrayValue(setter func(t []byte)) serialization.NodeParser {
+	return func(n serialization.ParseNode) error {
+		val, err := n.GetByteArrayValue()
+		if err != nil {
+			return err
+		}
+		if val != nil {
+			setter(val)
+		}
+		return nil
 	}
 }

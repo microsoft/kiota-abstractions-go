@@ -76,6 +76,14 @@ func TestCollectionApply(t *testing.T) {
 	assert.Equal(t, response, []int{1, 2, 3})
 }
 
+func TestCollectionCast1(t *testing.T) {
+	slice := []*int{P(1), P(2), P(3)}
+	response := CollectionValueCast[int](slice)
+
+	assert.Equal(t, len(response), 3)
+	assert.Equal(t, response, []int{1, 2, 3})
+}
+
 func TestCollectionCast(t *testing.T) {
 
 	var val1 interface{}
@@ -86,7 +94,7 @@ func TestCollectionCast(t *testing.T) {
 	val3 = 3
 
 	slice := []interface{}{val1, val2, val3}
-	response := CollectionCast[interface{}, int](slice)
+	response := CollectionCast[int](slice)
 
 	assert.Equal(t, len(response), 3)
 	assert.Equal(t, response, []int{1, 2, 3})
@@ -94,7 +102,7 @@ func TestCollectionCast(t *testing.T) {
 
 func TestCollectionCastAsParsable(t *testing.T) {
 	slice := []interface{}{&internal.CallRecord{}, &internal.CallRecord{}, &internal.CallRecord{}}
-	response := CollectionCastAsParsable(slice)
+	response := CollectionCast[serialization.Parsable](slice)
 
 	assert.Equal(t, len(response), 3)
 }

@@ -335,7 +335,7 @@ func SetByteArrayValue(setter func(t []byte)) serialization.NodeParser {
 }
 
 // CollectionCast casts a collection of values from any type T to given type R
-func CollectionCast[T any, R interface{}](items []T) []R {
+func CollectionCast[R interface{}, T any](items []T) []R {
 	cast := make([]R, len(items))
 	for i, v := range items {
 		cast[i] = any(v).(R)
@@ -343,9 +343,13 @@ func CollectionCast[T any, R interface{}](items []T) []R {
 	return cast
 }
 
-// CollectionCastAsParsable casts a collection of values to a serialization.Parsable of fails
+// CollectionValueCast casts a collection of values from any type T to given type R
 //
-// Assumes given values implement the serialization.Parsable interface
-func CollectionCastAsParsable[T any](items []T) []serialization.Parsable {
-	return CollectionCast[T, serialization.Parsable](items)
+// Value cast can be used to cast memory addresses to the value of the pointer
+func CollectionValueCast[R interface{}, T any](items []T) []R {
+	cast := make([]R, len(items))
+	for i, v := range items {
+		cast[i] = *(any(v).(*R))
+	}
+	return cast
 }

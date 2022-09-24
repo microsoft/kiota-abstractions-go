@@ -76,6 +76,29 @@ func TestCollectionApply(t *testing.T) {
 	assert.Equal(t, response, []int{1, 2, 3})
 }
 
+func TestCollectionCast(t *testing.T) {
+
+	var val1 interface{}
+	val1 = 1
+	var val2 interface{}
+	val2 = 2
+	var val3 interface{}
+	val3 = 3
+
+	slice := []interface{}{val1, val2, val3}
+	response := CollectionCast[interface{}, int](slice)
+
+	assert.Equal(t, len(response), 3)
+	assert.Equal(t, response, []int{1, 2, 3})
+}
+
+func TestCollectionCastAsParsable(t *testing.T) {
+	slice := []interface{}{&internal.CallRecord{}, &internal.CallRecord{}, &internal.CallRecord{}}
+	response := CollectionCastAsParsable(slice)
+
+	assert.Equal(t, len(response), 3)
+}
+
 func getEnumValue(parser serialization.EnumFactory) (interface{}, error) {
 	status := internal.ACTIVE
 	return &status, nil

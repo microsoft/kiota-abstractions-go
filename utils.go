@@ -48,10 +48,7 @@ func SetCollectionValue[T interface{}](source func(ctor serialization.ParsableFa
 		return err
 	}
 	if val != nil {
-		res := make([]T, len(val))
-		for i, v := range val {
-			res[i] = v.(T)
-		}
+		res := CollectionCast[T](val)
 		setter(res)
 	}
 	return nil
@@ -117,10 +114,7 @@ func SetCollectionOfPrimitiveValue[T interface{}](source func(targetType string)
 		return err
 	}
 	if val != nil {
-		res := make([]T, len(val))
-		for i, v := range val {
-			res[i] = v.(T)
-		}
+		res := CollectionCast[T](val)
 		setter(res)
 	}
 	return nil
@@ -137,10 +131,7 @@ func SetCollectionOfReferencedPrimitiveValue[T interface{}](source func(targetTy
 		return err
 	}
 	if val != nil {
-		res := make([]T, len(val))
-		for i, v := range val {
-			res[i] = *(v.(*T))
-		}
+		res := CollectionValueCast[T](val)
 		setter(res)
 	}
 	return nil
@@ -169,10 +160,7 @@ func SetCollectionOfObjectValues[T interface{}](ctor serialization.ParsableFacto
 			return err
 		}
 		if val != nil {
-			res := make([]T, len(val))
-			for i, v := range val {
-				res[i] = v.(T)
-			}
+			res := CollectionCast[T](val)
 			setter(res)
 		}
 		return nil
@@ -187,10 +175,7 @@ func SetCollectionOfPrimitiveValues[T interface{}](targetType string, setter fun
 			return err
 		}
 		if val != nil {
-			res := make([]T, len(val))
-			for i, v := range val {
-				res[i] = *(v.(*T))
-			}
+			res := CollectionValueCast[T](val)
 			setter(res)
 		}
 		return nil
@@ -205,10 +190,7 @@ func SetCollectionOfEnumValues[T interface{}](parser serialization.EnumFactory, 
 			return err
 		}
 		if val != nil {
-			res := make([]T, len(val))
-			for i, v := range val {
-				res[i] = *(v.(*T))
-			}
+			res := CollectionValueCast[T](val)
 			setter(res)
 		}
 		return nil

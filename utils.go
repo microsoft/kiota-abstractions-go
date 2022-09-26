@@ -94,10 +94,7 @@ func SetCollectionOfReferencedEnumValue[T interface{}](source func(parser serial
 		return err
 	}
 	if val != nil {
-		res := make([]*T, len(val))
-		for i, v := range val {
-			res[i] = (v).(*T)
-		}
+		res := CollectionApply(val, func(v interface{}) *T { return (v).(*T) })
 		setter(res)
 	}
 	return nil
@@ -318,10 +315,7 @@ func SetByteArrayValue(setter func(t []byte)) serialization.NodeParser {
 
 // CollectionCast casts a collection of values from any type T to given type R
 func CollectionCast[R interface{}, T any](items []T) []R {
-	cast := make([]R, len(items))
-	for i, v := range items {
-		cast[i] = any(v).(R)
-	}
+	cast := CollectionApply(items, func(v T) R { return any(v).(R) })
 	return cast
 }
 
@@ -329,10 +323,7 @@ func CollectionCast[R interface{}, T any](items []T) []R {
 //
 // Value cast can be used to cast memory addresses to the value of the pointer
 func CollectionValueCast[R interface{}, T any](items []T) []R {
-	cast := make([]R, len(items))
-	for i, v := range items {
-		cast[i] = *(any(v).(*R))
-	}
+	cast := CollectionApply(items, func(v T) R { return *(any(v).(*R)) })
 	return cast
 }
 
@@ -340,10 +331,9 @@ func CollectionValueCast[R interface{}, T any](items []T) []R {
 //
 // Value cast can be used to cast memory addresses to the value of the pointer
 func CollectionStructCast[R interface{}, T any](items []T) []R {
-	cast := make([]R, len(items))
-	for i, v := range items {
+	cast := CollectionApply(items, func(v T) R {
 		temp := v
-		cast[i] = any(&temp).(R)
-	}
+		return any(&temp).(R)
+	})
 	return cast
 }

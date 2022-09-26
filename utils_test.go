@@ -77,7 +77,7 @@ func TestCollectionApply(t *testing.T) {
 }
 
 func TestCollectionCast1(t *testing.T) {
-	slice := []*int{P(1), P(2), P(3)}
+	slice := []*int{p(1), p(2), p(3)}
 	response := CollectionValueCast[int](slice)
 
 	assert.Equal(t, len(response), 3)
@@ -133,7 +133,7 @@ func TestSetReferencedEnumValueValueValueWithError(t *testing.T) {
 func TestSetCollectionOfReferencedEnumValueWithoutError(t *testing.T) {
 	person := internal.NewPerson()
 
-	slice := []interface{}{P(internal.ACTIVE), P(internal.SUSPEND)}
+	slice := []interface{}{p(internal.ACTIVE), p(internal.SUSPEND)}
 	enumSource := func(parser serialization.EnumFactory) ([]interface{}, error) {
 		return slice, nil
 	}
@@ -159,7 +159,7 @@ func TestSetCollectionOfReferencedEnumValueWithError(t *testing.T) {
 func TestSetCollectionOfReferencedPrimitiveValueWithoutError(t *testing.T) {
 	person := internal.NewPerson()
 
-	slice := []interface{}{P(1), P(2), P(3)}
+	slice := []interface{}{p(1), p(2), p(3)}
 	dataSource := func(targetType string) ([]interface{}, error) {
 		return slice, nil
 	}
@@ -216,7 +216,7 @@ func TestGetValueReturn(t *testing.T) {
 
 	assert.Equal(t, GetValueOrDefault(person.GetDisplayName, "Unknown"), "Unknown")
 
-	person.SetDisplayName(P("Jane"))
+	person.SetDisplayName(p("Jane"))
 	assert.Equal(t, GetValueOrDefault(person.GetDisplayName, "Unknown"), "Jane")
 }
 

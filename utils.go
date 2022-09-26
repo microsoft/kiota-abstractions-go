@@ -134,8 +134,7 @@ func SetCollectionOfReferencedPrimitiveValue[T interface{}](source func(targetTy
 	return nil
 }
 
-// P converts a values to a pointer
-func P[T interface{}](t T) *T {
+func p[T interface{}](t T) *T {
 	return &t
 }
 

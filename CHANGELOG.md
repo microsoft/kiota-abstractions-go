@@ -14,7 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.11.0] - 2022-09-22
 
 ### Add
-
+- Adds generic helper methods to reduce code duplication for serializer and deserializers
 - Adds `WriteAnyValues` to support serialization of objects with undetermined properties at execution time e.g maps.
 - Adds `GetRawValue` to allow returning an `interface{}` from the parse-node
 

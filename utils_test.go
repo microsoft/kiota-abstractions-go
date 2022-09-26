@@ -219,3 +219,30 @@ func TestGetValueReturn(t *testing.T) {
 	person.SetDisplayName(P("Jane"))
 	assert.Equal(t, GetValueOrDefault(person.GetDisplayName, "Unknown"), "Jane")
 }
+
+type foo struct {
+	Name string
+}
+
+type animal interface {
+	Eat()
+	Call() string
+}
+
+type dog interface {
+	Bark()
+	Call() string
+}
+
+func (f *foo) Bark()        {}
+func (f *foo) Eat()         {}
+func (f *foo) Call() string { return f.Name }
+
+func TestCollectionStructCast(t *testing.T) {
+
+	foos := []foo{{Name: "Cooper"}, {Name: "Buddy"}, {Name: "Peanut"}}
+	animals := CollectionStructCast[animal](foos)
+	assert.Equal(t, "Cooper", animals[0].Call())
+	assert.Equal(t, "Buddy", animals[1].Call())
+	assert.Equal(t, "Peanut", animals[2].Call())
+}

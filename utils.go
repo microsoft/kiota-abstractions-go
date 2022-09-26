@@ -335,3 +335,15 @@ func CollectionValueCast[R interface{}, T any](items []T) []R {
 	}
 	return cast
 }
+
+// CollectionStructCast casts a collection of values from any type T to given type R
+//
+// Value cast can be used to cast memory addresses to the value of the pointer
+func CollectionStructCast[R interface{}, T any](items []T) []R {
+	cast := make([]R, len(items))
+	for i, v := range items {
+		temp := v
+		cast[i] = any(&temp).(R)
+	}
+	return cast
+}

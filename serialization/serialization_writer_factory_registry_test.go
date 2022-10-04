@@ -1,9 +1,10 @@
 package serialization
 
 import (
+	"testing"
+
 	"github.com/microsoft/kiota-abstractions-go/internal"
 	assert "github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestItGetsVendorSpecificSerializationWriter(t *testing.T) {

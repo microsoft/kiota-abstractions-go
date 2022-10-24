@@ -11,6 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+## [0.13.0] - 2022-10-18
+
+### Added
+
+- Added an API key authentication provider.
+
 ## [0.12.0] - 2022-09-27
 
 ### Added

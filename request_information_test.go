@@ -1,9 +1,12 @@
 package abstractions
 
 import (
+	"context"
 	"testing"
 	"time"
 
+	"github.com/microsoft/kiota-abstractions-go/internal"
+	s "github.com/microsoft/kiota-abstractions-go/serialization"
 	assert "github.com/stretchr/testify/assert"
 )
 
@@ -127,4 +130,132 @@ func TestItBuildsUrlOnProvidedBaseUrl(t *testing.T) {
 	resultUri, err := requestInformation.GetUri()
 	assert.Nil(t, err)
 	assert.Equal(t, "http://localhost/users", resultUri.String())
+}
+
+func TestItSetsContentFromParsable(t *testing.T) {
+	requestInformation := NewRequestInformation()
+	requestInformation.UrlTemplate = "{+baseurl}/users{?%24count}"
+	requestInformation.Method = POST
+
+	callsCounter := make(map[string]int)
+	requestAdapter := &MockRequestAdapter{
+		SerializationWriterFactory: &internal.MockSerializerFactory{
+			SerializationWriter: &internal.MockSerializer{
+				CallsCounter: callsCounter,
+			},
+		},
+	}
+
+	requestInformation.PathParameters["baseurl"] = "http://localhost"
+
+	record := internal.CallRecord{}
+	err := requestInformation.SetContentFromParsable(context.Background(), requestAdapter, "application/json", &record)
+	assert.Nil(t, err)
+	assert.Equal(t, 1, callsCounter["WriteObjectValue"])
+	assert.Equal(t, 0, callsCounter["WriteCollectionOfObjectValues"])
+}
+func TestItSetsContentFromParsableCollection(t *testing.T) {
+	requestInformation := NewRequestInformation()
+	requestInformation.UrlTemplate = "{+baseurl}/users{?%24count}"
+	requestInformation.Method = POST
+
+	callsCounter := make(map[string]int)
+	requestAdapter := &MockRequestAdapter{
+		SerializationWriterFactory: &internal.MockSerializerFactory{
+			SerializationWriter: &internal.MockSerializer{
+				CallsCounter: callsCounter,
+			},
+		},
+	}
+
+	requestInformation.PathParameters["baseurl"] = "http://localhost"
+
+	record := internal.CallRecord{}
+	err := requestInformation.SetContentFromParsableCollection(context.Background(), requestAdapter, "application/json", []s.Parsable{&record})
+	assert.Nil(t, err)
+	assert.Equal(t, 0, callsCounter["WriteObjectValue"])
+	assert.Equal(t, 1, callsCounter["WriteCollectionOfObjectValues"])
+}
+func TestItSetsContentFromScalarCollection(t *testing.T) {
+	requestInformation := NewRequestInformation()
+	requestInformation.UrlTemplate = "{+baseurl}/users{?%24count}"
+	requestInformation.Method = POST
+
+	callsCounter := make(map[string]int)
+	requestAdapter := &MockRequestAdapter{
+		SerializationWriterFactory: &internal.MockSerializerFactory{
+			SerializationWriter: &internal.MockSerializer{
+				CallsCounter: callsCounter,
+			},
+		},
+	}
+
+	requestInformation.PathParameters["baseurl"] = "http://localhost"
+
+	vals := []interface{}{"foo"}
+	err := requestInformation.SetContentFromScalarCollection(context.Background(), requestAdapter, "application/json", vals)
+	assert.Nil(t, err)
+	assert.Equal(t, 0, callsCounter["WriteStringValue"])
+	assert.Equal(t, 1, callsCounter["WriteCollectionOfStringValues"])
+}
+
+func TestItSetsContentFromScalar(t *testing.T) {
+	requestInformation := NewRequestInformation()
+	requestInformation.UrlTemplate = "{+baseurl}/users{?%24count}"
+	requestInformation.Method = POST
+
+	callsCounter := make(map[string]int)
+	requestAdapter := &MockRequestAdapter{
+		SerializationWriterFactory: &internal.MockSerializerFactory{
+			SerializationWriter: &internal.MockSerializer{
+				CallsCounter: callsCounter,
+			},
+		},
+	}
+
+	requestInformation.PathParameters["baseurl"] = "http://localhost"
+
+	value := "foo"
+	err := requestInformation.SetContentFromScalar(context.Background(), requestAdapter, "application/json", &value)
+	assert.Nil(t, err)
+	assert.Equal(t, 1, callsCounter["WriteStringValue"])
+	assert.Equal(t, 0, callsCounter["WriteCollectionOfStringValues"])
+}
+
+type MockRequestAdapter struct {
+	SerializationWriterFactory s.SerializationWriterFactory
+}
+
+func (r *MockRequestAdapter) SendAsync(context context.Context, requestInfo *RequestInformation, constructor s.ParsableFactory, errorMappings ErrorMappings) (s.Parsable, error) {
+	return nil, nil
+}
+func (r *MockRequestAdapter) SendEnumAsync(context context.Context, requestInfo *RequestInformation, parser s.EnumFactory, errorMappings ErrorMappings) (interface{}, error) {
+	return nil, nil
+}
+func (r *MockRequestAdapter) SendCollectionAsync(context context.Context, requestInfo *RequestInformation, constructor s.ParsableFactory, errorMappings ErrorMappings) ([]s.Parsable, error) {
+	return nil, nil
+}
+func (r *MockRequestAdapter) SendEnumCollectionAsync(context context.Context, requestInfo *RequestInformation, parser s.EnumFactory, errorMappings ErrorMappings) ([]interface{}, error) {
+	return nil, nil
+
+}
+func (r *MockRequestAdapter) SendPrimitiveAsync(context context.Context, requestInfo *RequestInformation, typeName string, errorMappings ErrorMappings) (interface{}, error) {
+	return nil, nil
+}
+func (r *MockRequestAdapter) SendPrimitiveCollectionAsync(context context.Context, requestInfo *RequestInformation, typeName string, errorMappings ErrorMappings) ([]interface{}, error) {
+	return nil, nil
+}
+func (r *MockRequestAdapter) SendNoContentAsync(context context.Context, requestInfo *RequestInformation, errorMappings ErrorMappings) error {
+	return nil
+
+}
+func (r *MockRequestAdapter) GetSerializationWriterFactory() s.SerializationWriterFactory {
+	return r.SerializationWriterFactory
+}
+func (r *MockRequestAdapter) EnableBackingStore() {
+}
+func (r *MockRequestAdapter) SetBaseUrl(baseUrl string) {
+}
+func (r *MockRequestAdapter) GetBaseUrl() string {
+	return ""
 }

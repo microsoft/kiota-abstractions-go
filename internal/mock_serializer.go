@@ -1,15 +1,18 @@
 package internal
 
 import (
+	"time"
+
 	"github.com/google/uuid"
 	"github.com/microsoft/kiota-abstractions-go/serialization"
-	"time"
 )
 
 type MockSerializer struct {
+	CallsCounter map[string]int
 }
 
-func (*MockSerializer) WriteStringValue(key string, value *string) error {
+func (m *MockSerializer) WriteStringValue(key string, value *string) error {
+	m.CallsCounter["WriteStringValue"]++
 	return nil
 }
 func (*MockSerializer) WriteBoolValue(key string, value *bool) error {
@@ -51,13 +54,16 @@ func (*MockSerializer) WriteTimeOnlyValue(key string, value *serialization.TimeO
 func (*MockSerializer) WriteUUIDValue(key string, value *uuid.UUID) error {
 	return nil
 }
-func (*MockSerializer) WriteObjectValue(key string, item serialization.Parsable, additionalValuesToMerge ...serialization.Parsable) error {
+func (m *MockSerializer) WriteObjectValue(key string, item serialization.Parsable, additionalValuesToMerge ...serialization.Parsable) error {
+	m.CallsCounter["WriteObjectValue"]++
 	return nil
 }
-func (*MockSerializer) WriteCollectionOfObjectValues(key string, collection []serialization.Parsable) error {
+func (m *MockSerializer) WriteCollectionOfObjectValues(key string, collection []serialization.Parsable) error {
+	m.CallsCounter["WriteCollectionOfObjectValues"]++
 	return nil
 }
-func (*MockSerializer) WriteCollectionOfStringValues(key string, collection []string) error {
+func (m *MockSerializer) WriteCollectionOfStringValues(key string, collection []string) error {
+	m.CallsCounter["WriteCollectionOfStringValues"]++
 	return nil
 }
 func (*MockSerializer) WriteCollectionOfBoolValues(key string, collection []bool) error {
@@ -97,7 +103,7 @@ func (*MockSerializer) WriteCollectionOfUUIDValues(key string, collection []uuid
 	return nil
 }
 func (*MockSerializer) GetSerializedContent() ([]byte, error) {
-	return nil, nil
+	return []byte("content"), nil
 }
 func (*MockSerializer) WriteAdditionalData(value map[string]interface{}) error {
 	return nil
@@ -110,11 +116,17 @@ func (*MockSerializer) Close() error {
 }
 
 type MockSerializerFactory struct {
+	SerializationWriter serialization.SerializationWriter
 }
 
 func (*MockSerializerFactory) GetValidContentType() (string, error) {
 	return "application/json", nil
 }
-func (*MockSerializerFactory) GetSerializationWriter(contentType string) (serialization.SerializationWriter, error) {
-	return &MockSerializer{}, nil
+func (m *MockSerializerFactory) GetSerializationWriter(contentType string) (serialization.SerializationWriter, error) {
+	if m.SerializationWriter == nil {
+		m.SerializationWriter = &MockSerializer{
+			CallsCounter: make(map[string]int),
+		}
+	}
+	return m.SerializationWriter, nil
 }

@@ -17,6 +17,15 @@ func TestItFollowsDefensivePrograming(t *testing.T) {
 	instance.RemoveValue("", "")
 	instance.RemoveValue("key", "")
 	instance.AddAll(nil)
+
+	instance = &RequestHeaders{}
+	assert.NotNil(t, instance)
+	instance.Get("key")
+	instance.Remove("key")
+	instance.ListKeys()
+	instance.RemoveValue("key", "value")
+	instance.Add("key", "value")
+
 }
 
 func TestIdAdds(t *testing.T) {

@@ -15,7 +15,7 @@ func NewRequestHeaders() *RequestHeaders {
 }
 
 func (r *RequestHeaders) normalizeHeaderKey(key string) string {
-	return strings.ToLower(key)
+	return strings.ToLower(strings.Trim(key, " "))
 }
 
 //Add adds a new header or append a new value to an existing header

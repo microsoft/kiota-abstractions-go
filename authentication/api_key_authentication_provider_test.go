@@ -42,7 +42,7 @@ func TestItAddsInQueryParameters(t *testing.T) {
 	resultUri, err := request.GetUri()
 	assert.Nil(t, err)
 	assert.Equal(t, "https://localhost?param=key", resultUri.String())
-	assert.Equal(t, "", request.Headers["param"])
+	assert.False(t, request.Headers.ContainsKey("param"))
 }
 
 func TestItAddsInQueryParametersWithOtherParameters(t *testing.T) {
@@ -57,7 +57,7 @@ func TestItAddsInQueryParametersWithOtherParameters(t *testing.T) {
 	resultUri, err := request.GetUri()
 	assert.Nil(t, err)
 	assert.Equal(t, "https://localhost?param=key&param1=value1", resultUri.String())
-	assert.Equal(t, "", request.Headers["param"])
+	assert.False(t, request.Headers.ContainsKey("param"))
 }
 
 func TestItAddsInHeader(t *testing.T) {
@@ -71,5 +71,5 @@ func TestItAddsInHeader(t *testing.T) {
 	resultUri, err := request.GetUri()
 	assert.Nil(t, err)
 	assert.Equal(t, "https://localhost", resultUri.String())
-	assert.Equal(t, "key", request.Headers["param"])
+	assert.Equal(t, "key", request.Headers.Get("param")[0])
 }

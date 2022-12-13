@@ -4,13 +4,13 @@ import "strings"
 
 //RequestHeaders represents a collection of request headers
 type RequestHeaders struct {
-	headers map[string]map[string]bool
+	headers map[string]map[string]struct{}
 }
 
 //NewRequestHeaders creates a new RequestHeaders
 func NewRequestHeaders() *RequestHeaders {
 	return &RequestHeaders{
-		headers: make(map[string]map[string]bool),
+		headers: make(map[string]map[string]struct{}),
 	}
 }
 
@@ -18,21 +18,25 @@ func (r *RequestHeaders) normalizeHeaderKey(key string) string {
 	return strings.ToLower(strings.Trim(key, " "))
 }
 
+type void struct{}
+
+var voidInstance void
+
 //Add adds a new header or append a new value to an existing header
 func (r *RequestHeaders) Add(key string, value string, additionalValues ...string) {
-	if key == "" || value == "" {
+	normalizedKey := r.normalizeHeaderKey(key)
+	if normalizedKey == "" || value == "" {
 		return
 	}
 	if r.headers == nil {
-		r.headers = make(map[string]map[string]bool)
+		r.headers = make(map[string]map[string]struct{})
 	}
-	normalizedKey := r.normalizeHeaderKey(key)
 	if r.headers[normalizedKey] == nil {
-		r.headers[normalizedKey] = make(map[string]bool)
+		r.headers[normalizedKey] = make(map[string]struct{})
 	}
-	r.headers[normalizedKey][value] = true
+	r.headers[normalizedKey][value] = voidInstance
 	for _, v := range additionalValues {
-		r.headers[normalizedKey][v] = true
+		r.headers[normalizedKey][v] = voidInstance
 	}
 }
 

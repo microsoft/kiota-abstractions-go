@@ -37,7 +37,7 @@ func (provider *BaseBearerTokenAuthenticationProvider) AuthenticateRequest(ctx c
 		request.Headers.ContainsKey(authorizationHeader) {
 		request.Headers.Remove(authorizationHeader)
 	}
-	if request.Headers.ContainsKey(authorizationHeader) {
+	if !request.Headers.ContainsKey(authorizationHeader) {
 		uri, err := request.GetUri()
 		if err != nil {
 			return err

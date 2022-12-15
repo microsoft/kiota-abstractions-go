@@ -11,6 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+## [0.15.1] - 2022-12-15
+
+### Changed
+
+- Fix bug preventing adding authentication key to header requests.
+
 ## [0.15.0] - 2022-12-15
 
 ### Added

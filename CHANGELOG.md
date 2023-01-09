@@ -11,6 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+## [0.16.0] - 2023-01-10
+
+### Added
+
+- Added a method to convert abstract requests to native requests in the request adapter interface.
+
 ## [0.15.2] - 2023-01-09
 
 ### Changed

@@ -463,7 +463,7 @@ func (request *RequestInformation) AddQueryParameters(source interface{}) {
 			continue
 		}
 		str, ok := value.(*string)
-		if ok && str != nil {
+		if ok && str != nil && *str != "" {
 			request.QueryParameters[fieldName] = *str
 		}
 		bl, ok := value.(*bool)

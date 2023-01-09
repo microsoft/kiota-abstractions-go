@@ -97,6 +97,29 @@ func TestItSetsSelectAndCountQueryParameters(t *testing.T) {
 	assert.Equal(t, "http://localhost/me?%24select=id%2CdisplayName&%24count=true", resultUri.String())
 }
 
+func TestItDoesNotSetEmptySelectQueryParameters(t *testing.T) {
+	requestInformation := NewRequestInformation()
+	requestInformation.UrlTemplate = "http://localhost/me{?%24select}"
+	requestInformation.AddQueryParameters(getQueryParameters{
+		Select_escaped: []string{},
+	})
+	resultUri, err := requestInformation.GetUri()
+	assert.Nil(t, err)
+	assert.Equal(t, "http://localhost/me", resultUri.String())
+}
+
+func TestItDoesNotSetEmptySearchQueryParameters(t *testing.T) {
+	emptyString := ""
+	requestInformation := NewRequestInformation()
+	requestInformation.UrlTemplate = "http://localhost/me{?%24search}"
+	requestInformation.AddQueryParameters(getQueryParameters{
+		Search: &emptyString,
+	})
+	resultUri, err := requestInformation.GetUri()
+	assert.Nil(t, err)
+	assert.Equal(t, "http://localhost/me", resultUri.String())
+}
+
 func TestItSetsPathParametersOfDateTimeOffsetType(t *testing.T) {
 	requestInformation := NewRequestInformation()
 	requestInformation.UrlTemplate = "http://localhost/getDirectRoutingCalls(fromDateTime='{fromDateTime}',toDateTime='{toDateTime}')"

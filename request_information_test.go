@@ -215,7 +215,7 @@ func TestItSetsContentFromScalarCollection(t *testing.T) {
 
 	requestInformation.PathParameters["baseurl"] = "http://localhost"
 
-	vals := []interface{}{"foo"}
+	vals := []any{"foo"}
 	err := requestInformation.SetContentFromScalarCollection(context.Background(), requestAdapter, "application/json", vals)
 	assert.Nil(t, err)
 	assert.Equal(t, 0, callsCounter["WriteStringValue"])
@@ -249,28 +249,31 @@ type MockRequestAdapter struct {
 	SerializationWriterFactory s.SerializationWriterFactory
 }
 
-func (r *MockRequestAdapter) SendAsync(context context.Context, requestInfo *RequestInformation, constructor s.ParsableFactory, errorMappings ErrorMappings) (s.Parsable, error) {
+func (r *MockRequestAdapter) Send(context context.Context, requestInfo *RequestInformation, constructor s.ParsableFactory, errorMappings ErrorMappings) (s.Parsable, error) {
 	return nil, nil
 }
-func (r *MockRequestAdapter) SendEnumAsync(context context.Context, requestInfo *RequestInformation, parser s.EnumFactory, errorMappings ErrorMappings) (interface{}, error) {
+func (r *MockRequestAdapter) SendEnum(context context.Context, requestInfo *RequestInformation, parser s.EnumFactory, errorMappings ErrorMappings) (any, error) {
 	return nil, nil
 }
-func (r *MockRequestAdapter) SendCollectionAsync(context context.Context, requestInfo *RequestInformation, constructor s.ParsableFactory, errorMappings ErrorMappings) ([]s.Parsable, error) {
+func (r *MockRequestAdapter) SendCollection(context context.Context, requestInfo *RequestInformation, constructor s.ParsableFactory, errorMappings ErrorMappings) ([]s.Parsable, error) {
 	return nil, nil
 }
-func (r *MockRequestAdapter) SendEnumCollectionAsync(context context.Context, requestInfo *RequestInformation, parser s.EnumFactory, errorMappings ErrorMappings) ([]interface{}, error) {
+func (r *MockRequestAdapter) SendEnumCollection(context context.Context, requestInfo *RequestInformation, parser s.EnumFactory, errorMappings ErrorMappings) ([]any, error) {
 	return nil, nil
 
 }
-func (r *MockRequestAdapter) SendPrimitiveAsync(context context.Context, requestInfo *RequestInformation, typeName string, errorMappings ErrorMappings) (interface{}, error) {
+func (r *MockRequestAdapter) SendPrimitive(context context.Context, requestInfo *RequestInformation, typeName string, errorMappings ErrorMappings) (any, error) {
 	return nil, nil
 }
-func (r *MockRequestAdapter) SendPrimitiveCollectionAsync(context context.Context, requestInfo *RequestInformation, typeName string, errorMappings ErrorMappings) ([]interface{}, error) {
+func (r *MockRequestAdapter) SendPrimitiveCollection(context context.Context, requestInfo *RequestInformation, typeName string, errorMappings ErrorMappings) ([]any, error) {
 	return nil, nil
 }
-func (r *MockRequestAdapter) SendNoContentAsync(context context.Context, requestInfo *RequestInformation, errorMappings ErrorMappings) error {
+func (r *MockRequestAdapter) SendNoContent(context context.Context, requestInfo *RequestInformation, errorMappings ErrorMappings) error {
 	return nil
 
+}
+func (r *MockRequestAdapter) ConvertToNativeRequest(context context.Context, requestInfo *RequestInformation) (any, error) {
+	return nil, nil
 }
 func (r *MockRequestAdapter) GetSerializationWriterFactory() s.SerializationWriterFactory {
 	return r.SerializationWriterFactory

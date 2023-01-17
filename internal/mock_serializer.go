@@ -11,6 +11,34 @@ type MockSerializer struct {
 	CallsCounter map[string]int
 }
 
+func (m *MockSerializer) WriteNullValue(key string) error {
+	return nil
+}
+
+func (m *MockSerializer) GetOnBeforeSerialization() serialization.ParsableAction {
+	return nil
+}
+
+func (m *MockSerializer) SetOnBeforeSerialization(action serialization.ParsableAction) {
+
+}
+
+func (m *MockSerializer) GetOnAfterObjectSerialization() serialization.ParsableAction {
+	return nil
+}
+
+func (m *MockSerializer) SetOnAfterObjectSerialization(action serialization.ParsableAction) {
+
+}
+
+func (m *MockSerializer) GetOnStartObjectSerialization() serialization.ParsableWriter {
+	return nil
+}
+
+func (m *MockSerializer) SetOnStartObjectSerialization(writer serialization.ParsableWriter) {
+
+}
+
 func (m *MockSerializer) WriteStringValue(key string, value *string) error {
 	m.CallsCounter["WriteStringValue"]++
 	return nil

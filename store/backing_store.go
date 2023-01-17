@@ -20,13 +20,13 @@ type BackingStore interface {
 
 	// Subscribe registers a listener to any data change happening.
 	// returns a subscriptionId which cah be used to reference the current subscription
-	Subscribe(callback BackingStoreSubscriber) *string
+	Subscribe(callback BackingStoreSubscriber) string
 
 	// SubscribeWithId registers a listener to any data change happening and assigns the given id
-	SubscribeWithId(callback BackingStoreSubscriber, subscriptionId *string) error
+	SubscribeWithId(callback BackingStoreSubscriber, subscriptionId string) error
 
 	// Unsubscribe Removes a subscription from the store based on its subscription id.
-	Unsubscribe(subscriptionId *string) error
+	Unsubscribe(subscriptionId string) error
 
 	// Clear Removes the data stored in the backing store. Doesn't trigger any subscription.
 	Clear()
@@ -37,7 +37,7 @@ type BackingStore interface {
 
 	// SetInitializationCompleted sets whether the initialization of the object and/or
 	// the initial deserialization has been completed to track whether objects have changed
-	SetInitializationCompleted(val *bool)
+	SetInitializationCompleted(val bool)
 
 	// GetReturnOnlyChangedValues is a flag that defines whether subscriber notifications should be sent only when
 	// data has been changed
@@ -45,5 +45,5 @@ type BackingStore interface {
 
 	// SetReturnOnlyChangedValues Sets whether to return only values that have changed
 	// since the initialization of the object when calling the Get and Enumerate method
-	SetReturnOnlyChangedValues(val *bool)
+	SetReturnOnlyChangedValues(val bool)
 }

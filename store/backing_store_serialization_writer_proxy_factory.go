@@ -7,21 +7,18 @@ import (
 func NewBackingStoreSerializationWriterProxyFactory(factory serialization.SerializationWriterFactory) *serialization.SerializationWriterProxyFactory {
 	return serialization.NewSerializationWriterProxyFactory(factory, func(parsable serialization.Parsable) {
 		if backedModel, ok := parsable.(BackedModel); ok && backedModel.GetBackingStore() != nil {
-			returnChanged := true
-			(*backedModel.GetBackingStore()).SetReturnOnlyChangedValues(&returnChanged)
+			backedModel.GetBackingStore().SetReturnOnlyChangedValues(true)
 		}
 	}, func(parsable serialization.Parsable) {
 		if backedModel, ok := parsable.(BackedModel); ok && backedModel.GetBackingStore() != nil {
-			store := *backedModel.GetBackingStore()
-			returnChanged := false
-			store.SetReturnOnlyChangedValues(&returnChanged)
-			initializationComplete := true
-			store.SetInitializationCompleted(&initializationComplete)
+			store := backedModel.GetBackingStore()
+			store.SetReturnOnlyChangedValues(false)
+			store.SetInitializationCompleted(true)
 		}
 	}, func(parsable serialization.Parsable, writer serialization.SerializationWriter) error {
 		if backedModel, ok := parsable.(BackedModel); ok && backedModel.GetBackingStore() != nil {
 
-			nilValues := (*backedModel.GetBackingStore()).EnumerateKeysForValuesChangedToNil()
+			nilValues := backedModel.GetBackingStore().EnumerateKeysForValuesChangedToNil()
 			for _, k := range nilValues {
 				err := writer.WriteNullValue(k)
 				if err != nil {

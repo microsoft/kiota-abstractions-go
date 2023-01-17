@@ -10,8 +10,8 @@ import (
 type BackingStoreSubscriber func(key string, oldVal interface{}, newVal interface{})
 
 type inMemoryBackingStore struct {
-	returnOnlyChangedValues *bool
-	initializationCompleted *bool
+	returnOnlyChangedValues bool
+	initializationCompleted bool
 	store                   map[string]interface{}
 	subscribers             map[string]BackingStoreSubscriber
 	changedValues           map[string]bool
@@ -20,8 +20,8 @@ type inMemoryBackingStore struct {
 // NewInMemoryBackingStore returns a new instance of an in memory backing store
 func NewInMemoryBackingStore() BackingStore {
 	return &inMemoryBackingStore{
-		returnOnlyChangedValues: new(bool),
-		initializationCompleted: new(bool),
+		returnOnlyChangedValues: false,
+		initializationCompleted: false,
 		store:                   make(map[string]interface{}),
 		subscribers:             make(map[string]BackingStoreSubscriber),
 		changedValues:           make(map[string]bool),
@@ -100,32 +100,30 @@ func (i *inMemoryBackingStore) EnumerateKeysForValuesChangedToNil() []string {
 	return keys
 }
 
-func (i *inMemoryBackingStore) Subscribe(callback BackingStoreSubscriber) *string {
+func (i *inMemoryBackingStore) Subscribe(callback BackingStoreSubscriber) string {
 	id := uuid.New().String()
 	i.subscribers[id] = callback
-	return &id
+	return id
 }
 
-func (i *inMemoryBackingStore) SubscribeWithId(callback BackingStoreSubscriber, subscriptionId *string) error {
-	subId := *subscriptionId
-	subId = strings.TrimSpace(subId)
-	if subId == "" {
+func (i *inMemoryBackingStore) SubscribeWithId(callback BackingStoreSubscriber, subscriptionId string) error {
+	subscriptionId = strings.TrimSpace(subscriptionId)
+	if subscriptionId == "" {
 		return errors.New("subscriptionId cannot be an empty string")
 	}
 
-	i.subscribers[subId] = callback
+	i.subscribers[subscriptionId] = callback
 
 	return nil
 }
 
-func (i *inMemoryBackingStore) Unsubscribe(subscriptionId *string) error {
-	subId := *subscriptionId
-	subId = strings.TrimSpace(subId)
-	if subId == "" {
+func (i *inMemoryBackingStore) Unsubscribe(subscriptionId string) error {
+	subscriptionId = strings.TrimSpace(subscriptionId)
+	if subscriptionId == "" {
 		return errors.New("subscriptionId cannot be an empty string")
 	}
 
-	delete(i.subscribers, subId)
+	delete(i.subscribers, subscriptionId)
 
 	return nil
 }
@@ -138,17 +136,17 @@ func (i *inMemoryBackingStore) Clear() {
 }
 
 func (i *inMemoryBackingStore) GetInitializationCompleted() bool {
-	return *i.initializationCompleted
+	return i.initializationCompleted
 }
 
-func (i *inMemoryBackingStore) SetInitializationCompleted(val *bool) {
+func (i *inMemoryBackingStore) SetInitializationCompleted(val bool) {
 	i.initializationCompleted = val
 }
 
 func (i *inMemoryBackingStore) GetReturnOnlyChangedValues() bool {
-	return *i.returnOnlyChangedValues
+	return i.returnOnlyChangedValues
 }
 
-func (i *inMemoryBackingStore) SetReturnOnlyChangedValues(val *bool) {
+func (i *inMemoryBackingStore) SetReturnOnlyChangedValues(val bool) {
 	i.returnOnlyChangedValues = val
 }

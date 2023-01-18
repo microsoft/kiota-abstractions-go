@@ -4,8 +4,22 @@ import (
 	"github.com/microsoft/kiota-abstractions-go/serialization"
 )
 
-func NewBackingStoreSerializationWriterProxyFactory(factory serialization.SerializationWriterFactory) *serialization.SerializationWriterProxyFactory {
-	return serialization.NewSerializationWriterProxyFactory(factory, func(parsable serialization.Parsable) {
+// BackingStoreSerializationWriterProxyFactory Backing Store implementation for serialization.SerializationWriterFactory
+type BackingStoreSerializationWriterProxyFactory struct {
+	factory *serialization.SerializationWriterProxyFactory
+}
+
+func (b *BackingStoreSerializationWriterProxyFactory) GetValidContentType() (string, error) {
+	return b.factory.GetValidContentType()
+}
+
+func (b *BackingStoreSerializationWriterProxyFactory) GetSerializationWriter(contentType string) (serialization.SerializationWriter, error) {
+	return b.factory.GetSerializationWriter(contentType)
+}
+
+// NewBackingStoreSerializationWriterProxyFactory Initializes a new instance of BackingStoreSerializationWriterProxyFactory
+func NewBackingStoreSerializationWriterProxyFactory(factory serialization.SerializationWriterFactory) *BackingStoreSerializationWriterProxyFactory {
+	proxyFactory := serialization.NewSerializationWriterProxyFactory(factory, func(parsable serialization.Parsable) {
 		if backedModel, ok := parsable.(BackedModel); ok && backedModel.GetBackingStore() != nil {
 			backedModel.GetBackingStore().SetReturnOnlyChangedValues(true)
 		}
@@ -29,4 +43,8 @@ func NewBackingStoreSerializationWriterProxyFactory(factory serialization.Serial
 
 		return nil
 	})
+
+	return &BackingStoreSerializationWriterProxyFactory{
+		factory: proxyFactory,
+	}
 }

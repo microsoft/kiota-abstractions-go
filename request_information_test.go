@@ -2,6 +2,7 @@ package abstractions
 
 import (
 	"context"
+	"github.com/microsoft/kiota-abstractions-go/store"
 	"testing"
 	"time"
 
@@ -260,7 +261,6 @@ func (r *MockRequestAdapter) SendCollection(context context.Context, requestInfo
 }
 func (r *MockRequestAdapter) SendEnumCollection(context context.Context, requestInfo *RequestInformation, parser s.EnumFactory, errorMappings ErrorMappings) ([]any, error) {
 	return nil, nil
-
 }
 func (r *MockRequestAdapter) SendPrimitive(context context.Context, requestInfo *RequestInformation, typeName string, errorMappings ErrorMappings) (any, error) {
 	return nil, nil
@@ -270,7 +270,6 @@ func (r *MockRequestAdapter) SendPrimitiveCollection(context context.Context, re
 }
 func (r *MockRequestAdapter) SendNoContent(context context.Context, requestInfo *RequestInformation, errorMappings ErrorMappings) error {
 	return nil
-
 }
 func (r *MockRequestAdapter) ConvertToNativeRequest(context context.Context, requestInfo *RequestInformation) (any, error) {
 	return nil, nil
@@ -278,7 +277,7 @@ func (r *MockRequestAdapter) ConvertToNativeRequest(context context.Context, req
 func (r *MockRequestAdapter) GetSerializationWriterFactory() s.SerializationWriterFactory {
 	return r.SerializationWriterFactory
 }
-func (r *MockRequestAdapter) EnableBackingStore() {
+func (r *MockRequestAdapter) EnableBackingStore(factory store.BackingStoreFactory) {
 }
 func (r *MockRequestAdapter) SetBaseUrl(baseUrl string) {
 }

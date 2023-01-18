@@ -21,16 +21,11 @@ type inMemoryBackingStore struct {
 func NewInMemoryBackingStore() BackingStore {
 	return &inMemoryBackingStore{
 		returnOnlyChangedValues: false,
-		initializationCompleted: false,
+		initializationCompleted: true,
 		store:                   make(map[string]interface{}),
 		subscribers:             make(map[string]BackingStoreSubscriber),
 		changedValues:           make(map[string]bool),
 	}
-}
-
-func (i *inMemoryBackingStore) valueChanged(key string) bool {
-	_, changed := i.changedValues[key]
-	return changed
 }
 
 func (i *inMemoryBackingStore) Get(key string) (interface{}, error) {
@@ -41,14 +36,10 @@ func (i *inMemoryBackingStore) Get(key string) (interface{}, error) {
 
 	objectVal := i.store[key]
 
-	if i.GetReturnOnlyChangedValues() {
-		if i.valueChanged(key) {
-			return objectVal, nil
-		} else {
-			return nil, nil
-		}
-	} else {
+	if (i.GetReturnOnlyChangedValues() && i.changedValues[key]) || !i.GetReturnOnlyChangedValues() {
 		return objectVal, nil
+	} else {
+		return nil, nil
 	}
 }
 
@@ -63,7 +54,7 @@ func (i *inMemoryBackingStore) Set(key string, value interface{}) error {
 	// check if objects values have changed
 	if current == nil || !reflect.DeepEqual(current, value) {
 		// track changed key
-		i.changedValues[key] = true
+		i.changedValues[key] = i.GetInitializationCompleted()
 
 		// update changed values
 		i.store[key] = value
@@ -81,7 +72,7 @@ func (i *inMemoryBackingStore) Enumerate() map[string]interface{} {
 	items := make(map[string]interface{})
 
 	for k, v := range i.store {
-		if !i.GetReturnOnlyChangedValues() || i.valueChanged(k) { // change flag not set or object changed
+		if !i.GetReturnOnlyChangedValues() || i.changedValues[k] { // change flag not set or object changed
 			items[k] = v
 		}
 	}
@@ -92,7 +83,7 @@ func (i *inMemoryBackingStore) Enumerate() map[string]interface{} {
 func (i *inMemoryBackingStore) EnumerateKeysForValuesChangedToNil() []string {
 	keys := make([]string, 0)
 	for k, v := range i.store {
-		if i.valueChanged(k) && v == nil {
+		if i.changedValues[k] && v == nil {
 			keys = append(keys, k)
 		}
 	}

@@ -144,7 +144,7 @@ func (*MockSerializer) Close() error {
 }
 
 type MockSerializerFactory struct {
-	SerializationWriter serialization.SerializationWriter
+	serialization.SerializationWriter
 }
 
 func (*MockSerializerFactory) GetValidContentType() (string, error) {
@@ -157,4 +157,15 @@ func (m *MockSerializerFactory) GetSerializationWriter(contentType string) (seri
 		}
 	}
 	return m.SerializationWriter, nil
+}
+
+type MockParseNodeFactory struct {
+	serialization.ParseNodeFactoryRegistry
+}
+
+func NewMockParseNodeFactory() *MockParseNodeFactory {
+	registry := serialization.ParseNodeFactoryRegistry{
+		ContentTypeAssociatedFactories: make(map[string]serialization.ParseNodeFactory),
+	}
+	return &MockParseNodeFactory{registry}
 }

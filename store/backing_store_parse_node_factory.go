@@ -4,15 +4,7 @@ import "github.com/microsoft/kiota-abstractions-go/serialization"
 
 // BackingStoreParseNodeFactory Backing Store implementation for serialization.ParseNodeFactory
 type BackingStoreParseNodeFactory struct {
-	factory *serialization.ParseNodeProxyFactory
-}
-
-func (b *BackingStoreParseNodeFactory) GetValidContentType() (string, error) {
-	return b.factory.GetValidContentType()
-}
-
-func (b *BackingStoreParseNodeFactory) GetRootParseNode(contentType string, content []byte) (serialization.ParseNode, error) {
-	return b.factory.GetRootParseNode(contentType, content)
+	*serialization.ParseNodeProxyFactory
 }
 
 // NewBackingStoreParseNodeFactory Initializes a new instance of BackingStoreParseNodeFactory
@@ -27,7 +19,5 @@ func NewBackingStoreParseNodeFactory(factory serialization.ParseNodeFactory) *Ba
 		}
 	})
 
-	return &BackingStoreParseNodeFactory{
-		factory: proxyFactory,
-	}
+	return &BackingStoreParseNodeFactory{proxyFactory}
 }

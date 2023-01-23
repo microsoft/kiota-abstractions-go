@@ -53,9 +53,9 @@ type ParseNode interface {
 	// GetOnBeforeAssignFieldValues returns a callback invoked before the node is deserialized.
 	GetOnBeforeAssignFieldValues() ParsableAction
 	// SetOnBeforeAssignFieldValues sets a callback invoked before the node is deserialized.
-	SetOnBeforeAssignFieldValues(ParsableAction)
+	SetOnBeforeAssignFieldValues(ParsableAction) error
 	// GetOnAfterAssignFieldValues returns a callback invoked after the node is deserialized.
 	GetOnAfterAssignFieldValues() ParsableAction
 	// SetOnAfterAssignFieldValues sets a callback invoked after the node is deserialized.
-	SetOnAfterAssignFieldValues(ParsableAction)
+	SetOnAfterAssignFieldValues(ParsableAction) error
 }

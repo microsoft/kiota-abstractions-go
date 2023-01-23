@@ -19,24 +19,24 @@ func (m *MockSerializer) GetOnBeforeSerialization() serialization.ParsableAction
 	return nil
 }
 
-func (m *MockSerializer) SetOnBeforeSerialization(action serialization.ParsableAction) {
-
+func (m *MockSerializer) SetOnBeforeSerialization(action serialization.ParsableAction) error {
+	return nil
 }
 
 func (m *MockSerializer) GetOnAfterObjectSerialization() serialization.ParsableAction {
 	return nil
 }
 
-func (m *MockSerializer) SetOnAfterObjectSerialization(action serialization.ParsableAction) {
-
+func (m *MockSerializer) SetOnAfterObjectSerialization(action serialization.ParsableAction) error {
+	return nil
 }
 
 func (m *MockSerializer) GetOnStartObjectSerialization() serialization.ParsableWriter {
 	return nil
 }
 
-func (m *MockSerializer) SetOnStartObjectSerialization(writer serialization.ParsableWriter) {
-
+func (m *MockSerializer) SetOnStartObjectSerialization(writer serialization.ParsableWriter) error {
+	return nil
 }
 
 func (m *MockSerializer) WriteStringValue(key string, value *string) error {

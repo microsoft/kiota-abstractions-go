@@ -79,13 +79,13 @@ type SerializationWriter interface {
 	// GetOnBeforeSerialization returns a callback invoked before the serialization process starts.
 	GetOnBeforeSerialization() ParsableAction
 	// SetOnBeforeSerialization sets a callback invoked before the serialization process starts.
-	SetOnBeforeSerialization(ParsableAction)
+	SetOnBeforeSerialization(ParsableAction) error
 	// GetOnAfterObjectSerialization returns a callback invoked after the serialization process completes.
 	GetOnAfterObjectSerialization() ParsableAction
 	// SetOnAfterObjectSerialization sets a callback invoked after the serialization process completes.
-	SetOnAfterObjectSerialization(ParsableAction)
+	SetOnAfterObjectSerialization(ParsableAction) error
 	// GetOnStartObjectSerialization returns a callback invoked right after the serialization process starts.
 	GetOnStartObjectSerialization() ParsableWriter
 	// SetOnStartObjectSerialization sets a callback invoked right after the serialization process starts.
-	SetOnStartObjectSerialization(ParsableWriter)
+	SetOnStartObjectSerialization(ParsableWriter) error
 }

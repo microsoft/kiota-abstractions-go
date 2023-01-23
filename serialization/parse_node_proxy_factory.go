@@ -30,7 +30,7 @@ func (p *ParseNodeProxyFactory) GetRootParseNode(contentType string, content []b
 	}
 
 	originalBefore := node.GetOnBeforeAssignFieldValues()
-	node.SetOnBeforeAssignFieldValues(func(parsable Parsable) {
+	err = node.SetOnBeforeAssignFieldValues(func(parsable Parsable) {
 		if parsable != nil {
 			p.onBeforeAction(parsable)
 		}
@@ -38,9 +38,12 @@ func (p *ParseNodeProxyFactory) GetRootParseNode(contentType string, content []b
 			originalBefore(parsable)
 		}
 	})
+	if err != nil {
+		return nil, err
+	}
 
 	originalAfter := node.GetOnAfterAssignFieldValues()
-	node.SetOnAfterAssignFieldValues(func(parsable Parsable) {
+	err = node.SetOnAfterAssignFieldValues(func(parsable Parsable) {
 		if p != nil {
 			p.onBeforeAction(parsable)
 		}
@@ -48,6 +51,9 @@ func (p *ParseNodeProxyFactory) GetRootParseNode(contentType string, content []b
 			originalAfter(parsable)
 		}
 	})
+	if err != nil {
+		return nil, err
+	}
 
 	return node, nil
 }

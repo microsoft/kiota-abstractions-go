@@ -3,7 +3,6 @@ package store
 import (
 	"errors"
 	"github.com/google/uuid"
-	"reflect"
 	"strings"
 )
 
@@ -52,7 +51,7 @@ func (i *inMemoryBackingStore) Set(key string, value interface{}) error {
 	current := i.store[key]
 
 	// check if objects values have changed
-	if current == nil || !reflect.DeepEqual(current, value) {
+	if current == nil || current != value {
 		// track changed key
 		i.changedValues[key] = i.GetInitializationCompleted()
 

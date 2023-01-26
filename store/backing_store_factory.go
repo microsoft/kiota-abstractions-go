@@ -1,30 +1,9 @@
 package store
 
-import "sync"
+// BackingStoreFactory represents a factory function for a backing store
+// initializes a new backing store object
+type BackingStoreFactory func() BackingStore
 
-type BackingStoreFactory interface {
-	// CreateBackingStore initializes a new backing store
-	CreateBackingStore() BackingStore
-}
-
-var lock = &sync.Mutex{}
-
-var singleInstance BackingStoreFactory
-
-// GetDefaultBackingStoreInstance returns a backing store instance.
-// if none exists an instance of inMemoryBackingStore is initialized and returned
-func GetDefaultBackingStoreInstance() BackingStoreFactory {
-	if singleInstance == nil {
-		lock.Lock()
-		defer lock.Unlock()
-		singleInstance = &InMemoryBackingStoreFactory{}
-	}
-	return singleInstance
-}
-
-// SetDefaultBackingStoreInstance allows configuring a custom backing store factory.
-func SetDefaultBackingStoreInstance(store BackingStoreFactory) {
-	lock.Lock()
-	defer lock.Unlock()
-	singleInstance = store
-}
+// BackingStoreFactoryInstance returns a backing store instance.
+// if none exists an instance of InMemoryBackingStore is initialized and returned
+var BackingStoreFactoryInstance = NewInMemoryBackingStore

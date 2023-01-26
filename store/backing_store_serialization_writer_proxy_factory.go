@@ -6,7 +6,7 @@ import (
 
 // BackingStoreSerializationWriterProxyFactory Backing Store implementation for serialization.SerializationWriterFactory
 type BackingStoreSerializationWriterProxyFactory struct {
-	factory *serialization.SerializationWriterProxyFactory
+	factory serialization.SerializationWriterFactory
 }
 
 func (b *BackingStoreSerializationWriterProxyFactory) GetValidContentType() (string, error) {

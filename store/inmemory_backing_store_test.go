@@ -228,6 +228,6 @@ func (t *testEntity) SetPhoneNumbers(numbers []string) {
 
 func NewTestEntity() *testEntity {
 	return &testEntity{
-		backingStore: GetDefaultBackingStoreInstance().CreateBackingStore(),
+		backingStore: BackingStoreFactoryInstance(),
 	}
 }

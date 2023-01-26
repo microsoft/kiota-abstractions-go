@@ -10,6 +10,7 @@ package abstractions
 
 import (
 	"context"
+	"github.com/microsoft/kiota-abstractions-go/store"
 
 	s "github.com/microsoft/kiota-abstractions-go/serialization"
 )
@@ -36,7 +37,7 @@ type RequestAdapter interface {
 	// GetSerializationWriterFactory returns the serialization writer factory currently in use for the request adapter service.
 	GetSerializationWriterFactory() s.SerializationWriterFactory
 	// EnableBackingStore enables the backing store proxies for the SerializationWriters and ParseNodes in use.
-	EnableBackingStore()
+	EnableBackingStore(factory store.BackingStoreFactory)
 	// SetBaseUrl sets the base url for every request.
 	SetBaseUrl(baseUrl string)
 	// GetBaseUrl gets the base url for every request.

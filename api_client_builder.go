@@ -34,15 +34,14 @@ func RegisterDefaultDeserializer(metaFactory func() s.ParseNodeFactory) {
 
 // EnableBackingStoreForSerializationWriterFactory Enables the backing store on default serialization writers and the given serialization writer.
 func EnableBackingStoreForSerializationWriterFactory(factory s.SerializationWriterFactory) s.SerializationWriterFactory {
-	var result s.SerializationWriterFactory
 	switch v := factory.(type) {
 	case *s.SerializationWriterFactoryRegistry:
 		enableBackingStoreForSerializationRegistry(v)
 	default:
-		result = store.NewBackingStoreSerializationWriterProxyFactory(factory)
+		factory = store.NewBackingStoreSerializationWriterProxyFactory(factory)
 		enableBackingStoreForSerializationRegistry(s.DefaultSerializationWriterFactoryInstance)
 	}
-	return result
+	return factory
 }
 
 func enableBackingStoreForSerializationRegistry(registry *s.SerializationWriterFactoryRegistry) {
@@ -55,15 +54,14 @@ func enableBackingStoreForSerializationRegistry(registry *s.SerializationWriterF
 
 // EnableBackingStoreForParseNodeFactory Enables the backing store on default parse nodes factories and the given parse node factory.
 func EnableBackingStoreForParseNodeFactory(factory s.ParseNodeFactory) s.ParseNodeFactory {
-	var result s.ParseNodeFactory
 	switch v := factory.(type) {
 	case *s.ParseNodeFactoryRegistry:
 		enableBackingStoreForParseNodeRegistry(v)
 	default:
-		result = store.NewBackingStoreParseNodeFactory(factory)
+		factory = store.NewBackingStoreParseNodeFactory(factory)
 		enableBackingStoreForParseNodeRegistry(s.DefaultParseNodeFactoryInstance)
 	}
-	return result
+	return factory
 }
 
 func enableBackingStoreForParseNodeRegistry(registry *s.ParseNodeFactoryRegistry) {

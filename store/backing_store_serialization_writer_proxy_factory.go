@@ -19,16 +19,18 @@ func (b *BackingStoreSerializationWriterProxyFactory) GetSerializationWriter(con
 
 // NewBackingStoreSerializationWriterProxyFactory Initializes a new instance of BackingStoreSerializationWriterProxyFactory
 func NewBackingStoreSerializationWriterProxyFactory(factory serialization.SerializationWriterFactory) *BackingStoreSerializationWriterProxyFactory {
-	proxyFactory := serialization.NewSerializationWriterProxyFactory(factory, func(parsable serialization.Parsable) {
+	proxyFactory := serialization.NewSerializationWriterProxyFactory(factory, func(parsable serialization.Parsable) error {
 		if backedModel, ok := parsable.(BackedModel); ok && backedModel.GetBackingStore() != nil {
 			backedModel.GetBackingStore().SetReturnOnlyChangedValues(true)
 		}
-	}, func(parsable serialization.Parsable) {
+		return nil
+	}, func(parsable serialization.Parsable) error {
 		if backedModel, ok := parsable.(BackedModel); ok && backedModel.GetBackingStore() != nil {
 			store := backedModel.GetBackingStore()
 			store.SetReturnOnlyChangedValues(false)
 			store.SetInitializationCompleted(true)
 		}
+		return nil
 	}, func(parsable serialization.Parsable, writer serialization.SerializationWriter) error {
 		if backedModel, ok := parsable.(BackedModel); ok && backedModel.GetBackingStore() != nil {
 

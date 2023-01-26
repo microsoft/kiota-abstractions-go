@@ -1,7 +1,9 @@
 package serialization
 
-type ParsableAction func(Parsable)
+// ParsableAction Encapsulates a method with a single Parsable parameter
+type ParsableAction func(Parsable) error
 
+// ParsableWriter  Encapsulates a method that receives a Parsable and SerializationWriter as parameters
 type ParsableWriter func(Parsable, SerializationWriter) error
 
 // SerializationWriterProxyFactory factory that allows the composition of before and after callbacks on existing factories.
@@ -38,25 +40,39 @@ func (s *SerializationWriterProxyFactory) GetSerializationWriter(contentType str
 	}
 
 	originalBefore := writer.GetOnBeforeSerialization()
-	err = writer.SetOnBeforeSerialization(func(parsable Parsable) {
+	err = writer.SetOnBeforeSerialization(func(parsable Parsable) error {
 		if s != nil {
-			s.onBeforeAction(parsable)
+			err := s.onBeforeAction(parsable)
+			if err != nil {
+				return err
+			}
 		}
 		if originalBefore != nil {
-			originalBefore(parsable)
+			err := originalBefore(parsable)
+			if err != nil {
+				return err
+			}
 		}
+		return nil
 	})
 	if err != nil {
 		return nil, err
 	}
 	originalAfter := writer.GetOnAfterObjectSerialization()
-	err = writer.SetOnAfterObjectSerialization(func(parsable Parsable) {
+	err = writer.SetOnAfterObjectSerialization(func(parsable Parsable) error {
 		if s != nil {
-			s.onAfterAction(parsable)
+			err := s.onAfterAction(parsable)
+			if err != nil {
+				return err
+			}
 		}
 		if originalAfter != nil {
-			originalAfter(parsable)
+			err := originalAfter(parsable)
+			if err != nil {
+				return err
+			}
 		}
+		return nil
 	})
 	if err != nil {
 		return nil, err

@@ -337,7 +337,7 @@ func CollectionStructCast[R interface{}, T any](items []T) []R {
 	return cast
 }
 
-// InvokeParsableWriter executes the ParsableAction in a nil safe way
+// InvokeParsableAction nil safe execution of ParsableAction
 func InvokeParsableAction(action serialization.ParsableAction, parsable serialization.Parsable) {
 	if action != nil {
 		action(parsable)

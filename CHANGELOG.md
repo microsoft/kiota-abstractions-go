@@ -11,6 +11,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+## [0.17.1] - 2023-01-28
+
+### Added
+
+- Adds a type qualifier for backing store instance type to be `BackingStoreFactory`.
+
+### Changed
+
 ## [0.17.0] - 2023-01-23
 
 ### Added

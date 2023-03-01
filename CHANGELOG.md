@@ -11,6 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+## [0.17.2] - 2023-03-01
+
+### Added
+
+- Adds ResponseStatusCode field in ApiError struct.
+
 ## [0.17.1] - 2023-01-28
 
 ### Added

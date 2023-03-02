@@ -3,7 +3,7 @@ module github.com/microsoft/kiota-abstractions-go
 go 1.18
 
 require (
-	github.com/cjlapao/common-go v0.0.37
+	github.com/cjlapao/common-go v0.0.38
 	github.com/google/uuid v1.3.0
 	github.com/stretchr/testify v1.8.2
 	github.com/yosida95/uritemplate/v3 v3.0.2

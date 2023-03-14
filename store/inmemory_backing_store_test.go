@@ -4,6 +4,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/microsoft/kiota-abstractions-go/serialization"
 	"github.com/stretchr/testify/assert"
+	"reflect"
 	"testing"
 )
 
@@ -149,6 +150,58 @@ func TestClear(t *testing.T) {
 	testUser.GetBackingStore().Clear()
 
 	assert.Nil(t, testUser.GetId())
+}
+
+func TestReplaceSlice(t *testing.T) {
+	memoryStore := NewInMemoryBackingStore()
+	assert.Equal(t, 0, len(memoryStore.Enumerate()))
+
+	err := memoryStore.Set("key", []string{"a", "b"})
+	assert.Nil(t, err)
+
+	err = memoryStore.Set("key", []string{"b", "c"})
+	assert.Nil(t, err)
+
+	assert.Equal(t, 1, len(memoryStore.Enumerate()))
+	val := memoryStore.Enumerate()["key"].([]string)
+	assert.Equal(t, 2, len(val))
+	assert.Equal(t, "b", val[0])
+	assert.Equal(t, "c", val[1])
+}
+
+func TestReplaceMap(t *testing.T) {
+	memoryStore := NewInMemoryBackingStore()
+	assert.Equal(t, 0, len(memoryStore.Enumerate()))
+
+	err := memoryStore.Set("key", map[string]string{"k": "v1"})
+	assert.Nil(t, err)
+
+	err = memoryStore.Set("key", map[string]string{"k": "v2"})
+	assert.Nil(t, err)
+
+	assert.Equal(t, 1, len(memoryStore.Enumerate()))
+	val := memoryStore.Enumerate()["key"].(map[string]string)
+	assert.Equal(t, 1, len(val))
+	assert.Equal(t, "v2", val["k"])
+}
+
+func TestReplaceStruct(t *testing.T) {
+	memoryStore := NewInMemoryBackingStore()
+	assert.Equal(t, 0, len(memoryStore.Enumerate()))
+
+	prev := struct{ slice []string }{
+		slice: []string{"a", "b"},
+	}
+	err := memoryStore.Set("key", prev)
+	assert.Nil(t, err)
+
+	curr := struct{ slice []string }{
+		slice: []string{"b", "c"},
+	}
+	err = memoryStore.Set("key", curr)
+	assert.Nil(t, err)
+	assert.Equal(t, 1, len(memoryStore.Enumerate()))
+	assert.True(t, reflect.DeepEqual(curr, memoryStore.Enumerate()["key"]))
 }
 
 type testEntity struct {

@@ -11,10 +11,19 @@ type BaseRequestBuilder struct {
 }
 
 // NewBaseRequestBuilder creates a new BaseRequestBuilder instance.
-func NewBaseRequestBuilder(requestAdapter RequestAdapter, urlTemplate string) *BaseRequestBuilder {
+func NewBaseRequestBuilder(requestAdapter RequestAdapter, urlTemplate string, pathParameters map[string]string) *BaseRequestBuilder {
+	if requestAdapter == nil {
+		panic("requestAdapter cannot be nil")
+	}
+	pathParametersCopy := make(map[string]string)
+	if pathParameters != nil {
+		for idx, item := range pathParameters {
+			pathParametersCopy[idx] = item
+		}
+	}
 	return &BaseRequestBuilder{
 		RequestAdapter: requestAdapter,
 		UrlTemplate:    urlTemplate,
-		PathParameters: make(map[string]string),
+		PathParameters: pathParametersCopy,
 	}
 }

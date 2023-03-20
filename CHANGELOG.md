@@ -11,6 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+## [0.18.0] - 2023-03-20
+
+### Added
+
+- Adds utility functions `CopyMap` and `CopyStringMap` that returns a copy of the passed map.
+
 ## [0.17.3] - 2023-03-15
 
 ### Changed

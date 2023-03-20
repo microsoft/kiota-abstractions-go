@@ -351,3 +351,21 @@ func InvokeParsableWriter(writer serialization.ParsableWriter, parsable serializ
 	}
 	return nil
 }
+
+// CopyMap returns a copy of map[string]string
+func CopyMap[T comparable, R interface{}](items map[T]R) map[T]R {
+	result := make(map[T]R)
+	for idx, item := range items {
+		result[idx] = item
+	}
+	return result
+}
+
+// CopyStringMap returns a copy of map[string]string
+func CopyStringMap(items map[string]string) map[string]string {
+	result := make(map[string]string)
+	for idx, item := range items {
+		result[idx] = item
+	}
+	return result
+}

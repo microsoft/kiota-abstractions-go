@@ -246,3 +246,17 @@ func TestCollectionStructCast(t *testing.T) {
 	assert.Equal(t, "Buddy", animals[1].Call())
 	assert.Equal(t, "Peanut", animals[2].Call())
 }
+
+func TestCopyMap(t *testing.T) {
+	source := map[string]int{"foo": 1, "bar": 2}
+	duplicate := CopyMap(source)
+
+	assert.Equal(t, duplicate, source)
+}
+
+func TestStringCopyMap(t *testing.T) {
+	source := map[string]string{"foo": "1", "bar": "2"}
+	duplicate := CopyStringMap(source)
+
+	assert.Equal(t, duplicate, source)
+}

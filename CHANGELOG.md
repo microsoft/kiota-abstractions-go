@@ -11,6 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+## [0.19.0] - 2023-03-22
+
+### Added
+
+- Adds base request builder class to reduce generated code duplication.
+
 ## [0.18.0] - 2023-03-20
 
 ### Added

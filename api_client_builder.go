@@ -11,10 +11,6 @@ import (
 // serialization.SerializationWriterFactoryRegistry objects to ensure that they are not written to concurrently.
 var serializerMutex sync.Mutex
 
-// deserializerMutex is used when accessing fields of serialization.ParseNodeFactory or
-// serialization.ParseNodeFactoryRegistry objects to ensure that they are not written to concurrently.
-var deserializerMutex sync.Mutex
-
 // RegisterDefaultSerializer registers the default serializer to the registry singleton to be used by the request adapter.
 func RegisterDefaultSerializer(metaFactory func() s.SerializationWriterFactory) {
 	factory := metaFactory()
@@ -31,9 +27,10 @@ func RegisterDefaultDeserializer(metaFactory func() s.ParseNodeFactory) {
 	factory := metaFactory()
 	contentType, err := factory.GetValidContentType()
 	if err == nil && contentType != "" {
-		deserializerMutex.Lock()
-		s.DefaultParseNodeFactoryInstance.ContentTypeAssociatedFactories[contentType] = factory
-		deserializerMutex.Unlock()
+		registry := s.DefaultParseNodeFactoryInstance
+		registry.Lock.Lock()
+		registry.ContentTypeAssociatedFactories[contentType] = factory
+		registry.Lock.Unlock()
 	}
 }
 
@@ -74,9 +71,9 @@ func EnableBackingStoreForParseNodeFactory(factory s.ParseNodeFactory) s.ParseNo
 func enableBackingStoreForParseNodeRegistry(registry *s.ParseNodeFactoryRegistry) {
 	for key, value := range registry.ContentTypeAssociatedFactories {
 		if _, ok := value.(*store.BackingStoreParseNodeFactory); !ok {
-			deserializerMutex.Lock()
+			registry.Lock.Lock()
 			registry.ContentTypeAssociatedFactories[key] = store.NewBackingStoreParseNodeFactory(value)
-			deserializerMutex.Unlock()
+			registry.Lock.Unlock()
 		}
 	}
 }

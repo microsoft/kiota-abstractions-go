@@ -7,8 +7,8 @@ import (
 	s "github.com/microsoft/kiota-abstractions-go/serialization"
 )
 
-// serializerMutex is used when accessing fields of serialization.SerializationWriterFactory
-// objects to ensure that they are not written to concurrently.
+// serializerMutex is used when accessing fields of serialization.SerializationWriterFactory or
+// serialization.SerializationWriterFactoryRegistry objects to ensure that they are not written to concurrently.
 var serializerMutex sync.Mutex
 
 // deserializerMutex is used when accessing fields of serialization.ParseNodeFactory
@@ -52,7 +52,9 @@ func EnableBackingStoreForSerializationWriterFactory(factory s.SerializationWrit
 func enableBackingStoreForSerializationRegistry(registry *s.SerializationWriterFactoryRegistry) {
 	for key, value := range registry.ContentTypeAssociatedFactories {
 		if _, ok := value.(*store.BackingStoreSerializationWriterProxyFactory); !ok {
+			serializerMutex.Lock()
 			registry.ContentTypeAssociatedFactories[key] = store.NewBackingStoreSerializationWriterProxyFactory(value)
+			serializerMutex.Unlock()
 		}
 	}
 }

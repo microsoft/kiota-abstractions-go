@@ -3,18 +3,29 @@ package serialization
 import (
 	"errors"
 	"strings"
+	"sync"
 )
 
 // SerializationWriterFactoryRegistry is a factory holds a list of all the registered factories for the various types of nodes.
 type SerializationWriterFactoryRegistry struct {
+	// Lock should be used when accessing other fields of this struct to ensure thread safety.
+	Lock *sync.Mutex
+
 	// ContentTypeAssociatedFactories list of factories that are registered by content type.
+	//
+	// When interacting with this field, please make use of Lock to ensure thread safety.
 	ContentTypeAssociatedFactories map[string]SerializationWriterFactory
 }
 
-// DefaultSerializationWriterFactoryInstance is the default singleton instance of the registry to be used when registering new factories that should be available by default.
-var DefaultSerializationWriterFactoryInstance = &SerializationWriterFactoryRegistry{
-	ContentTypeAssociatedFactories: make(map[string]SerializationWriterFactory),
+func NewSerializationWriterFactoryRegistry() *SerializationWriterFactoryRegistry {
+	return &SerializationWriterFactoryRegistry{
+		Lock:                           &sync.Mutex{},
+		ContentTypeAssociatedFactories: make(map[string]SerializationWriterFactory),
+	}
 }
+
+// DefaultSerializationWriterFactoryInstance is the default singleton instance of the registry to be used when registering new factories that should be available by default.
+var DefaultSerializationWriterFactoryInstance = NewSerializationWriterFactoryRegistry()
 
 // GetValidContentType returns the valid content type for the SerializationWriterFactoryRegistry
 func (m *SerializationWriterFactoryRegistry) GetValidContentType() (string, error) {

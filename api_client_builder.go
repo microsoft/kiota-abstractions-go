@@ -1,24 +1,19 @@
 package abstractions
 
 import (
-	"github.com/microsoft/kiota-abstractions-go/store"
-	sync "sync"
-
 	s "github.com/microsoft/kiota-abstractions-go/serialization"
+	"github.com/microsoft/kiota-abstractions-go/store"
 )
-
-// serializerMutex is used when accessing fields of serialization.SerializationWriterFactory or
-// serialization.SerializationWriterFactoryRegistry objects to ensure that they are not written to concurrently.
-var serializerMutex sync.Mutex
 
 // RegisterDefaultSerializer registers the default serializer to the registry singleton to be used by the request adapter.
 func RegisterDefaultSerializer(metaFactory func() s.SerializationWriterFactory) {
 	factory := metaFactory()
 	contentType, err := factory.GetValidContentType()
 	if err == nil && contentType != "" {
-		serializerMutex.Lock()
-		s.DefaultSerializationWriterFactoryInstance.ContentTypeAssociatedFactories[contentType] = factory
-		serializerMutex.Unlock()
+		registry := s.DefaultSerializationWriterFactoryInstance
+		registry.Lock.Lock()
+		registry.ContentTypeAssociatedFactories[contentType] = factory
+		registry.Lock.Unlock()
 	}
 }
 
@@ -49,9 +44,9 @@ func EnableBackingStoreForSerializationWriterFactory(factory s.SerializationWrit
 func enableBackingStoreForSerializationRegistry(registry *s.SerializationWriterFactoryRegistry) {
 	for key, value := range registry.ContentTypeAssociatedFactories {
 		if _, ok := value.(*store.BackingStoreSerializationWriterProxyFactory); !ok {
-			serializerMutex.Lock()
+			registry.Lock.Lock()
 			registry.ContentTypeAssociatedFactories[key] = store.NewBackingStoreSerializationWriterProxyFactory(value)
-			serializerMutex.Unlock()
+			registry.Lock.Unlock()
 		}
 	}
 }

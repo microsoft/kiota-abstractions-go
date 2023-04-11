@@ -7,7 +7,12 @@ import (
 	s "github.com/microsoft/kiota-abstractions-go/serialization"
 )
 
+// serializerMutex is used when accessing fields of serialization.SerializationWriterFactory
+// objects to ensure that they are not written to concurrently.
 var serializerMutex sync.Mutex
+
+// deserializerMutex is used when accessing fields of serialization.ParseNodeFactory
+// objects to ensure that they are not written to concurrently.
 var deserializerMutex sync.Mutex
 
 // RegisterDefaultSerializer registers the default serializer to the registry singleton to be used by the request adapter.

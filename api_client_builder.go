@@ -23,9 +23,9 @@ func RegisterDefaultDeserializer(metaFactory func() s.ParseNodeFactory) {
 	contentType, err := factory.GetValidContentType()
 	if err == nil && contentType != "" {
 		registry := s.DefaultParseNodeFactoryInstance
-		registry.Lock.Lock()
+		registry.Lock()
 		registry.ContentTypeAssociatedFactories[contentType] = factory
-		registry.Lock.Unlock()
+		registry.Unlock()
 	}
 }
 
@@ -66,9 +66,9 @@ func EnableBackingStoreForParseNodeFactory(factory s.ParseNodeFactory) s.ParseNo
 func enableBackingStoreForParseNodeRegistry(registry *s.ParseNodeFactoryRegistry) {
 	for key, value := range registry.ContentTypeAssociatedFactories {
 		if _, ok := value.(*store.BackingStoreParseNodeFactory); !ok {
-			registry.Lock.Lock()
+			registry.Lock()
 			registry.ContentTypeAssociatedFactories[key] = store.NewBackingStoreParseNodeFactory(value)
-			registry.Lock.Unlock()
+			registry.Unlock()
 		}
 	}
 }

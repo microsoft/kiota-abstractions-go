@@ -9,18 +9,17 @@ import (
 
 // ParseNodeFactoryRegistry holds a list of all the registered factories for the various types of nodes.
 type ParseNodeFactoryRegistry struct {
-	// Lock should be used when accessing other fields of this struct to ensure thread safety.
-	Lock *sync.Mutex
+	lock *sync.Mutex
 
 	// ContentTypeAssociatedFactories maps content types onto the relevant factory.
 	//
-	// When interacting with this field, please make use of Lock to ensure thread safety.
+	// When interacting with this field, please make use of Lock and Unlock methods to ensure thread safety.
 	ContentTypeAssociatedFactories map[string]ParseNodeFactory
 }
 
 func NewParseNodeFactoryRegistry() *ParseNodeFactoryRegistry {
 	return &ParseNodeFactoryRegistry{
-		Lock:                           &sync.Mutex{},
+		lock:                           &sync.Mutex{},
 		ContentTypeAssociatedFactories: make(map[string]ParseNodeFactory),
 	}
 }
@@ -54,4 +53,12 @@ func (m *ParseNodeFactoryRegistry) GetRootParseNode(contentType string, content 
 		return factory.GetRootParseNode(cleanedContentType, content)
 	}
 	return nil, errors.New("content type " + cleanedContentType + " does not have a factory registered to be parsed")
+}
+
+func (m *ParseNodeFactoryRegistry) Lock() {
+	m.lock.Lock()
+}
+
+func (m *ParseNodeFactoryRegistry) Unlock() {
+	m.lock.Unlock()
 }

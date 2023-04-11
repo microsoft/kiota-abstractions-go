@@ -8,18 +8,17 @@ import (
 
 // SerializationWriterFactoryRegistry is a factory holds a list of all the registered factories for the various types of nodes.
 type SerializationWriterFactoryRegistry struct {
-	// Lock should be used when accessing other fields of this struct to ensure thread safety.
-	Lock *sync.Mutex
+	lock *sync.Mutex
 
 	// ContentTypeAssociatedFactories list of factories that are registered by content type.
 	//
-	// When interacting with this field, please make use of Lock to ensure thread safety.
+	// When interacting with this field, please make use of Lock and Unlock methods to ensure thread safety.
 	ContentTypeAssociatedFactories map[string]SerializationWriterFactory
 }
 
 func NewSerializationWriterFactoryRegistry() *SerializationWriterFactoryRegistry {
 	return &SerializationWriterFactoryRegistry{
-		Lock:                           &sync.Mutex{},
+		lock:                           &sync.Mutex{},
 		ContentTypeAssociatedFactories: make(map[string]SerializationWriterFactory),
 	}
 }
@@ -48,4 +47,12 @@ func (m *SerializationWriterFactoryRegistry) GetSerializationWriter(contentType 
 		return factory.GetSerializationWriter(cleanedContentType)
 	}
 	return nil, errors.New("Content type " + cleanedContentType + " does not have a factory registered to be parsed")
+}
+
+func (m *SerializationWriterFactoryRegistry) Lock() {
+	m.lock.Lock()
+}
+
+func (m *SerializationWriterFactoryRegistry) Unlock() {
+	m.lock.Unlock()
 }

@@ -11,9 +11,9 @@ func RegisterDefaultSerializer(metaFactory func() s.SerializationWriterFactory) 
 	contentType, err := factory.GetValidContentType()
 	if err == nil && contentType != "" {
 		registry := s.DefaultSerializationWriterFactoryInstance
-		registry.Lock.Lock()
+		registry.Lock()
 		registry.ContentTypeAssociatedFactories[contentType] = factory
-		registry.Lock.Unlock()
+		registry.Unlock()
 	}
 }
 
@@ -44,9 +44,9 @@ func EnableBackingStoreForSerializationWriterFactory(factory s.SerializationWrit
 func enableBackingStoreForSerializationRegistry(registry *s.SerializationWriterFactoryRegistry) {
 	for key, value := range registry.ContentTypeAssociatedFactories {
 		if _, ok := value.(*store.BackingStoreSerializationWriterProxyFactory); !ok {
-			registry.Lock.Lock()
+			registry.Lock()
 			registry.ContentTypeAssociatedFactories[key] = store.NewBackingStoreSerializationWriterProxyFactory(value)
-			registry.Lock.Unlock()
+			registry.Unlock()
 		}
 	}
 }

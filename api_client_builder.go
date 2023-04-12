@@ -1,23 +1,19 @@
 package abstractions
 
 import (
-	"github.com/microsoft/kiota-abstractions-go/store"
-	sync "sync"
-
 	s "github.com/microsoft/kiota-abstractions-go/serialization"
+	"github.com/microsoft/kiota-abstractions-go/store"
 )
-
-var serializerMutex sync.Mutex
-var deserializerMutex sync.Mutex
 
 // RegisterDefaultSerializer registers the default serializer to the registry singleton to be used by the request adapter.
 func RegisterDefaultSerializer(metaFactory func() s.SerializationWriterFactory) {
 	factory := metaFactory()
 	contentType, err := factory.GetValidContentType()
 	if err == nil && contentType != "" {
-		serializerMutex.Lock()
-		s.DefaultSerializationWriterFactoryInstance.ContentTypeAssociatedFactories[contentType] = factory
-		serializerMutex.Unlock()
+		registry := s.DefaultSerializationWriterFactoryInstance
+		registry.Lock()
+		registry.ContentTypeAssociatedFactories[contentType] = factory
+		registry.Unlock()
 	}
 }
 
@@ -26,9 +22,10 @@ func RegisterDefaultDeserializer(metaFactory func() s.ParseNodeFactory) {
 	factory := metaFactory()
 	contentType, err := factory.GetValidContentType()
 	if err == nil && contentType != "" {
-		deserializerMutex.Lock()
-		s.DefaultParseNodeFactoryInstance.ContentTypeAssociatedFactories[contentType] = factory
-		deserializerMutex.Unlock()
+		registry := s.DefaultParseNodeFactoryInstance
+		registry.Lock()
+		registry.ContentTypeAssociatedFactories[contentType] = factory
+		registry.Unlock()
 	}
 }
 
@@ -45,6 +42,8 @@ func EnableBackingStoreForSerializationWriterFactory(factory s.SerializationWrit
 }
 
 func enableBackingStoreForSerializationRegistry(registry *s.SerializationWriterFactoryRegistry) {
+	registry.Lock()
+	defer registry.Unlock()
 	for key, value := range registry.ContentTypeAssociatedFactories {
 		if _, ok := value.(*store.BackingStoreSerializationWriterProxyFactory); !ok {
 			registry.ContentTypeAssociatedFactories[key] = store.NewBackingStoreSerializationWriterProxyFactory(value)
@@ -65,6 +64,8 @@ func EnableBackingStoreForParseNodeFactory(factory s.ParseNodeFactory) s.ParseNo
 }
 
 func enableBackingStoreForParseNodeRegistry(registry *s.ParseNodeFactoryRegistry) {
+	registry.Lock()
+	defer registry.Unlock()
 	for key, value := range registry.ContentTypeAssociatedFactories {
 		if _, ok := value.(*store.BackingStoreParseNodeFactory); !ok {
 			registry.ContentTypeAssociatedFactories[key] = store.NewBackingStoreParseNodeFactory(value)

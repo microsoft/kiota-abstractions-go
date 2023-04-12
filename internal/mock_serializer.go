@@ -164,8 +164,6 @@ type MockParseNodeFactory struct {
 }
 
 func NewMockParseNodeFactory() *MockParseNodeFactory {
-	registry := serialization.ParseNodeFactoryRegistry{
-		ContentTypeAssociatedFactories: make(map[string]serialization.ParseNodeFactory),
-	}
-	return &MockParseNodeFactory{registry}
+	registry := serialization.NewParseNodeFactoryRegistry()
+	return &MockParseNodeFactory{*registry}
 }

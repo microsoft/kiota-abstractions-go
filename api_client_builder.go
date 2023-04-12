@@ -42,11 +42,11 @@ func EnableBackingStoreForSerializationWriterFactory(factory s.SerializationWrit
 }
 
 func enableBackingStoreForSerializationRegistry(registry *s.SerializationWriterFactoryRegistry) {
+	registry.Lock()
+	defer registry.Unlock()
 	for key, value := range registry.ContentTypeAssociatedFactories {
 		if _, ok := value.(*store.BackingStoreSerializationWriterProxyFactory); !ok {
-			registry.Lock()
 			registry.ContentTypeAssociatedFactories[key] = store.NewBackingStoreSerializationWriterProxyFactory(value)
-			registry.Unlock()
 		}
 	}
 }
@@ -64,11 +64,11 @@ func EnableBackingStoreForParseNodeFactory(factory s.ParseNodeFactory) s.ParseNo
 }
 
 func enableBackingStoreForParseNodeRegistry(registry *s.ParseNodeFactoryRegistry) {
+	registry.Lock()
+	defer registry.Unlock()
 	for key, value := range registry.ContentTypeAssociatedFactories {
 		if _, ok := value.(*store.BackingStoreParseNodeFactory); !ok {
-			registry.Lock()
 			registry.ContentTypeAssociatedFactories[key] = store.NewBackingStoreParseNodeFactory(value)
-			registry.Unlock()
 		}
 	}
 }

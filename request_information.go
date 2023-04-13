@@ -49,8 +49,13 @@ func NewRequestInformation() *RequestInformation {
 	}
 }
 
-// GetUri returns the URI of the request.
+// GetUri returns the URI of the request. Invokes GetReplacedUri without any values
 func (request *RequestInformation) GetUri() (*u.URL, error) {
+	return request.GetReplacedUri(make(map[string]string))
+}
+
+// GetReplacedUri returns the URI of the request.
+func (request *RequestInformation) GetReplacedUri(replacementPairs map[string]string) (*u.URL, error) {
 	if request.uri != nil {
 		return request.uri, nil
 	} else if request.UrlTemplate == "" {
@@ -92,9 +97,18 @@ func (request *RequestInformation) GetUri() (*u.URL, error) {
 		if err != nil {
 			return nil, err
 		}
+		url = replaceTokens(url, replacementPairs)
 		uri, err := u.Parse(url)
 		return uri, err
 	}
+}
+
+// replaceTokens replaces url tokens with provided variables.
+func replaceTokens(url string, replacementPairs map[string]string) string {
+	for key, value := range replacementPairs {
+		url = strings.Replace(url, key, value, 1)
+	}
+	return url
 }
 
 // addParameterWithOriginalName adds the URI template parameter to the template using the right casing, because of go conventions, casing might have changed for the generated property

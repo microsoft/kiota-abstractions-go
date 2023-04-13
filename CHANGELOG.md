@@ -11,9 +11,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-## [0.19.1] - 2023-04-12
+## [0.20.0] - 2023-04-13
 
 ### Added
+
+- Adds UrlReplacementPairs accessor and methods to allow url token replacements
+
+## [0.19.1] - 2023-04-12
 
 ### Changed
 

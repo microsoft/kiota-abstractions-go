@@ -42,6 +42,8 @@ type RequestAdapter interface {
 	SetBaseUrl(baseUrl string)
 	// GetBaseUrl gets the base url for every request.
 	GetBaseUrl() string
-	// ConvertToNativeRequest converts the given RequestInformation into a native HTTP request.
-	ConvertToNativeRequest(context context.Context, requestInfo *RequestInformation) (any, error)
+	// SetUrlReplacementPairs sets the value of the url replacement pairs.
+	SetUrlReplacementPairs(map[string]string)
+	// GetUrlReplacementPairs returns url replacement pairs provided by the users.
+	GetUrlReplacementPairs() map[string]string
 }

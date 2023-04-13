@@ -76,6 +76,15 @@ func TestItSetsTheRawURL(t *testing.T) {
 	assert.Equal(t, 0, len(requestInformation.QueryParameters))
 }
 
+func TestGetReplacedUri(t *testing.T) {
+	requestInformation := NewRequestInformation()
+	requestInformation.UrlTemplate = "https://someurl.com/users/me-token-to-replace/contactFolders"
+	uri, err := requestInformation.GetReplacedUri(map[string]string{"/users/me-token-to-replace": "/me"})
+	assert.Nil(t, err)
+	assert.Equal(t, "https://someurl.com/me/contactFolders", uri.String())
+	assert.Equal(t, 0, len(requestInformation.QueryParameters))
+}
+
 type getQueryParameters struct {
 	Count          *bool    `uriparametername:"%24count"`
 	Expand         []string `uriparametername:"%24expand"`
@@ -250,6 +259,11 @@ type MockRequestAdapter struct {
 	SerializationWriterFactory s.SerializationWriterFactory
 }
 
+func (r *MockRequestAdapter) SetUrlReplacementPairs(map[string]string) {
+}
+func (r *MockRequestAdapter) GetUrlReplacementPairs() map[string]string {
+	return nil
+}
 func (r *MockRequestAdapter) Send(context context.Context, requestInfo *RequestInformation, constructor s.ParsableFactory, errorMappings ErrorMappings) (s.Parsable, error) {
 	return nil, nil
 }

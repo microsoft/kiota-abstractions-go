@@ -11,6 +11,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+## [0.20.0] - 2023-04-12
+
+### Added
+
+- Adds response headers to Api Error class
+
+### Changed
+
 ## [0.19.1] - 2023-04-12
 
 ### Added

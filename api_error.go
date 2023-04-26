@@ -6,6 +6,7 @@ import "fmt"
 type ApiError struct {
 	Message            string
 	ResponseStatusCode int
+	ResponseHeaders    *ResponseHeaders
 }
 
 func (e *ApiError) Error() string {
@@ -18,5 +19,5 @@ func (e *ApiError) Error() string {
 
 // NewApiError creates a new ApiError instance
 func NewApiError() *ApiError {
-	return &ApiError{}
+	return &ApiError{ResponseHeaders: NewResponseHeaders()}
 }

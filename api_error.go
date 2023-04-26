@@ -19,5 +19,5 @@ func (e *ApiError) Error() string {
 
 // NewApiError creates a new ApiError instance
 func NewApiError() *ApiError {
-	return &ApiError{}
+	return &ApiError{ResponseHeaders: NewResponseHeaders()}
 }

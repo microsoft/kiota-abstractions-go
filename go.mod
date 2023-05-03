@@ -7,8 +7,8 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/stretchr/testify v1.8.2
 	github.com/yosida95/uritemplate/v3 v3.0.2
-	go.opentelemetry.io/otel v1.15.0
-	go.opentelemetry.io/otel/trace v1.15.0
+	go.opentelemetry.io/otel v1.15.1
+	go.opentelemetry.io/otel/trace v1.15.1
 )
 
 require (

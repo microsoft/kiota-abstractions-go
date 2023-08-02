@@ -2,9 +2,10 @@ package abstractions
 
 import (
 	"context"
-	"github.com/microsoft/kiota-abstractions-go/store"
 	"testing"
 	"time"
+
+	"github.com/microsoft/kiota-abstractions-go/store"
 
 	"github.com/microsoft/kiota-abstractions-go/internal"
 	s "github.com/microsoft/kiota-abstractions-go/serialization"
@@ -244,6 +245,31 @@ func TestItSetsContentFromScalar(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, 1, callsCounter["WriteStringValue"])
 	assert.Equal(t, 0, callsCounter["WriteCollectionOfStringValues"])
+}
+
+func TestItSetsTheBoundaryOnMultipartBody(t *testing.T) {
+	requestInformation := NewRequestInformation()
+	requestInformation.UrlTemplate = "{+baseurl}/users{?%24count}"
+	requestInformation.Method = POST
+
+	callsCounter := make(map[string]int)
+	requestAdapter := &MockRequestAdapter{
+		SerializationWriterFactory: &internal.MockSerializerFactory{
+			SerializationWriter: &internal.MockSerializer{
+				CallsCounter: callsCounter,
+			},
+		},
+	}
+
+	requestInformation.PathParameters["baseurl"] = "http://localhost"
+
+	multipartBody := NewMultipartBody()
+	err := requestInformation.SetContentFromParsable(context.Background(), requestAdapter, "multipart/form-data", multipartBody)
+	assert.Nil(t, err)
+	contentTypeHeader := requestInformation.Headers.Get("Content-Type")
+	assert.NotNil(t, contentTypeHeader)
+	contentTypeHeaderValue := contentTypeHeader[0]
+	assert.Equal(t, "multipart/form-data; boundary="+multipartBody.GetBoundary(), contentTypeHeaderValue)
 }
 
 type MockRequestAdapter struct {

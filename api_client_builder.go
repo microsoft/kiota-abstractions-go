@@ -26,7 +26,9 @@ func RegisterDefaultDeserializer(metaFactory func() s.ParseNodeFactory) {
 	if err == nil && contentType != "" {
 		registry := s.DefaultParseNodeFactoryInstance
 		registry.Lock()
-		registry.ContentTypeAssociatedFactories[contentType] = factory
+		if _, ok := registry.ContentTypeAssociatedFactories[contentType]; !ok {
+			registry.ContentTypeAssociatedFactories[contentType] = factory
+		}
 		registry.Unlock()
 	}
 }

@@ -11,6 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+## [1.2.2] - 2023-09-21
+
+### Changed
+
+- Switched the RFC 6570 implementation to std-uritemplate
+
 ## [1.2.1] - 2023-09-06
 
 ### Changed

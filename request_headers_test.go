@@ -36,6 +36,14 @@ func TestIdAdds(t *testing.T) {
 	assert.Equal(t, "value", instance.Get("key")[0])
 }
 
+func TestIdTryAdds(t *testing.T) {
+	instance := NewRequestHeaders()
+	assert.NotNil(t, instance)
+	assert.True(t, instance.TryAdd("key", "value"))
+	assert.True(t, instance.ContainsKey("key"))
+	assert.Equal(t, "value", instance.Get("key")[0])
+}
+
 func TestItRemoves(t *testing.T) {
 	instance := NewRequestHeaders()
 	assert.NotNil(t, instance)
@@ -69,6 +77,15 @@ func TestItAddsAll(t *testing.T) {
 	assert.False(t, instance.ContainsKey("key"))
 	instance.AddAll(instance2)
 	assert.True(t, instance.ContainsKey("key"))
+	assert.Equal(t, "value", instance.Get("key")[0])
+}
+
+func TestItTryAdds(t *testing.T) {
+	instance := NewRequestHeaders()
+	assert.NotNil(t, instance)
+	assert.True(t, instance.TryAdd("key", "value"))
+	assert.True(t, instance.ContainsKey("key"))
+	assert.False(t, instance.TryAdd("key", "value2"))
 	assert.Equal(t, "value", instance.Get("key")[0])
 }
 

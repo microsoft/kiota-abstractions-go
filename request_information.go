@@ -146,7 +146,7 @@ func (request *RequestInformation) setContentAndContentType(writer s.Serializati
 	}
 	request.Content = content
 	if request.Headers != nil {
-		request.Headers.Add(contentTypeHeader, contentType)
+		request.Headers.TryAdd(contentTypeHeader, contentType)
 	}
 	return nil
 }

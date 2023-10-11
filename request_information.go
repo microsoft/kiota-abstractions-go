@@ -130,10 +130,16 @@ const contentTypeHeader = "Content-Type"
 const binaryContentType = "application/octet-steam"
 
 // SetStreamContent sets the request body to a binary stream.
+// Deprecated: Use SetStreamContentAndContentType instead.
 func (request *RequestInformation) SetStreamContent(content []byte) {
+	request.SetStreamContentAndContentType(content, binaryContentType)
+}
+
+// SetStreamContentAndContentType sets the request body to a binary stream with the specified content type.
+func (request *RequestInformation) SetStreamContentAndContentType(content []byte, contentType string) {
 	request.Content = content
 	if request.Headers != nil {
-		request.Headers.Add(contentTypeHeader, binaryContentType)
+		request.Headers.Add(contentTypeHeader, contentType)
 	}
 }
 

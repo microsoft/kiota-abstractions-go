@@ -61,7 +61,7 @@ func TestItAddsStringArrayQueryParameters(t *testing.T) {
 		Expand: value,
 	}
 	requestInformation.AddQueryParameters(queryParameters)
-	assert.Equal(t, "somefilter,someotherfilter", requestInformation.QueryParameters["Expand"])
+	assert.Equal(t, []any{"somefilter", "someotherfilter"}, requestInformation.QueryParameters["Expand"])
 }
 
 func TestItSetsTheRawURL(t *testing.T) {
@@ -96,7 +96,7 @@ func TestItSetsSelectAndCountQueryParameters(t *testing.T) {
 	})
 	resultUri, err := requestInformation.GetUri()
 	assert.Nil(t, err)
-	assert.Equal(t, "http://localhost/me?%24select=id%2CdisplayName&%24count=true", resultUri.String())
+	assert.Equal(t, "http://localhost/me?%24select=id,displayName&%24count=true", resultUri.String())
 }
 
 func TestItDoesNotSetEmptySelectQueryParameters(t *testing.T) {

@@ -27,7 +27,7 @@ type RequestInformation struct {
 	// The Request Headers.
 	Headers *RequestHeaders
 	// The Query Parameters of the request.
-	QueryParameters map[string]string
+	QueryParameters map[string]any
 	// The Request Body.
 	Content []byte
 	// The path parameters to use for the URL template when generating the URI.
@@ -43,7 +43,7 @@ const raw_url_key = "request-raw-url"
 func NewRequestInformation() *RequestInformation {
 	return &RequestInformation{
 		Headers:         NewRequestHeaders(),
-		QueryParameters: make(map[string]string),
+		QueryParameters: make(map[string]any),
 		options:         make(map[string]RequestOption),
 		PathParameters:  make(map[string]string),
 	}
@@ -467,7 +467,11 @@ func (request *RequestInformation) AddQueryParameters(source interface{}) {
 		}
 		arr, ok := value.([]string)
 		if ok && len(arr) > 0 {
-			request.QueryParameters[fieldName] = strings.Join(arr, ",")
+			tmp := make([]any, len(arr))
+			for i, v := range arr {
+				tmp[i] = v
+			}
+			request.QueryParameters[fieldName] = tmp
 		}
 	}
 }

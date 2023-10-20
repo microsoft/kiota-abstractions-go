@@ -157,6 +157,19 @@ func TestItBuildsUrlOnProvidedBaseUrl(t *testing.T) {
 	assert.Equal(t, "http://localhost/users", resultUri.String())
 }
 
+func TestItSetsExplodedQueryParameters(t *testing.T) {
+	value := true
+	requestInformation := NewRequestInformation()
+	requestInformation.UrlTemplate = "http://localhost/me{?%24select*}"
+	requestInformation.AddQueryParameters(getQueryParameters{
+		Select_escaped: []string{"id", "displayName"},
+		Count:          &value,
+	})
+	resultUri, err := requestInformation.GetUri()
+	assert.Nil(t, err)
+	assert.Equal(t, "http://localhost/me?%24select=id&%24select=displayName", resultUri.String())
+}
+
 func TestItSetsContentFromParsable(t *testing.T) {
 	requestInformation := NewRequestInformation()
 	requestInformation.UrlTemplate = "{+baseurl}/users{?%24count}"

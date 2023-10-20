@@ -27,7 +27,9 @@ type RequestInformation struct {
 	// The Request Headers.
 	Headers *RequestHeaders
 	// The Query Parameters of the request.
-	QueryParameters map[string]any
+	// Deprecated: use QueryParametersAny instead
+	QueryParameters    map[string]string
+	QueryParametersAny map[string]any
 	// The Request Body.
 	Content []byte
 	// The path parameters to use for the URL template when generating the URI.
@@ -42,10 +44,11 @@ const raw_url_key = "request-raw-url"
 // NewRequestInformation creates a new RequestInformation object with default values.
 func NewRequestInformation() *RequestInformation {
 	return &RequestInformation{
-		Headers:         NewRequestHeaders(),
-		QueryParameters: make(map[string]any),
-		options:         make(map[string]RequestOption),
-		PathParameters:  make(map[string]string),
+		Headers:            NewRequestHeaders(),
+		QueryParameters:    make(map[string]string),
+		QueryParametersAny: make(map[string]any),
+		options:            make(map[string]RequestOption),
+		PathParameters:     make(map[string]string),
 	}
 }
 
@@ -58,6 +61,8 @@ func (request *RequestInformation) GetUri() (*u.URL, error) {
 	} else if request.PathParameters == nil {
 		return nil, errors.New("uri template parameters cannot be nil")
 	} else if request.QueryParameters == nil {
+		return nil, errors.New("uri query parameters cannot be nil")
+	} else if request.QueryParametersAny == nil {
 		return nil, errors.New("uri query parameters cannot be nil")
 	} else if request.PathParameters[raw_url_key] != "" {
 		uri, err := u.Parse(request.PathParameters[raw_url_key])
@@ -79,6 +84,9 @@ func (request *RequestInformation) GetUri() (*u.URL, error) {
 		for key, value := range request.QueryParameters {
 			substitutions[key] = value
 		}
+		for key, value := range request.QueryParametersAny {
+			substitutions[key] = value
+		}
 		url, err := stduritemplate.Expand(request.UrlTemplate, substitutions)
 		if err != nil {
 			return nil, err
@@ -96,6 +104,9 @@ func (request *RequestInformation) SetUri(url u.URL) {
 	}
 	for k := range request.QueryParameters {
 		delete(request.QueryParameters, k)
+	}
+	for k := range request.QueryParametersAny {
+		delete(request.QueryParametersAny, k)
 	}
 }
 
@@ -467,11 +478,12 @@ func (request *RequestInformation) AddQueryParameters(source interface{}) {
 		}
 		arr, ok := value.([]string)
 		if ok && len(arr) > 0 {
+			request.QueryParameters[fieldName] = strings.Join(arr, ",")
 			tmp := make([]any, len(arr))
 			for i, v := range arr {
 				tmp[i] = v
 			}
-			request.QueryParameters[fieldName] = tmp
+			request.QueryParametersAny[fieldName] = tmp
 		}
 	}
 }

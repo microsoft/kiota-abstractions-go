@@ -32,6 +32,7 @@ func TestItAddsStringQueryParameters(t *testing.T) {
 	requestInformation.AddQueryParameters(queryParameters)
 
 	assert.Equal(t, value, requestInformation.QueryParameters["Filter"])
+	assert.Equal(t, nil, requestInformation.QueryParametersAny["Filter"])
 }
 
 func TestItAddsBoolQueryParameters(t *testing.T) {
@@ -42,6 +43,7 @@ func TestItAddsBoolQueryParameters(t *testing.T) {
 	}
 	requestInformation.AddQueryParameters(queryParameters)
 	assert.Equal(t, "true", requestInformation.QueryParameters["Count"])
+	assert.Equal(t, nil, requestInformation.QueryParametersAny["Count"])
 }
 
 func TestItAddsIntQueryParameters(t *testing.T) {
@@ -52,6 +54,7 @@ func TestItAddsIntQueryParameters(t *testing.T) {
 	}
 	requestInformation.AddQueryParameters(queryParameters)
 	assert.Equal(t, "42", requestInformation.QueryParameters["Top"])
+	assert.Equal(t, nil, requestInformation.QueryParametersAny["Top"])
 }
 
 func TestItAddsStringArrayQueryParameters(t *testing.T) {
@@ -61,7 +64,8 @@ func TestItAddsStringArrayQueryParameters(t *testing.T) {
 		Expand: value,
 	}
 	requestInformation.AddQueryParameters(queryParameters)
-	assert.Equal(t, []any{"somefilter", "someotherfilter"}, requestInformation.QueryParameters["Expand"])
+	assert.Equal(t, "somefilter,someotherfilter", requestInformation.QueryParameters["Expand"])
+	assert.Equal(t, []any{"somefilter", "someotherfilter"}, requestInformation.QueryParametersAny["Expand"])
 }
 
 func TestItSetsTheRawURL(t *testing.T) {
@@ -75,6 +79,7 @@ func TestItSetsTheRawURL(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, "https://someurl.com", uri.String())
 	assert.Equal(t, 0, len(requestInformation.QueryParameters))
+	assert.Equal(t, 0, len(requestInformation.QueryParametersAny))
 }
 
 type getQueryParameters struct {

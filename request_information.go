@@ -476,14 +476,18 @@ func (request *RequestInformation) AddQueryParameters(source interface{}) {
 		if ok && it != nil {
 			request.QueryParameters[fieldName] = strconv.FormatInt(int64(*it), 10)
 		}
-		arr, ok := value.([]string)
-		if ok && len(arr) > 0 {
-			request.QueryParameters[fieldName] = strings.Join(arr, ",")
-			tmp := make([]any, len(arr))
-			for i, v := range arr {
+		strArr, ok := value.([]string)
+		if ok && len(strArr) > 0 {
+			request.QueryParameters[fieldName] = strings.Join(strArr, ",")
+			tmp := make([]any, len(strArr))
+			for i, v := range strArr {
 				tmp[i] = v
 			}
 			request.QueryParametersAny[fieldName] = tmp
+		}
+		arr, ok := value.([]any)
+		if ok && len(arr) > 0 {
+			request.QueryParametersAny[fieldName] = arr
 		}
 	}
 }

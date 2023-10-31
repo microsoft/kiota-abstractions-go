@@ -15,6 +15,7 @@ import (
 type QueryParameters struct {
 	Count          *bool
 	Expand         []string
+	ExpandAny      []any
 	Filter         *string
 	Orderby        []string
 	Search         *string
@@ -32,7 +33,7 @@ func TestItAddsStringQueryParameters(t *testing.T) {
 	requestInformation.AddQueryParameters(queryParameters)
 
 	assert.Equal(t, value, requestInformation.QueryParameters["Filter"])
-	assert.Equal(t, nil, requestInformation.QueryParametersAny["Filter"])
+	assert.Nil(t, requestInformation.QueryParametersAny["Filter"])
 }
 
 func TestItAddsBoolQueryParameters(t *testing.T) {
@@ -43,7 +44,7 @@ func TestItAddsBoolQueryParameters(t *testing.T) {
 	}
 	requestInformation.AddQueryParameters(queryParameters)
 	assert.Equal(t, "true", requestInformation.QueryParameters["Count"])
-	assert.Equal(t, nil, requestInformation.QueryParametersAny["Count"])
+	assert.Nil(t, requestInformation.QueryParametersAny["Count"])
 }
 
 func TestItAddsIntQueryParameters(t *testing.T) {
@@ -54,7 +55,7 @@ func TestItAddsIntQueryParameters(t *testing.T) {
 	}
 	requestInformation.AddQueryParameters(queryParameters)
 	assert.Equal(t, "42", requestInformation.QueryParameters["Top"])
-	assert.Equal(t, nil, requestInformation.QueryParametersAny["Top"])
+	assert.Nil(t, requestInformation.QueryParametersAny["Top"])
 }
 
 func TestItAddsStringArrayQueryParameters(t *testing.T) {
@@ -66,6 +67,17 @@ func TestItAddsStringArrayQueryParameters(t *testing.T) {
 	requestInformation.AddQueryParameters(queryParameters)
 	assert.Equal(t, "somefilter,someotherfilter", requestInformation.QueryParameters["Expand"])
 	assert.Equal(t, []any{"somefilter", "someotherfilter"}, requestInformation.QueryParametersAny["Expand"])
+}
+
+func TestItAddsAnyArrayQueryParameters(t *testing.T) {
+	requestInformation := NewRequestInformation()
+	value := []any{"somefilter", "someotherfilter"}
+	queryParameters := QueryParameters{
+		ExpandAny: value,
+	}
+	requestInformation.AddQueryParameters(queryParameters)
+	assert.Empty(t, requestInformation.QueryParameters["ExpandAny"])
+	assert.Equal(t, []any{"somefilter", "someotherfilter"}, requestInformation.QueryParametersAny["ExpandAny"])
 }
 
 func TestItSetsTheRawURL(t *testing.T) {

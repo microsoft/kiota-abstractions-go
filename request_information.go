@@ -478,7 +478,9 @@ func (request *RequestInformation) AddQueryParameters(source interface{}) {
 		}
 		strArr, ok := value.([]string)
 		if ok && len(strArr) > 0 {
+            // populating both query parameter fields to avoid breaking compatibility with code reading this field
 			request.QueryParameters[fieldName] = strings.Join(strArr, ",")
+
 			tmp := make([]any, len(strArr))
 			for i, v := range strArr {
 				tmp[i] = v

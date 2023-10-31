@@ -11,6 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+## [1.3.1] - 2023-10-31
+
+### Changed
+
+- Fixed an issue where query parameters of type array of anything else than string would not be expanded properly. [#114](https://github.com/microsoft/kiota-abstractions-go/issues/114)
+
 ## [1.3.0] - 2023-10-12
 
 ### Added

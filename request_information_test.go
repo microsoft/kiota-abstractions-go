@@ -15,6 +15,7 @@ import (
 type QueryParameters struct {
 	Count          *bool
 	Expand         []string
+	ExpandAny      []any
 	Filter         *string
 	Orderby        []string
 	Search         *string
@@ -32,6 +33,7 @@ func TestItAddsStringQueryParameters(t *testing.T) {
 	requestInformation.AddQueryParameters(queryParameters)
 
 	assert.Equal(t, value, requestInformation.QueryParameters["Filter"])
+	assert.Nil(t, requestInformation.QueryParametersAny["Filter"])
 }
 
 func TestItAddsBoolQueryParameters(t *testing.T) {
@@ -42,6 +44,7 @@ func TestItAddsBoolQueryParameters(t *testing.T) {
 	}
 	requestInformation.AddQueryParameters(queryParameters)
 	assert.Equal(t, "true", requestInformation.QueryParameters["Count"])
+	assert.Nil(t, requestInformation.QueryParametersAny["Count"])
 }
 
 func TestItAddsIntQueryParameters(t *testing.T) {
@@ -52,6 +55,7 @@ func TestItAddsIntQueryParameters(t *testing.T) {
 	}
 	requestInformation.AddQueryParameters(queryParameters)
 	assert.Equal(t, "42", requestInformation.QueryParameters["Top"])
+	assert.Nil(t, requestInformation.QueryParametersAny["Top"])
 }
 
 func TestItAddsStringArrayQueryParameters(t *testing.T) {
@@ -62,6 +66,18 @@ func TestItAddsStringArrayQueryParameters(t *testing.T) {
 	}
 	requestInformation.AddQueryParameters(queryParameters)
 	assert.Equal(t, "somefilter,someotherfilter", requestInformation.QueryParameters["Expand"])
+	assert.Equal(t, []any{"somefilter", "someotherfilter"}, requestInformation.QueryParametersAny["Expand"])
+}
+
+func TestItAddsAnyArrayQueryParameters(t *testing.T) {
+	requestInformation := NewRequestInformation()
+	value := []any{"somefilter", "someotherfilter"}
+	queryParameters := QueryParameters{
+		ExpandAny: value,
+	}
+	requestInformation.AddQueryParameters(queryParameters)
+	assert.Empty(t, requestInformation.QueryParameters["ExpandAny"])
+	assert.Equal(t, []any{"somefilter", "someotherfilter"}, requestInformation.QueryParametersAny["ExpandAny"])
 }
 
 func TestItSetsTheRawURL(t *testing.T) {
@@ -75,6 +91,7 @@ func TestItSetsTheRawURL(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, "https://someurl.com", uri.String())
 	assert.Equal(t, 0, len(requestInformation.QueryParameters))
+	assert.Equal(t, 0, len(requestInformation.QueryParametersAny))
 }
 
 type getQueryParameters struct {
@@ -96,7 +113,7 @@ func TestItSetsSelectAndCountQueryParameters(t *testing.T) {
 	})
 	resultUri, err := requestInformation.GetUri()
 	assert.Nil(t, err)
-	assert.Equal(t, "http://localhost/me?%24select=id%2CdisplayName&%24count=true", resultUri.String())
+	assert.Equal(t, "http://localhost/me?%24select=id,displayName&%24count=true", resultUri.String())
 }
 
 func TestItDoesNotSetEmptySelectQueryParameters(t *testing.T) {
@@ -155,6 +172,19 @@ func TestItBuildsUrlOnProvidedBaseUrl(t *testing.T) {
 	resultUri, err := requestInformation.GetUri()
 	assert.Nil(t, err)
 	assert.Equal(t, "http://localhost/users", resultUri.String())
+}
+
+func TestItSetsExplodedQueryParameters(t *testing.T) {
+	value := true
+	requestInformation := NewRequestInformation()
+	requestInformation.UrlTemplate = "http://localhost/me{?%24select*}"
+	requestInformation.AddQueryParameters(getQueryParameters{
+		Select_escaped: []string{"id", "displayName"},
+		Count:          &value,
+	})
+	resultUri, err := requestInformation.GetUri()
+	assert.Nil(t, err)
+	assert.Equal(t, "http://localhost/me?%24select=id&%24select=displayName", resultUri.String())
 }
 
 func TestItSetsContentFromParsable(t *testing.T) {

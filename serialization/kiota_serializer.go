@@ -2,8 +2,6 @@ package serialization
 
 import (
 	"errors"
-	"reflect"
-	"strings"
 )
 
 func Serialize(contentType string, model Parsable) ([]byte, error) {
@@ -81,34 +79,4 @@ func DeserializeCollection(contentType string, content []byte, parsableFactory P
 		return nil, err
 	}
 	return result, nil
-}
-
-func DeserializeWithType(contentType string, content []byte, modelType reflect.Type) (Parsable, error) {
-	factory, err := getTypeFactory(modelType)
-	if err != nil {
-		return nil, err
-	}
-	return Deserialize(contentType, content, factory)
-}
-func DeserializeCollectionWithType(contentType string, content []byte, modelType reflect.Type) ([]Parsable, error) {
-	factory, err := getTypeFactory(modelType)
-	if err != nil {
-		return nil, err
-	}
-	return DeserializeCollection(contentType, content, factory)
-}
-
-func getTypeFactory(modelType reflect.Type) (ParsableFactory, error) {
-	if modelType == nil {
-		return nil, errors.New("the model type is empty")
-	}
-	typeName := modelType.Name()
-	method, ok := modelType.MethodByName("Create" + strings.ToUpper(typeName[0:0]) + typeName[1:] + "FromDiscriminatorValue")
-	if !ok {
-		return nil, errors.New("the model type does not have a factory method")
-	}
-	factory := func(parseNode ParseNode) (Parsable, error) {
-		return method.Func.Call([]reflect.Value{reflect.ValueOf(parseNode)})[0].Interface().(Parsable), nil
-	}
-	return factory, nil
 }

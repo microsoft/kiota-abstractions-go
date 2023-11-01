@@ -102,18 +102,6 @@ func TestItDefendsCollectionDeserializationNilFactory(t *testing.T) {
 	assert.NotNil(t, err)
 }
 
-func TestItDefendsDeserializationNilType(t *testing.T) {
-	result, err := serialization.DeserializeWithType(jsonContentType, make([]byte, 0), nil)
-	assert.Nil(t, result)
-	assert.NotNil(t, err)
-}
-
-func TestItDefendsCollectionDeserializationNilType(t *testing.T) {
-	result, err := serialization.DeserializeCollectionWithType(jsonContentType, make([]byte, 0), nil)
-	assert.Nil(t, result)
-	assert.NotNil(t, err)
-}
-
 func TestItDeserializesAnObject(t *testing.T) {
 	person := internal.NewPerson()
 	id := "123"

@@ -4,6 +4,7 @@ import (
 	"errors"
 )
 
+// Serialize serializes the given model into a byte array.
 func Serialize(contentType string, model Parsable) ([]byte, error) {
 	writer, err := getSerializationWriter(contentType, model)
 	if err != nil {
@@ -16,6 +17,8 @@ func Serialize(contentType string, model Parsable) ([]byte, error) {
 	}
 	return writer.GetSerializedContent()
 }
+
+// SerializeCollection serializes the given models into a byte array.
 func SerializeCollection(contentType string, models []Parsable) ([]byte, error) {
 	writer, err := getSerializationWriter(contentType, models)
 	if err != nil {
@@ -42,6 +45,7 @@ func getSerializationWriter(contentType string, value interface{}) (Serializatio
 	return writer, nil
 }
 
+// Deserialize deserializes the given byte array into a model.
 func Deserialize(contentType string, content []byte, parsableFactory ParsableFactory) (Parsable, error) {
 	node, err := getParseNode(contentType, content, parsableFactory)
 	if err != nil {
@@ -69,6 +73,8 @@ func getParseNode(contentType string, content []byte, parsableFactory ParsableFa
 	}
 	return node, nil
 }
+
+// DeserializeCollection deserializes the given byte array into a collection of models.
 func DeserializeCollection(contentType string, content []byte, parsableFactory ParsableFactory) ([]Parsable, error) {
 	node, err := getParseNode(contentType, content, parsableFactory)
 	if err != nil {

@@ -39,6 +39,9 @@ func (c *CallRecord) GetFieldDeserializers() map[string]func(serialization.Parse
 func NewCallRecord() *CallRecord {
 	return &CallRecord{}
 }
+func CreatePersonFromDiscriminatorValue(parseNode serialization.ParseNode) (serialization.Parsable, error) {
+	return &Person{}, nil
+}
 func (c *Person) SetId(id *string) {
 	c.id = id
 }

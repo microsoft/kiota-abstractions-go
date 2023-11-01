@@ -69,3 +69,87 @@ func TestItSerializesACollectionOfObjects(t *testing.T) {
 	assert.Equal(t, serializedValue, string(result))
 	serialization.DefaultSerializationWriterFactoryInstance.ContentTypeAssociatedFactories = make(map[string]serialization.SerializationWriterFactory)
 }
+
+func TestItDefendsDeserializationEmptyContentType(t *testing.T) {
+	result, err := serialization.Deserialize("", nil, nil)
+	assert.Nil(t, result)
+	assert.NotNil(t, err)
+}
+func TestItDefendsDeserializationNilContent(t *testing.T) {
+	result, err := serialization.Deserialize(jsonContentType, nil, nil)
+	assert.Nil(t, result)
+	assert.NotNil(t, err)
+}
+func TestItDefendsDeserializationNilFactory(t *testing.T) {
+	result, err := serialization.Deserialize(jsonContentType, make([]byte, 0), nil)
+	assert.Nil(t, result)
+	assert.NotNil(t, err)
+}
+
+func TestItDefendsCollectionDeserializationEmptyContentType(t *testing.T) {
+	result, err := serialization.DeserializeCollection("", nil, nil)
+	assert.Nil(t, result)
+	assert.NotNil(t, err)
+}
+func TestItDefendsCollectionDeserializationNilContent(t *testing.T) {
+	result, err := serialization.DeserializeCollection(jsonContentType, nil, nil)
+	assert.Nil(t, result)
+	assert.NotNil(t, err)
+}
+func TestItDefendsCollectionDeserializationNilFactory(t *testing.T) {
+	result, err := serialization.DeserializeCollection(jsonContentType, make([]byte, 0), nil)
+	assert.Nil(t, result)
+	assert.NotNil(t, err)
+}
+
+func TestItDefendsDeserializationNilType(t *testing.T) {
+	result, err := serialization.DeserializeWithType(jsonContentType, make([]byte, 0), nil)
+	assert.Nil(t, result)
+	assert.NotNil(t, err)
+}
+
+func TestItDefendsCollectionDeserializationNilType(t *testing.T) {
+	result, err := serialization.DeserializeCollectionWithType(jsonContentType, make([]byte, 0), nil)
+	assert.Nil(t, result)
+	assert.NotNil(t, err)
+}
+
+func TestItDeserializesAnObject(t *testing.T) {
+	person := internal.NewPerson()
+	id := "123"
+	person.SetId(&id)
+	metaFactory := func() serialization.ParseNodeFactory {
+		return &internal.MockParseNodeFactory{
+			SerializedValue: person,
+		}
+	}
+	RegisterDefaultDeserializer(metaFactory)
+
+	result, err := serialization.Deserialize(jsonContentType, []byte("{\"id\": \"123\"}"), internal.CreatePersonFromDiscriminatorValue)
+	assert.Nil(t, err)
+	assert.NotNil(t, result)
+	resultAsPerson, ok := result.(*internal.Person)
+	assert.True(t, ok)
+	assert.Equal(t, id, *resultAsPerson.GetId())
+	serialization.DefaultParseNodeFactoryInstance.ContentTypeAssociatedFactories = make(map[string]serialization.ParseNodeFactory)
+}
+
+func TestItDeserializesAnObjectCollection(t *testing.T) {
+	person := internal.NewPerson()
+	id := "123"
+	person.SetId(&id)
+	metaFactory := func() serialization.ParseNodeFactory {
+		return &internal.MockParseNodeFactory{
+			SerializedValue: []serialization.Parsable{person},
+		}
+	}
+	RegisterDefaultDeserializer(metaFactory)
+
+	result, err := serialization.DeserializeCollection(jsonContentType, []byte("[{\"id\": \"123\"}]"), internal.CreatePersonFromDiscriminatorValue)
+	assert.Nil(t, err)
+	assert.NotNil(t, result)
+	resultAsPerson, ok := result[0].(*internal.Person)
+	assert.True(t, ok)
+	assert.Equal(t, id, *resultAsPerson.GetId())
+	serialization.DefaultParseNodeFactoryInstance.ContentTypeAssociatedFactories = make(map[string]serialization.ParseNodeFactory)
+}

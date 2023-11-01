@@ -99,6 +99,9 @@ func DeserializeCollectionWithType(contentType string, content []byte, modelType
 }
 
 func getTypeFactory(modelType reflect.Type) (ParsableFactory, error) {
+	if modelType == nil {
+		return nil, errors.New("the model type is empty")
+	}
 	typeName := modelType.Name()
 	method, ok := modelType.MethodByName("Create" + strings.ToUpper(typeName[0:0]) + typeName[1:] + "FromDiscriminatorValue")
 	if !ok {

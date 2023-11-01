@@ -1,8 +1,9 @@
 package tests
 
 import (
-	"github.com/microsoft/kiota-abstractions-go/serialization"
 	"testing"
+
+	"github.com/microsoft/kiota-abstractions-go/serialization"
 
 	"github.com/microsoft/kiota-abstractions-go/internal"
 	assert "github.com/stretchr/testify/assert"
@@ -13,6 +14,7 @@ func TestItGetsVendorSpecificSerializationWriter(t *testing.T) {
 	serializationWriter, err := serialization.DefaultSerializationWriterFactoryInstance.GetSerializationWriter("application/vnd+json")
 	assert.Nil(t, err)
 	assert.NotNil(t, serializationWriter)
+	serialization.DefaultSerializationWriterFactoryInstance.ContentTypeAssociatedFactories = make(map[string]serialization.SerializationWriterFactory)
 }
 
 func TestSerializationWriterFactoryRegistryHonoursInterface(t *testing.T) {

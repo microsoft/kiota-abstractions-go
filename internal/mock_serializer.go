@@ -9,6 +9,7 @@ import (
 
 type MockSerializer struct {
 	CallsCounter map[string]int
+	SerializedValue string
 }
 
 func (m *MockSerializer) WriteNullValue(key string) error {
@@ -130,7 +131,10 @@ func (*MockSerializer) WriteCollectionOfTimeOnlyValues(key string, collection []
 func (*MockSerializer) WriteCollectionOfUUIDValues(key string, collection []uuid.UUID) error {
 	return nil
 }
-func (*MockSerializer) GetSerializedContent() ([]byte, error) {
+func (m *MockSerializer) GetSerializedContent() ([]byte, error) {
+	if (m.SerializedValue != "") {
+		return []byte(m.SerializedValue), nil
+	}
 	return []byte("content"), nil
 }
 func (*MockSerializer) WriteAdditionalData(value map[string]interface{}) error {
@@ -145,6 +149,7 @@ func (*MockSerializer) Close() error {
 
 type MockSerializerFactory struct {
 	serialization.SerializationWriter
+	SerializedValue string
 }
 
 func (*MockSerializerFactory) GetValidContentType() (string, error) {
@@ -154,6 +159,7 @@ func (m *MockSerializerFactory) GetSerializationWriter(contentType string) (seri
 	if m.SerializationWriter == nil {
 		m.SerializationWriter = &MockSerializer{
 			CallsCounter: make(map[string]int),
+			SerializedValue: m.SerializedValue,
 		}
 	}
 	return m.SerializationWriter, nil

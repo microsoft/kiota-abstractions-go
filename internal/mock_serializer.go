@@ -8,7 +8,8 @@ import (
 )
 
 type MockSerializer struct {
-	CallsCounter map[string]int
+	CallsCounter    map[string]int
+	SerializedValue string
 }
 
 func (m *MockSerializer) WriteNullValue(key string) error {
@@ -130,7 +131,10 @@ func (*MockSerializer) WriteCollectionOfTimeOnlyValues(key string, collection []
 func (*MockSerializer) WriteCollectionOfUUIDValues(key string, collection []uuid.UUID) error {
 	return nil
 }
-func (*MockSerializer) GetSerializedContent() ([]byte, error) {
+func (m *MockSerializer) GetSerializedContent() ([]byte, error) {
+	if m.SerializedValue != "" {
+		return []byte(m.SerializedValue), nil
+	}
 	return []byte("content"), nil
 }
 func (*MockSerializer) WriteAdditionalData(value map[string]interface{}) error {
@@ -145,6 +149,7 @@ func (*MockSerializer) Close() error {
 
 type MockSerializerFactory struct {
 	serialization.SerializationWriter
+	SerializedValue string
 }
 
 func (*MockSerializerFactory) GetValidContentType() (string, error) {
@@ -153,17 +158,47 @@ func (*MockSerializerFactory) GetValidContentType() (string, error) {
 func (m *MockSerializerFactory) GetSerializationWriter(contentType string) (serialization.SerializationWriter, error) {
 	if m.SerializationWriter == nil {
 		m.SerializationWriter = &MockSerializer{
-			CallsCounter: make(map[string]int),
+			CallsCounter:    make(map[string]int),
+			SerializedValue: m.SerializedValue,
 		}
 	}
 	return m.SerializationWriter, nil
 }
 
 type MockParseNodeFactory struct {
-	serialization.ParseNodeFactoryRegistry
+	serialization.ParseNodeFactory
+	SerializedValue any
 }
 
 func NewMockParseNodeFactory() *MockParseNodeFactory {
-	registry := serialization.NewParseNodeFactoryRegistry()
-	return &MockParseNodeFactory{*registry}
+	return &MockParseNodeFactory{}
+}
+func (*MockParseNodeFactory) GetValidContentType() (string, error) {
+	return "application/json", nil
+}
+
+type MockParseNode struct {
+	serialization.ParseNode
+	SerializedValue any
+}
+
+func (m *MockParseNodeFactory) GetRootParseNode(contentType string, content []byte) (serialization.ParseNode, error) {
+	return &MockParseNode{
+		SerializedValue: m.SerializedValue,
+	}, nil
+}
+
+func (m *MockParseNode) GetObjectValue(ctor serialization.ParsableFactory) (serialization.Parsable, error) {
+	castValue, ok := m.SerializedValue.(serialization.Parsable)
+	if ok {
+		return castValue, nil
+	}
+	return ctor(m)
+}
+func (m *MockParseNode) GetCollectionOfObjectValues(ctor serialization.ParsableFactory) ([]serialization.Parsable, error) {
+	castValue, ok := m.SerializedValue.([]serialization.Parsable)
+	if ok {
+		return castValue, nil
+	}
+	return nil, nil
 }

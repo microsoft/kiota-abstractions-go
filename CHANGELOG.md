@@ -11,6 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+## [1.4.0] - 2023-11-01
+
+### Added
+
+- Added serialization helpers. [microsoft/kiota#3406](https://github.com/microsoft/kiota/issues/3406)
+
 ## [1.3.1] - 2023-10-31
 
 ### Changed

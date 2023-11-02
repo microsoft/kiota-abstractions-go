@@ -2,10 +2,11 @@ package abstractions
 
 import (
 	"fmt"
-	"github.com/microsoft/kiota-abstractions-go/store"
 	"reflect"
 	"testing"
 	"time"
+
+	"github.com/microsoft/kiota-abstractions-go/store"
 
 	"github.com/microsoft/kiota-abstractions-go/internal"
 	serialization "github.com/microsoft/kiota-abstractions-go/serialization"
@@ -22,6 +23,7 @@ func TestItCreatesClientConcurrently(t *testing.T) {
 	waitTime, _ := time.ParseDuration("100ms") // otherwise the routines might not be completed
 	time.Sleep(waitTime)
 	assert.Equal(t, 1, len(serialization.DefaultSerializationWriterFactoryInstance.ContentTypeAssociatedFactories))
+	serialization.DefaultSerializationWriterFactoryInstance.ContentTypeAssociatedFactories = make(map[string]serialization.SerializationWriterFactory)
 }
 
 func TestEnableBackingStoreForSerializationWriterFactory(t *testing.T) {
@@ -35,6 +37,7 @@ func TestEnableBackingStoreForSerializationWriterFactory(t *testing.T) {
 
 	EnableBackingStoreForSerializationWriterFactory(factory)
 	assert.IsType(t, &store.BackingStoreSerializationWriterProxyFactory{}, serializationFactoryRegistry.ContentTypeAssociatedFactories[StreamContentType])
+	serialization.DefaultSerializationWriterFactoryInstance.ContentTypeAssociatedFactories = make(map[string]serialization.SerializationWriterFactory)
 }
 
 func TestEnableBackingStoreForParseNodeFactory(t *testing.T) {
@@ -48,6 +51,7 @@ func TestEnableBackingStoreForParseNodeFactory(t *testing.T) {
 
 	EnableBackingStoreForParseNodeFactory(factory)
 	assert.IsType(t, &store.BackingStoreParseNodeFactory{}, parseNodeRegistry.ContentTypeAssociatedFactories[StreamContentType])
+	serialization.DefaultParseNodeFactoryInstance.ContentTypeAssociatedFactories = make(map[string]serialization.ParseNodeFactory)
 }
 
 // IsType asserts that the specified objects are of the same type.

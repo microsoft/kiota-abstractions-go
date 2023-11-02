@@ -3,6 +3,7 @@ package internal
 import "github.com/microsoft/kiota-abstractions-go/serialization"
 
 type Person struct {
+	id             *string
 	displayName    *string
 	callRecord     *CallRecord
 	callRecords    []*CallRecord
@@ -37,6 +38,15 @@ func (c *CallRecord) GetFieldDeserializers() map[string]func(serialization.Parse
 
 func NewCallRecord() *CallRecord {
 	return &CallRecord{}
+}
+func CreatePersonFromDiscriminatorValue(parseNode serialization.ParseNode) (serialization.Parsable, error) {
+	return &Person{}, nil
+}
+func (c *Person) SetId(id *string) {
+	c.id = id
+}
+func (c *Person) GetId() *string {
+	return c.id
 }
 func (u *Person) SetDisplayName(name *string) {
 	u.displayName = name
@@ -84,4 +94,11 @@ func (u *Person) SetCardNumbers(numbers []int) {
 
 func (u *Person) GetCardNumbers() []int {
 	return u.cardNumbers
+}
+func (c *Person) Serialize(writer serialization.SerializationWriter) error {
+	panic("implement me")
+}
+
+func (c *Person) GetFieldDeserializers() map[string]func(serialization.ParseNode) error {
+	panic("implement me")
 }

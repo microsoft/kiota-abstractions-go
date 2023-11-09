@@ -52,6 +52,28 @@ func NewRequestInformation() *RequestInformation {
 	}
 }
 
+// NewRequestInformationWithMethodAndUrlTemplateAndPathParameters creates a new RequestInformation object with the specified method and URL template and path parameters.
+func NewRequestInformationWithMethodAndUrlTemplateAndPathParameters(method HttpMethod, urlTemplate string, pathParameters map[string]string) *RequestInformation {
+	value := NewRequestInformation()
+	value.Method = method
+	value.UrlTemplate = urlTemplate
+	value.PathParameters = pathParameters
+	return value
+}
+func ConfigureRequestInformation[T any](request *RequestInformation, config *RequestConfiguration[T]) {
+	if request == nil {
+		return
+	}
+	if config == nil {
+		return
+	}
+	if config.QueryParameters != nil {
+		request.AddQueryParameters(*(config.QueryParameters))
+	}
+	request.Headers.AddAll(config.Headers)
+	request.AddRequestOptions(config.Options)
+}
+
 // GetUri returns the URI of the request.
 func (request *RequestInformation) GetUri() (*u.URL, error) {
 	if request.uri != nil {
@@ -445,7 +467,7 @@ func (request *RequestInformation) SetContentFromScalarCollection(ctx context.Co
 }
 
 // AddQueryParameters adds the query parameters to the request by reading the properties from the provided object.
-func (request *RequestInformation) AddQueryParameters(source interface{}) {
+func (request *RequestInformation) AddQueryParameters(source any) {
 	if source == nil || request == nil {
 		return
 	}
@@ -478,7 +500,7 @@ func (request *RequestInformation) AddQueryParameters(source interface{}) {
 		}
 		strArr, ok := value.([]string)
 		if ok && len(strArr) > 0 {
-            // populating both query parameter fields to avoid breaking compatibility with code reading this field
+			// populating both query parameter fields to avoid breaking compatibility with code reading this field
 			request.QueryParameters[fieldName] = strings.Join(strArr, ",")
 
 			tmp := make([]any, len(strArr))

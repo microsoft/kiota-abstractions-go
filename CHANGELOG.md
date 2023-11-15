@@ -11,6 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+## [1.5.1] - 2023-11-15
+
+### Added
+
+- Added support for query an path parameters of enum type. [microsoft/kiota#3693](https://github.com/microsoft/kiota/issues/3693)
+
 ## [1.5.0] - 2023-11-08
 
 ### Added

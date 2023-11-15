@@ -483,7 +483,8 @@ func (request *RequestInformation) AddQueryParameters(source any) {
 			fieldName = tagValue
 		}
 		value := fieldValue.Interface()
-		if value == nil {
+		valueOfValue := reflect.ValueOf(value)
+		if valueOfValue.IsNil() {
 			continue
 		}
 		str, ok := value.(*string)
@@ -509,9 +510,27 @@ func (request *RequestInformation) AddQueryParameters(source any) {
 			}
 			request.QueryParametersAny[fieldName] = tmp
 		}
-		arr, ok := value.([]any)
-		if ok && len(arr) > 0 {
+		if arr, ok := value.([]any); ok && len(arr) > 0 {
 			request.QueryParametersAny[fieldName] = arr
 		}
+		if valueOfValue.Kind() == reflect.Slice && valueOfValue.Len() > 0 {
+			//type assertions to "enums" don't work if you don't know the enum type in advance, we need to use reflection
+			enumArr := valueOfValue.Slice(0, valueOfValue.Len())
+			strRepresentations := make([]string, valueOfValue.Len())
+			if _, ok := enumArr.Index(0).Interface().(kiotaEnum); ok {
+				// testing the first value is an enum to avoid iterating over the whole array if it's not
+				for i := range strRepresentations {
+					strRepresentations[i] = enumArr.Index(i).Interface().(kiotaEnum).String()
+				}
+				request.QueryParametersAny[fieldName] = strRepresentations
+			}
+		}
+		if enum, ok := value.(kiotaEnum); ok {
+			request.QueryParameters[fieldName] = enum.String()
+		}
 	}
+}
+
+type kiotaEnum interface {
+	String() string
 }

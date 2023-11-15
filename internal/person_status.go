@@ -6,7 +6,7 @@ type PersonStatus int
 
 const (
 	ACTIVE PersonStatus = iota
-	SUSPEND
+	SUSPENDED
 )
 
 func (i PersonStatus) String() string {
@@ -18,16 +18,19 @@ func ParsePersonStatus(v string) (interface{}, error) {
 	case "active":
 		result = ACTIVE
 	case "suspended":
-		result = SUSPEND
+		result = SUSPENDED
 	default:
 		return 0, errors.New("Unknown PersonStatus value: " + v)
 	}
 	return &result, nil
 }
-func SerializeTeamVisibilityType(values []PersonStatus) []string {
+func SerializePersonStatus(values []PersonStatus) []string {
 	result := make([]string, len(values))
 	for i, v := range values {
 		result[i] = v.String()
 	}
 	return result
+}
+func (i PersonStatus) isMultiValue() bool {
+	return false
 }

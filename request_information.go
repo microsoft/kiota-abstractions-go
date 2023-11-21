@@ -28,12 +28,16 @@ type RequestInformation struct {
 	Headers *RequestHeaders
 	// The Query Parameters of the request.
 	// Deprecated: use QueryParametersAny instead
-	QueryParameters    map[string]string
+	QueryParameters map[string]string
+	// The Query Parameters of the request.
 	QueryParametersAny map[string]any
 	// The Request Body.
 	Content []byte
 	// The path parameters to use for the URL template when generating the URI.
+	// Deprecated: use PathParametersAny instead
 	PathParameters map[string]string
+	// The path parameters to use for the URL template when generating the URI.
+	PathParametersAny map[string]any
 	// The Url template for the current request.
 	UrlTemplate string
 	options     map[string]RequestOption
@@ -49,6 +53,7 @@ func NewRequestInformation() *RequestInformation {
 		QueryParametersAny: make(map[string]any),
 		options:            make(map[string]RequestOption),
 		PathParameters:     make(map[string]string),
+		PathParametersAny:  make(map[string]any),
 	}
 }
 
@@ -102,6 +107,9 @@ func (request *RequestInformation) GetUri() (*u.URL, error) {
 		substitutions := make(map[string]any)
 		for key, value := range request.PathParameters {
 			substitutions[key] = value
+		}
+		for key, value := range request.PathParametersAny {
+			substitutions[key] = request.normalizeEnumParameters(reflect.ValueOf(value), value, false)
 		}
 		for key, value := range request.QueryParameters {
 			substitutions[key] = value
@@ -483,7 +491,8 @@ func (request *RequestInformation) AddQueryParameters(source any) {
 			fieldName = tagValue
 		}
 		value := fieldValue.Interface()
-		if value == nil {
+		valueOfValue := reflect.ValueOf(value)
+		if valueOfValue.IsNil() {
 			continue
 		}
 		str, ok := value.(*string)
@@ -509,9 +518,38 @@ func (request *RequestInformation) AddQueryParameters(source any) {
 			}
 			request.QueryParametersAny[fieldName] = tmp
 		}
-		arr, ok := value.([]any)
-		if ok && len(arr) > 0 {
+		if arr, ok := value.([]any); ok && len(arr) > 0 {
 			request.QueryParametersAny[fieldName] = arr
 		}
+		normalizedEnumValue := request.normalizeEnumParameters(valueOfValue, value, true)
+		if normalizedEnumValue != nil {
+			request.QueryParametersAny[fieldName] = normalizedEnumValue
+		}
 	}
+}
+func (request *RequestInformation) normalizeEnumParameters(valueOfValue reflect.Value, value any, returnNilIfNotEnum bool) any {
+	if valueOfValue.Kind() == reflect.Slice && valueOfValue.Len() > 0 {
+		//type assertions to "enums" don't work if you don't know the enum type in advance, we need to use reflection
+		enumArr := valueOfValue.Slice(0, valueOfValue.Len())
+		strRepresentations := make([]string, valueOfValue.Len())
+		if _, ok := enumArr.Index(0).Interface().(kiotaEnum); ok {
+			// testing the first value is an enum to avoid iterating over the whole array if it's not
+			for i := range strRepresentations {
+				strRepresentations[i] = enumArr.Index(i).Interface().(kiotaEnum).String()
+			}
+			return strRepresentations
+		}
+	} else if enum, ok := value.(kiotaEnum); ok {
+		return enum.String()
+	}
+
+	if returnNilIfNotEnum {
+		return nil
+	} else {
+		return value
+	}
+}
+
+type kiotaEnum interface {
+	String() string
 }

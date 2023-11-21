@@ -22,6 +22,8 @@ type QueryParameters struct {
 	Select_escaped []string
 	Skip           *int32
 	Top            *int32
+	Status         *internal.PersonStatus  `uriparametername:"status"`
+	Statuses       []internal.PersonStatus `uriparametername:"statuses"`
 }
 
 func TestItAddsStringQueryParameters(t *testing.T) {
@@ -172,6 +174,66 @@ func TestItBuildsUrlOnProvidedBaseUrl(t *testing.T) {
 	resultUri, err := requestInformation.GetUri()
 	assert.Nil(t, err)
 	assert.Equal(t, "http://localhost/users", resultUri.String())
+}
+
+func TestItSetsEnumValueInQueryParameters(t *testing.T) {
+	requestInformation := NewRequestInformation()
+	requestInformation.UrlTemplate = "{+baseurl}/users{?status}"
+
+	requestInformation.PathParameters["baseurl"] = "http://localhost"
+
+	status := internal.ACTIVE
+	requestInformation.AddQueryParameters(QueryParameters{
+		Status: &status,
+	})
+	resultUri, err := requestInformation.GetUri()
+	assert.Nil(t, err)
+	assert.Equal(t, "http://localhost/users?status=active", resultUri.String())
+}
+
+func TestItSetsEnumValuesInQueryParameters(t *testing.T) {
+	requestInformation := NewRequestInformation()
+	requestInformation.UrlTemplate = "{+baseurl}/users{?statuses}"
+
+	requestInformation.PathParameters["baseurl"] = "http://localhost"
+
+	statuses := make([]internal.PersonStatus, 2)
+	statuses[0] = internal.ACTIVE
+	statuses[1] = internal.SUSPENDED
+	requestInformation.AddQueryParameters(QueryParameters{
+		Statuses: statuses,
+	})
+	resultUri, err := requestInformation.GetUri()
+	assert.Nil(t, err)
+	assert.Equal(t, "http://localhost/users?statuses=active,suspended", resultUri.String())
+}
+
+func TestItSetsEnumValueInPathParameters(t *testing.T) {
+	requestInformation := NewRequestInformation()
+	requestInformation.UrlTemplate = "{+baseurl}/{status}"
+
+	status := internal.ACTIVE
+	requestInformation.PathParameters["baseurl"] = "http://localhost"
+	requestInformation.PathParametersAny["status"] = &status
+
+	resultUri, err := requestInformation.GetUri()
+	assert.Nil(t, err)
+	assert.Equal(t, "http://localhost/active", resultUri.String())
+}
+
+func TestItSetsEnumValuesInPathParameters(t *testing.T) {
+	requestInformation := NewRequestInformation()
+	requestInformation.UrlTemplate = "{+baseurl}/{statuses}"
+
+	statuses := make([]internal.PersonStatus, 2)
+	statuses[0] = internal.ACTIVE
+	statuses[1] = internal.SUSPENDED
+	requestInformation.PathParameters["baseurl"] = "http://localhost"
+	requestInformation.PathParametersAny["statuses"] = statuses
+
+	resultUri, err := requestInformation.GetUri()
+	assert.Nil(t, err)
+	assert.Equal(t, "http://localhost/active,suspended", resultUri.String())
 }
 
 func TestItSetsExplodedQueryParameters(t *testing.T) {

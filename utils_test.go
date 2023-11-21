@@ -2,11 +2,12 @@ package abstractions
 
 import (
 	"errors"
+	"strconv"
+	"testing"
+
 	"github.com/microsoft/kiota-abstractions-go/internal"
 	"github.com/microsoft/kiota-abstractions-go/serialization"
 	"github.com/stretchr/testify/assert"
-	"strconv"
-	"testing"
 )
 
 func TestSetValueWithoutError(t *testing.T) {
@@ -133,7 +134,7 @@ func TestSetReferencedEnumValueValueValueWithError(t *testing.T) {
 func TestSetCollectionOfReferencedEnumValueWithoutError(t *testing.T) {
 	person := internal.NewPerson()
 
-	slice := []interface{}{p(internal.ACTIVE), p(internal.SUSPEND)}
+	slice := []interface{}{p(internal.ACTIVE), p(internal.SUSPENDED)}
 	enumSource := func(parser serialization.EnumFactory) ([]interface{}, error) {
 		return slice, nil
 	}
@@ -141,7 +142,7 @@ func TestSetCollectionOfReferencedEnumValueWithoutError(t *testing.T) {
 	err := SetCollectionOfReferencedEnumValue(enumSource, internal.ParsePersonStatus, person.SetPreviousStatus)
 	assert.Nil(t, err)
 	assert.Equal(t, person.GetPreviousStatus()[0].String(), internal.ACTIVE.String())
-	assert.Equal(t, person.GetPreviousStatus()[1].String(), internal.SUSPEND.String())
+	assert.Equal(t, person.GetPreviousStatus()[1].String(), internal.SUSPENDED.String())
 }
 
 func TestSetCollectionOfReferencedEnumValueWithError(t *testing.T) {

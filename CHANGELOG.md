@@ -11,6 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+## [1.5.2] - 2023-11-22
+
+### Added
+
+- Added ApiErrorable interface. [microsoft/kiota-http-go#110](https://github.com/microsoft/kiota-http-go/issues/110)
+
 ## [1.5.1] - 2023-11-15
 
 ### Added

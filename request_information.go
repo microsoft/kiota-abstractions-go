@@ -109,7 +109,7 @@ func (request *RequestInformation) GetUri() (*u.URL, error) {
 			substitutions[key] = value
 		}
 		for key, value := range request.PathParametersAny {
-			substitutions[key] = request.normalizeEnumParameters(reflect.ValueOf(value), value, false)
+			substitutions[key] = request.normalizeParameters(reflect.ValueOf(value), value, false)
 		}
 		for key, value := range request.QueryParameters {
 			substitutions[key] = value
@@ -521,29 +521,40 @@ func (request *RequestInformation) AddQueryParameters(source any) {
 		if arr, ok := value.([]any); ok && len(arr) > 0 {
 			request.QueryParametersAny[fieldName] = arr
 		}
-		normalizedEnumValue := request.normalizeEnumParameters(valueOfValue, value, true)
-		if normalizedEnumValue != nil {
-			request.QueryParametersAny[fieldName] = normalizedEnumValue
+		normalizedValue := request.normalizeParameters(valueOfValue, value, true)
+		if normalizedValue != nil {
+			request.QueryParametersAny[fieldName] = normalizedValue
 		}
 	}
 }
-func (request *RequestInformation) normalizeEnumParameters(valueOfValue reflect.Value, value any, returnNilIfNotEnum bool) any {
+
+// Normalize different types to values that can be rendered in an URL:
+// enum -> string (name)
+// []enum -> []string (containing names)
+// []non_interface -> []any (like []int64 -> []any)
+func (request *RequestInformation) normalizeParameters(valueOfValue reflect.Value, value any, returnNilIfNotNormalizable bool) any {
 	if valueOfValue.Kind() == reflect.Slice && valueOfValue.Len() > 0 {
 		//type assertions to "enums" don't work if you don't know the enum type in advance, we need to use reflection
 		enumArr := valueOfValue.Slice(0, valueOfValue.Len())
-		strRepresentations := make([]string, valueOfValue.Len())
 		if _, ok := enumArr.Index(0).Interface().(kiotaEnum); ok {
 			// testing the first value is an enum to avoid iterating over the whole array if it's not
+			strRepresentations := make([]string, valueOfValue.Len())
 			for i := range strRepresentations {
 				strRepresentations[i] = enumArr.Index(i).Interface().(kiotaEnum).String()
 			}
 			return strRepresentations
+		} else {
+			anySlice := make([]any, valueOfValue.Len())
+			for i := range anySlice {
+				anySlice[i] = enumArr.Index(i).Interface()
+			}
+			return anySlice
 		}
 	} else if enum, ok := value.(kiotaEnum); ok {
 		return enum.String()
 	}
 
-	if returnNilIfNotEnum {
+	if returnNilIfNotNormalizable {
 		return nil
 	} else {
 		return value

@@ -11,6 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+## [1.5.3] - 2023-11-24
+
+### Added
+
+- Added support for multi valued query and path parameters of type other than string. [#124](https://github.com/microsoft/kiota-abstractions-go/pull/124)
+
 ## [1.5.2] - 2023-11-22
 
 ### Added

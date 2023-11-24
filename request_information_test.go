@@ -103,6 +103,18 @@ type getQueryParameters struct {
 	Filter         *string  `uriparametername:"%24filter"`
 	Orderby        []string `uriparametername:"%24orderby"`
 	Search         *string  `uriparametername:"%24search"`
+	Number         []int64  `uriparametername:"%24number"`
+}
+
+func TestItSetsNumberArrayQueryParameters(t *testing.T) {
+	requestInformation := NewRequestInformation()
+	requestInformation.UrlTemplate = "http://localhost/me{?%24number}"
+	requestInformation.AddQueryParameters(getQueryParameters{
+		Number: []int64{1, 2, 4},
+	})
+	resultUri, err := requestInformation.GetUri()
+	assert.Nil(t, err)
+	assert.Equal(t, "http://localhost/me?%24number=1,2,4", resultUri.String())
 }
 
 func TestItSetsSelectAndCountQueryParameters(t *testing.T) {

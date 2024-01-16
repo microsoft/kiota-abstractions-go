@@ -98,7 +98,8 @@ func (i *InMemoryBackingStore) Enumerate() map[string]interface{} {
 func (i *InMemoryBackingStore) EnumerateKeysForValuesChangedToNil() []string {
 	keys := make([]string, 0)
 	for k, v := range i.store {
-		if i.changedValues[k] && (v == nil || reflect.ValueOf(v).IsNil()) {
+		valueOfV := reflect.ValueOf(v)
+		if i.changedValues[k] && (v == nil || valueOfV.Kind() == reflect.Ptr && valueOfV.IsNil()) {
 			keys = append(keys, k)
 		}
 	}

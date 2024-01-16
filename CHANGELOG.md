@@ -11,6 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+## [1.5.4] - 2024-01-16
+
+### Changed
+
+- Fix bug where empty string query parameters are added to the request. [#133](https://github.com/microsoft/kiota-abstractions-go/issues/133)
+
 ## [1.5.3] - 2023-11-24
 
 ### Added

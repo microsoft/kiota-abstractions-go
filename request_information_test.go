@@ -150,7 +150,7 @@ func TestItDoesNotSetEmptySearchQueryParameters(t *testing.T) {
 	})
 	resultUri, err := requestInformation.GetUri()
 	assert.Nil(t, err)
-	assert.Equal(t, "http://localhost/me", resultUri.String())
+	assert.Equal(t, "http://localhost/me?%24search=", resultUri.String())
 }
 
 func TestItSetsPathParametersOfDateTimeOffsetType(t *testing.T) {

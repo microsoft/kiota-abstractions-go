@@ -141,18 +141,6 @@ func TestItDoesNotSetEmptySelectQueryParameters(t *testing.T) {
 	assert.Equal(t, "http://localhost/me", resultUri.String())
 }
 
-func TestItDoesNotSetEmptySearchQueryParameters(t *testing.T) {
-	emptyString := ""
-	requestInformation := NewRequestInformation()
-	requestInformation.UrlTemplate = "http://localhost/me{?%24search}"
-	requestInformation.AddQueryParameters(getQueryParameters{
-		Search: &emptyString,
-	})
-	resultUri, err := requestInformation.GetUri()
-	assert.Nil(t, err)
-	assert.Equal(t, "http://localhost/me", resultUri.String())
-}
-
 func TestItSetsPathParametersOfDateTimeOffsetType(t *testing.T) {
 	requestInformation := NewRequestInformation()
 	requestInformation.UrlTemplate = "http://localhost/getDirectRoutingCalls(fromDateTime='{fromDateTime}',toDateTime='{toDateTime}')"

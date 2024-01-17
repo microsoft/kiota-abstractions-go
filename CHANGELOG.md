@@ -11,6 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+## [1.5.5] - 2024-01-17
+
+### Changed
+
+- Fixed a bug where reseting properties to null would be impossible with the in memory backing store. [microsoftgraph/msgraph-sdk-go#643](https://github.com/microsoftgraph/msgraph-sdk-go/issues/643)
+
 ## [1.5.4] - 2024-01-16
 
 ### Changed

@@ -1,11 +1,12 @@
 package store
 
 import (
+	"reflect"
+	"testing"
+
 	"github.com/google/uuid"
 	"github.com/microsoft/kiota-abstractions-go/serialization"
 	"github.com/stretchr/testify/assert"
-	"reflect"
-	"testing"
 )
 
 func TestSetAndGetsValuesFromStore(t *testing.T) {
@@ -202,6 +203,15 @@ func TestReplaceStruct(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, 1, len(memoryStore.Enumerate()))
 	assert.True(t, reflect.DeepEqual(curr, memoryStore.Enumerate()["key"]))
+}
+
+func TestItConsidersSettingNullAsAChange(t *testing.T) {
+	testEntityInstance := NewTestEntity()
+	testEntityInstance.GetBackingStore().SetInitializationCompleted(true)
+	testEntityInstance.GetBackingStore().SetReturnOnlyChangedValues(true)
+	testEntityInstance.SetId(nil)
+	assert.Equal(t, 1, len(testEntityInstance.GetBackingStore().Enumerate()))
+	assert.Equal(t, []string{"id"}, testEntityInstance.GetBackingStore().EnumerateKeysForValuesChangedToNil())
 }
 
 type testEntity struct {

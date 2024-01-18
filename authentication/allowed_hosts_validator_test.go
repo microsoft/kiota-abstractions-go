@@ -15,6 +15,7 @@ func TestItValidatesHostsUseNewAllowedHostsValidator(t *testing.T) {
 }
 
 func TestItValidatesHostsUseNewAllowedHostsValidatorErrorCheck(t *testing.T) {
-	_, err := NewAllowedHostsValidatorErrorCheck([]string{"http://graph.microsoft.com"})
+	validator, err := NewAllowedHostsValidatorErrorCheck([]string{"http://graph.microsoft.com"})
 	assert.EqualValues(t, ErrInvalidHostPrefix, err)
+	assert.Nil(t, validator)
 }

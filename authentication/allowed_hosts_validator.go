@@ -25,7 +25,7 @@ func NewAllowedHostsValidator(validHosts []string) AllowedHostsValidator {
 func NewAllowedHostsValidatorErrorCheck(validHosts []string) (*AllowedHostsValidator, error) {
 	result := &AllowedHostsValidator{}
 	if err := result.SetAllowedHostsErrorCheck(validHosts); err != nil {
-		return result, err
+		return nil, err
 	}
 	return result, nil
 }

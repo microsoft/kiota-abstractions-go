@@ -11,6 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+## [1.5.6] - 2024-01-18
+
+### Changed
+
+- The input contains http or https which function will return an error. [#130](https://github.com/microsoft/kiota-abstractions-go/issues/130)
+
 ## [1.5.5] - 2024-01-17
 
 ### Changed

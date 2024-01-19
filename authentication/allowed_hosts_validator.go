@@ -54,7 +54,7 @@ func (v *AllowedHostsValidator) SetAllowedHostsErrorCheck(hosts []string) error 
 	v.validHosts = make(map[string]bool, len(hosts))
 	if len(hosts) > 0 {
 		for _, host := range hosts {
-			if strings.HasPrefix(host, "http") {
+			if strings.HasPrefix(host, "http://") || strings.HasPrefix(host, "https://") {
 				return ErrInvalidHostPrefix
 			}
 			v.validHosts[strings.ToLower(host)] = true

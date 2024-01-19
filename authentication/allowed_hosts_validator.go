@@ -66,8 +66,12 @@ func (v *AllowedHostsValidator) SetAllowedHostsErrorCheck(hosts []string) error 
 
 // IsValidHost returns true if the host is valid.
 func (v *AllowedHostsValidator) IsUrlHostValid(uri *u.URL) bool {
-	if uri == nil || uri.Hostname() == "" {
+	if uri == nil {
 		return false
 	}
-	return len(v.validHosts) == 0 || v.validHosts[strings.ToLower(uri.Hostname())]
+	host := uri.Hostname()
+	if host == "" {
+		return false
+	}
+	return len(v.validHosts) == 0 || v.validHosts[strings.ToLower(host)]
 }

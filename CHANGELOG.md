@@ -11,6 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+## [1.8.0] - 2024-02-29
+
+### Added
+
+- Added support for untyped nodes. (https://github.com/microsoft/kiota/pull/4095)
+
 ## [1.5.6] - 2024-01-18
 
 ### Changed

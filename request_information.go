@@ -3,6 +3,7 @@ package abstractions
 import (
 	"context"
 	"errors"
+	"io"
 	"time"
 
 	"reflect"
@@ -32,7 +33,10 @@ type RequestInformation struct {
 	// The Query Parameters of the request.
 	QueryParametersAny map[string]any
 	// The Request Body.
+	// Deprecated: use ContentReader instead
 	Content []byte
+	// The Request Body.
+	ContentReader io.ReadCloser
 	// The path parameters to use for the URL template when generating the URI.
 	// Deprecated: use PathParametersAny instead
 	PathParameters map[string]string
@@ -177,8 +181,17 @@ func (request *RequestInformation) SetStreamContent(content []byte) {
 }
 
 // SetStreamContentAndContentType sets the request body to a binary stream with the specified content type.
+// Deprecated: Use SetContentReaderAndContentType instead.
 func (request *RequestInformation) SetStreamContentAndContentType(content []byte, contentType string) {
 	request.Content = content
+	if request.Headers != nil {
+		request.Headers.Add(contentTypeHeader, contentType)
+	}
+}
+
+// SetContentReaderAndContentType sets the request body to a binary stream with the specified content type.
+func (request *RequestInformation) SetContentReaderAndContentType(reader io.ReadCloser, contentType string) {
+	request.ContentReader = reader
 	if request.Headers != nil {
 		request.Headers.Add(contentTypeHeader, contentType)
 	}
@@ -220,7 +233,7 @@ func (request *RequestInformation) getSerializationWriter(requestAdapter Request
 	}
 }
 
-func (r *RequestInformation) setRequestType(result interface{}, span trace.Span) {
+func (request *RequestInformation) setRequestType(result interface{}, span trace.Span) {
 	if result != nil {
 		span.SetAttributes(attribute.String("com.microsoft.kiota.request.type", reflect.TypeOf(result).String()))
 	}

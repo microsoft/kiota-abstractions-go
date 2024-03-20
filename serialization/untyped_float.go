@@ -1,7 +1,5 @@
 package serialization
 
-import "errors"
-
 // UntypedFloat defines an untyped float32 value.
 type UntypedFloat struct {
 	UntypedNode
@@ -9,15 +7,16 @@ type UntypedFloat struct {
 
 // GetValue returns the float32 value.
 func (un *UntypedFloat) GetValue() *float32 {
-	return un.value.(*float32)
+	castValue, ok := un.value.(*float32)
+	if ok {
+		return castValue
+	}
+	return nil
 }
 
 // NewUntypedFloat creates a new UntypedFloat object.
-func NewUntypedFloat(float32Value *float32) (*UntypedFloat, error) {
-	if float32Value == nil {
-		return nil, errors.New("float32Value cannot be nil")
-	}
+func NewUntypedFloat(float32Value float32) *UntypedFloat {
 	m := &UntypedFloat{}
-	m.value = float32Value
-	return m, nil
+	m.value = &float32Value
+	return m
 }

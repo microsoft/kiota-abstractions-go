@@ -9,7 +9,11 @@ type UntypedLong struct {
 
 // GetValue returns the int64 value.
 func (un *UntypedLong) GetValue() *int64 {
-	return un.value.(*int64)
+	castValue, ok := un.value.(*int64)
+	if ok {
+		return castValue
+	}
+	return nil
 }
 
 // NewUntypedLong creates a new UntypedLong object.

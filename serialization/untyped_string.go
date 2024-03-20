@@ -1,7 +1,5 @@
 package serialization
 
-import "errors"
-
 // UntypedString defines an untyped string object.
 type UntypedString struct {
 	UntypedNode
@@ -9,15 +7,16 @@ type UntypedString struct {
 
 // GetValue returns the string object.
 func (un *UntypedString) GetValue() *string {
-	return un.value.(*string)
+	castValue, ok := un.value.(*string)
+	if ok {
+		return castValue
+	}
+	return nil
 }
 
 // NewUntypedString creates a new UntypedString object.
-func NewUntypedString(stringValue *string) (*UntypedString, error) {
-	if stringValue == nil {
-		return nil, errors.New("stringValue cannot be nil")
-	}
+func NewUntypedString(stringValue string) *UntypedString {
 	m := &UntypedString{}
-	m.value = stringValue
-	return m, nil
+	m.value = &stringValue
+	return m
 }

@@ -1,7 +1,5 @@
 package serialization
 
-import "errors"
-
 // UntypedArray defines an untyped collection.
 type UntypedArray struct {
 	UntypedNode
@@ -13,11 +11,8 @@ func (un *UntypedArray) GetValue() []UntypedNodeable {
 }
 
 // NewUntypedArray creates a new UntypedArray object.
-func NewUntypedArray(collection []UntypedNodeable) (*UntypedArray, error) {
-	if collection == nil {
-		return nil, errors.New("collection cannot be nil")
-	}
+func NewUntypedArray(collection []UntypedNodeable) *UntypedArray {
 	m := &UntypedArray{}
 	m.value = collection
-	return m, nil
+	return m
 }

@@ -1,7 +1,5 @@
 package serialization
 
-import "errors"
-
 // UntypedBoolean defines an untyped boolean object.
 type UntypedBoolean struct {
 	UntypedNode
@@ -9,15 +7,16 @@ type UntypedBoolean struct {
 
 // GetValue returns the bool value.
 func (un *UntypedBoolean) GetValue() *bool {
-	return un.value.(*bool)
+	castValue, ok := un.value.(*bool)
+	if ok {
+		return castValue
+	}
+	return nil
 }
 
 // NewUntypedBoolean creates a new UntypedBoolean object.
-func NewUntypedBoolean(boolValue *bool) (*UntypedBoolean, error) {
-	if boolValue == nil {
-		return nil, errors.New("boolValue cannot be nil")
-	}
+func NewUntypedBoolean(boolValue bool) *UntypedBoolean {
 	m := &UntypedBoolean{}
-	m.value = boolValue
-	return m, nil
+	m.value = &boolValue
+	return m
 }

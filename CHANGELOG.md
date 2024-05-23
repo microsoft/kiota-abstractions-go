@@ -11,7 +11,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-## [1.8.0] - 2024-02-29
+## [1.7.0] - 2024-05-20
+
+### Changed
+
+- Adds `io.ReadCloser` to request information for streamed request information . [#588](https://github.com/microsoftgraph/msgraph-sdk-go/issues/588)
+
+## [1.6.0] - 2024-02-29
 
 ### Added
 

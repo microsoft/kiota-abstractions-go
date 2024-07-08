@@ -168,7 +168,7 @@ func (request *RequestInformation) GetRequestOptions() []RequestOption {
 }
 
 const contentTypeHeader = "Content-Type"
-const binaryContentType = "application/octet-steam"
+const binaryContentType = "application/octet-stream"
 
 // SetStreamContent sets the request body to a binary stream.
 // Deprecated: Use SetStreamContentAndContentType instead.

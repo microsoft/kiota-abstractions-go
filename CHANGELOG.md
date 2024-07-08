@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+## [1.8.1] - 2024-07-09
+
+- Corrected two instances of `octet-steam` to `octet-stream` [#173](https://github.com/microsoft/kiota-abstractions-go/pull/173), [#174](https://github.com/microsoft/kiota-abstractions-go/pull/174)
+
 ## [1.8.0] - 2024-02-29
 
 ### Added

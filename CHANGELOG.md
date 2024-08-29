@@ -11,9 +11,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+### Changed
+
+## [1.7.1] - 2024-08-29
+
+-  Minor performance improvements in the `AddQueryParameters` implementation.
+
 ### Added
 
-## [1.7.0] - 2024-07-09
+## [1.7.0] - 2024-08-29
 
 -  Added accessors for headers and status to `ApiErrorable`  [#177](https://github.com/microsoft/kiota-abstractions-go/issues/177)
 

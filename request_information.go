@@ -498,14 +498,17 @@ func (request *RequestInformation) AddQueryParameters(source any) {
 		str, ok := value.(*string)
 		if ok && str != nil {
 			request.QueryParameters[fieldName] = *str
+			continue
 		}
 		bl, ok := value.(*bool)
 		if ok && bl != nil {
 			request.QueryParameters[fieldName] = strconv.FormatBool(*bl)
+			continue
 		}
 		it, ok := value.(*int32)
 		if ok && it != nil {
 			request.QueryParameters[fieldName] = strconv.FormatInt(int64(*it), 10)
+			continue
 		}
 		strArr, ok := value.([]string)
 		if ok && len(strArr) > 0 {
@@ -517,9 +520,11 @@ func (request *RequestInformation) AddQueryParameters(source any) {
 				tmp[i] = v
 			}
 			request.QueryParametersAny[fieldName] = tmp
+			continue
 		}
 		if arr, ok := value.([]any); ok && len(arr) > 0 {
 			request.QueryParametersAny[fieldName] = arr
+			continue
 		}
 		normalizedValue := request.normalizeParameters(valueOfValue, value, true)
 		if normalizedValue != nil {

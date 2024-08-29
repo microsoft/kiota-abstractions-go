@@ -11,6 +11,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+### Added
+
+## [1.7.0] - 2024-07-09
+
+-  Added accessors for headers and status to `ApiErrorable`  [#177](https://github.com/microsoft/kiota-abstractions-go/issues/177)
+
+### Changed
+
 ## [1.6.1] - 2024-07-09
 
 - Corrected two instances of `octet-steam` to `octet-stream` [#173](https://github.com/microsoft/kiota-abstractions-go/pull/173), [#174](https://github.com/microsoft/kiota-abstractions-go/pull/174)

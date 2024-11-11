@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/microsoft/kiota-abstractions-go/store"
 
 	"github.com/microsoft/kiota-abstractions-go/internal"
@@ -24,6 +25,7 @@ type QueryParameters struct {
 	Top            *int32
 	Status         *internal.PersonStatus  `uriparametername:"status"`
 	Statuses       []internal.PersonStatus `uriparametername:"statuses"`
+	Id             *uuid.UUID
 }
 
 func TestItAddsStringQueryParameters(t *testing.T) {
@@ -97,13 +99,36 @@ func TestItSetsTheRawURL(t *testing.T) {
 }
 
 type getQueryParameters struct {
-	Count          *bool    `uriparametername:"%24count"`
-	Expand         []string `uriparametername:"%24expand"`
-	Select_escaped []string `uriparametername:"%24select"`
-	Filter         *string  `uriparametername:"%24filter"`
-	Orderby        []string `uriparametername:"%24orderby"`
-	Search         *string  `uriparametername:"%24search"`
-	Number         []int64  `uriparametername:"%24number"`
+	Count          *bool      `uriparametername:"%24count"`
+	Expand         []string   `uriparametername:"%24expand"`
+	Select_escaped []string   `uriparametername:"%24select"`
+	Filter         *string    `uriparametername:"%24filter"`
+	Orderby        []string   `uriparametername:"%24orderby"`
+	Search         *string    `uriparametername:"%24search"`
+	Number         []int64    `uriparametername:"%24number"`
+	Id             *uuid.UUID `uriparametername:"id"`
+}
+
+func TestItSetsUUIDQueryParameters(t *testing.T) {
+	requestInformation := NewRequestInformation()
+	requestInformation.UrlTemplate = "http://localhost/users{?id}"
+	value := uuid.MustParse("95E943B8-52D5-4228-902D-61D65792CED7")
+	requestInformation.AddQueryParameters(getQueryParameters{
+		Id: &value,
+	})
+	resultUri, err := requestInformation.GetUri()
+	assert.Nil(t, err)
+	assert.Equal(t, "http://localhost/users?id=95e943b8-52d5-4228-902d-61d65792ced7", resultUri.String())
+}
+
+func TestItSetsUUIDPathParameters(t *testing.T) {
+	requestInformation := NewRequestInformation()
+	requestInformation.UrlTemplate = "http://localhost/users/{id}"
+	value := uuid.MustParse("95E943B8-52D5-4228-902D-61D65792CED7")
+	requestInformation.PathParametersAny["id"] = &value
+	resultUri, err := requestInformation.GetUri()
+	assert.Nil(t, err)
+	assert.Equal(t, "http://localhost/users/95e943b8-52d5-4228-902d-61d65792ced7", resultUri.String())
 }
 
 func TestItSetsNumberArrayQueryParameters(t *testing.T) {

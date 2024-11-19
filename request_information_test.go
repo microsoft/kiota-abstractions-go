@@ -273,6 +273,46 @@ func TestItSetsEnumValuesInPathParameters(t *testing.T) {
 	assert.Equal(t, "http://localhost/active,suspended", resultUri.String())
 }
 
+func TestItNormalizesOnStandardizedTimeParams(t *testing.T) {
+	requestInformation := NewRequestInformation()
+	requestInformation.UrlTemplate = "{+baseurl}/{timeValues}"
+
+	timeValues := make([]time.Time, 2)
+	timeValues[0] = time.Date(2022, 8, 1, 0, 0, 0, 0, time.UTC)
+	timeValues[1] = time.Date(2022, 8, 2, 0, 0, 0, 0, time.UTC)
+
+	requestInformation.PathParameters["baseurl"] = "http://localhost"
+	requestInformation.PathParametersAny["timeValues"] = timeValues
+
+	resultUri, err := requestInformation.GetUri()
+	assert.Nil(t, err)
+	assert.Equal(t, "http://localhost/2022-08-01%2000%3A00%3A00%20%2B0000%20UTC,2022-08-02%2000%3A00%3A00%20%2B0000%20UTC", resultUri.String())
+}
+
+func TestItNormalizesOnStandardizedDurationParams(t *testing.T) {
+	requestInformation := NewRequestInformation()
+	requestInformation.UrlTemplate = "{+baseurl}/{durationValue}"
+
+	requestInformation.PathParameters["baseurl"] = "http://localhost"
+	requestInformation.PathParametersAny["durationValue"] = s.FromDuration(time.Duration(24) * time.Hour)
+
+	resultUri, err := requestInformation.GetUri()
+	assert.Nil(t, err)
+	assert.Equal(t, "http://localhost/P1D", resultUri.String())
+}
+
+func TestItNormalizesOnStandardizedTimeOnlyParams(t *testing.T) {
+	requestInformation := NewRequestInformation()
+	requestInformation.UrlTemplate = "{+baseurl}/{timeOnly}"
+
+	requestInformation.PathParameters["baseurl"] = "http://localhost"
+	requestInformation.PathParametersAny["timeOnly"] = s.NewTimeOnly(time.Date(1, 1, 1, 16, 20, 21, 0, time.UTC))
+
+	resultUri, err := requestInformation.GetUri()
+	assert.Nil(t, err)
+	assert.Equal(t, "http://localhost/16%3A20%3A21.000000000", resultUri.String())
+}
+
 func TestItSetsExplodedQueryParameters(t *testing.T) {
 	value := true
 	requestInformation := NewRequestInformation()

@@ -106,16 +106,16 @@ func (request *RequestInformation) GetUri() (*u.URL, error) {
 
 		substitutions := make(map[string]any)
 		for key, value := range request.PathParameters {
-			substitutions[key] = value
+			substitutions[key] = request.sanitizeValue(value)
 		}
 		for key, value := range request.PathParametersAny {
-			substitutions[key] = request.normalizeParameters(reflect.ValueOf(value), value, false)
+			substitutions[key] = request.normalizeParameters(reflect.ValueOf(value), request.sanitizeValue(value), false)
 		}
 		for key, value := range request.QueryParameters {
-			substitutions[key] = value
+			substitutions[key] = request.sanitizeValue(value)
 		}
 		for key, value := range request.QueryParametersAny {
-			substitutions[key] = value
+			substitutions[key] = request.sanitizeValue(value)
 		}
 		url, err := stduritemplate.Expand(request.UrlTemplate, substitutions)
 		if err != nil {
@@ -124,6 +124,110 @@ func (request *RequestInformation) GetUri() (*u.URL, error) {
 		uri, err := u.Parse(url)
 		return uri, err
 	}
+}
+
+func (request *RequestInformation) sanitizeValue(value any) any {
+	if value == nil {
+		return nil
+	}
+
+	if reflect.TypeOf(value).Kind() == reflect.Struct {
+		// convert struct to pointer
+		value = reflect.New(reflect.TypeOf(value)).Interface
+	}
+
+	switch v := value.(type) {
+	case *time.Time:
+		if v != nil {
+			return v.Format(time.RFC3339)
+		}
+	case time.Time:
+		return v.Format(time.RFC3339)
+	case []*time.Time:
+		if len(v) > 0 {
+			tmp := make([]any, len(v))
+			for i, t := range v {
+				tmp[i] = t.Format(time.RFC3339)
+			}
+			return tmp
+		}
+	case []time.Time:
+		if len(v) > 0 {
+			tmp := make([]any, len(v))
+			for i, t := range v {
+				tmp[i] = t.Format(time.RFC3339)
+			}
+			return tmp
+		}
+	case *s.ISODuration:
+		if v != nil {
+			return v.String()
+		}
+	case s.ISODuration:
+		return v.String()
+	case []*s.ISODuration:
+		if len(v) > 0 {
+			tmp := make([]any, len(v))
+			for i, d := range v {
+				tmp[i] = d.String()
+			}
+			return tmp
+		}
+	case []s.ISODuration:
+		if len(v) > 0 {
+			tmp := make([]any, len(v))
+			for i, d := range v {
+				tmp[i] = d.String()
+			}
+			return tmp
+		}
+	case *s.TimeOnly:
+		if v != nil {
+			return v.String()
+		}
+	case s.TimeOnly:
+		return v.String()
+	case []*s.TimeOnly:
+		if len(v) > 0 {
+			tmp := make([]any, len(v))
+			for i, t := range v {
+				tmp[i] = t.String()
+			}
+			return tmp
+		}
+	case []s.TimeOnly:
+		if len(v) > 0 {
+			tmp := make([]any, len(v))
+			for i, t := range v {
+				tmp[i] = t.String()
+			}
+			return tmp
+		}
+	case *s.DateOnly:
+		if v != nil {
+			return v.String()
+		}
+	case s.DateOnly:
+		return v.String()
+	case []*s.DateOnly:
+		if len(v) > 0 {
+			tmp := make([]any, len(v))
+			for i, d := range v {
+				tmp[i] = d.String()
+			}
+			return tmp
+		}
+	case []s.DateOnly:
+		if len(v) > 0 {
+			tmp := make([]any, len(v))
+			for i, d := range v {
+				tmp[i] = d.String()
+			}
+			return tmp
+		}
+	}
+
+	return value
 }
 
 // SetUri updates the URI for the request from a raw URL.
@@ -490,7 +594,7 @@ func (request *RequestInformation) AddQueryParameters(source any) {
 		if tagValue != "" {
 			fieldName = tagValue
 		}
-		value := fieldValue.Interface()
+		value := request.sanitizeValue(fieldValue.Interface())
 		valueOfValue := reflect.ValueOf(value)
 		if valueOfValue.IsNil() {
 			continue

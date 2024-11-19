@@ -131,11 +131,6 @@ func (request *RequestInformation) sanitizeValue(value any) any {
 		return nil
 	}
 
-	if reflect.TypeOf(value).Kind() == reflect.Struct {
-		// convert struct to pointer
-		value = reflect.New(reflect.TypeOf(value)).Interface
-	}
-
 	switch v := value.(type) {
 	case *time.Time:
 		if v != nil {

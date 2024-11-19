@@ -126,6 +126,17 @@ func (request *RequestInformation) GetUri() (*u.URL, error) {
 	}
 }
 
+func castItem[T any, R interface{}](collection []T, mutator func(t T) R) []R {
+	if len(collection) > 0 {
+		cast := make([]R, len(collection))
+		for i, v := range collection {
+			cast[i] = mutator(v)
+		}
+		return cast
+	}
+	return nil
+}
+
 func (request *RequestInformation) sanitizeValue(value any) any {
 	if value == nil {
 		return nil
@@ -133,93 +144,53 @@ func (request *RequestInformation) sanitizeValue(value any) any {
 
 	switch v := value.(type) {
 	case *time.Time:
-		if v != nil {
-			return v.Format(time.RFC3339)
-		}
+		return v.Format(time.RFC3339)
 	case time.Time:
 		return v.Format(time.RFC3339)
 	case []*time.Time:
-		if len(v) > 0 {
-			tmp := make([]any, len(v))
-			for i, t := range v {
-				tmp[i] = t.Format(time.RFC3339)
-			}
-			return tmp
-		}
+		return castItem(v, func(t *time.Time) string {
+			return t.Format(time.RFC3339)
+		})
 	case []time.Time:
-		if len(v) > 0 {
-			tmp := make([]any, len(v))
-			for i, t := range v {
-				tmp[i] = t.Format(time.RFC3339)
-			}
-			return tmp
-		}
+		return castItem(v, func(t time.Time) string {
+			return t.Format(time.RFC3339)
+		})
 	case *s.ISODuration:
-		if v != nil {
-			return v.String()
-		}
+		return v.String()
 	case s.ISODuration:
 		return v.String()
 	case []*s.ISODuration:
-		if len(v) > 0 {
-			tmp := make([]any, len(v))
-			for i, d := range v {
-				tmp[i] = d.String()
-			}
-			return tmp
-		}
-	case []s.ISODuration:
-		if len(v) > 0 {
-			tmp := make([]any, len(v))
-			for i, d := range v {
-				tmp[i] = d.String()
-			}
-			return tmp
-		}
-	case *s.TimeOnly:
-		if v != nil {
+		return castItem(v, func(v *s.ISODuration) string {
 			return v.String()
-		}
+		})
+	case []s.ISODuration:
+		return castItem(v, func(v s.ISODuration) string {
+			return v.String()
+		})
+	case *s.TimeOnly:
+		return v.String()
 	case s.TimeOnly:
 		return v.String()
 	case []*s.TimeOnly:
-		if len(v) > 0 {
-			tmp := make([]any, len(v))
-			for i, t := range v {
-				tmp[i] = t.String()
-			}
-			return tmp
-		}
-	case []s.TimeOnly:
-		if len(v) > 0 {
-			tmp := make([]any, len(v))
-			for i, t := range v {
-				tmp[i] = t.String()
-			}
-			return tmp
-		}
-	case *s.DateOnly:
-		if v != nil {
+		return castItem(v, func(v *s.TimeOnly) string {
 			return v.String()
-		}
+		})
+	case []s.TimeOnly:
+		return castItem(v, func(v s.TimeOnly) string {
+			return v.String()
+		})
+	case *s.DateOnly:
+		return v.String()
 	case s.DateOnly:
 		return v.String()
 	case []*s.DateOnly:
-		if len(v) > 0 {
-			tmp := make([]any, len(v))
-			for i, d := range v {
-				tmp[i] = d.String()
-			}
-			return tmp
-		}
+		return castItem(v, func(v *s.DateOnly) string {
+			return v.String()
+		})
 	case []s.DateOnly:
-		if len(v) > 0 {
-			tmp := make([]any, len(v))
-			for i, d := range v {
-				tmp[i] = d.String()
-			}
-			return tmp
-		}
+		return castItem(v, func(v s.DateOnly) string {
+			return v.String()
+		})
 	}
 
 	return value

@@ -13,9 +13,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+## [1.8.1] - 2024-07-09
+
+### Changed
+
+- Fixed outdated reference to std uri template.
+
 ## [1.8.0] - 2024-07-09
 
--  Remove native support for date in `std-uritemplate`  [#1.8.0](https://github.com/microsoft/kiota-abstractions-go/issues/183)
+### Changed
+
+-  Removed native support for date in `std-uritemplate`  [#1.8.0](https://github.com/microsoft/kiota-abstractions-go/issues/183)
 
 ### Added
 

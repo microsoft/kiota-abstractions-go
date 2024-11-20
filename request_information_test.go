@@ -273,6 +273,112 @@ func TestItSetsEnumValuesInPathParameters(t *testing.T) {
 	assert.Equal(t, "http://localhost/active,suspended", resultUri.String())
 }
 
+func prepareNormalizedStdTest(arrayValues any, singleValue any, referenceArray any, referenceValue any) *RequestInformation {
+	requestInformation := NewRequestInformation()
+	requestInformation.UrlTemplate = "{+baseurl}/array/{arrayValues}/single/{singleValue}/referenceArray/{referenceArray}/referenceValue/{referenceValue}"
+
+	requestInformation.PathParameters["baseurl"] = "http://localhost"
+	requestInformation.PathParametersAny["arrayValues"] = arrayValues
+	requestInformation.PathParametersAny["singleValue"] = singleValue
+	requestInformation.PathParametersAny["referenceArray"] = referenceArray
+	requestInformation.PathParametersAny["referenceValue"] = referenceValue
+
+	return requestInformation
+}
+
+func TestItNormalizesOnStandardizedTimeParams(t *testing.T) {
+	arrayValues := []time.Time{
+		time.Date(2022, 8, 1, 0, 0, 0, 0, time.UTC),
+		time.Date(2022, 8, 2, 0, 0, 0, 0, time.UTC),
+	}
+
+	singleValue := time.Date(2022, 8, 1, 0, 0, 0, 0, time.UTC)
+
+	time1 := time.Date(2022, 8, 1, 0, 0, 0, 0, time.UTC)
+	time2 := time.Date(2022, 8, 2, 0, 0, 0, 0, time.UTC)
+	referenceArray := []*time.Time{
+		&time1,
+		&time2,
+	}
+
+	referenceValue := &time1
+
+	requestInformation := prepareNormalizedStdTest(arrayValues, singleValue, referenceArray, referenceValue)
+	resultUri, err := requestInformation.GetUri()
+	assert.Nil(t, err)
+	assert.Equal(t, "http://localhost/array/2022-08-01%2000%3A00%3A00%20%2B0000%20UTC,2022-08-02%2000%3A00%3A00%20%2B0000%20UTC/single/2022-08-01T00%3A00%3A00Z/referenceArray/2022-08-01%2000%3A00%3A00%20%2B0000%20UTC,2022-08-02%2000%3A00%3A00%20%2B0000%20UTC/referenceValue/2022-08-01T00%3A00%3A00Z", resultUri.String())
+
+}
+
+func TestItNormalizesOnStandardizedDurationParams(t *testing.T) {
+	duration := s.NewDuration(0, 0, 1, 1, 0, 0, 0)
+	duration1 := s.NewDuration(0, 0, 1, 2, 0, 0, 0)
+	arrayValues := []s.ISODuration{
+		*duration,
+		*duration1,
+	}
+
+	value := s.NewDuration(0, 0, 2, 1, 0, 0, 0)
+	singleValue := *value
+
+	duration3 := s.NewDuration(0, 0, 1, 2, 0, 0, 0)
+	referenceArray := []*s.ISODuration{
+		duration3,
+	}
+
+	referenceValue := s.NewDuration(0, 0, 1, 1, 0, 0, 0)
+
+	requestInformation := prepareNormalizedStdTest(arrayValues, singleValue, referenceArray, referenceValue)
+	resultUri, err := requestInformation.GetUri()
+	assert.Nil(t, err)
+	assert.Equal(t, "http://localhost/array/P1DT1H,P1DT2H/single/P2DT1H/referenceArray/P1DT2H/referenceValue/P1DT1H", resultUri.String())
+}
+
+func TestItNormalizesOnStandardizedTimeOnlyParams(t *testing.T) {
+	time1, err := s.ParseTimeOnly("16:20:21.000")
+	assert.Nil(t, err)
+	arrayValues := []s.TimeOnly{
+		*time1,
+	}
+
+	value, err := s.ParseTimeOnly("16:20:21.000")
+	assert.Nil(t, err)
+	singleValue := *value
+
+	time2, err := s.ParseTimeOnly("16:20:21.000")
+	referenceArray := []*s.TimeOnly{
+		time2,
+	}
+
+	referenceValue, err := s.ParseTimeOnly("16:20:21.000")
+
+	requestInformation := prepareNormalizedStdTest(arrayValues, singleValue, referenceArray, referenceValue)
+	resultUri, err := requestInformation.GetUri()
+	assert.Nil(t, err)
+	assert.Equal(t, "http://localhost/array/16%3A20%3A21.000000000/single/16%3A20%3A21.000000000/referenceArray/16%3A20%3A21.000000000/referenceValue/16%3A20%3A21.000000000", resultUri.String())
+}
+
+func TestItNormalizesOnStandardizedDateOnlyParams(t *testing.T) {
+	dateOnly := s.NewDateOnly(time.Date(2020, 1, 4, 0, 0, 0, 0, time.UTC))
+	arrayValues := []s.DateOnly{
+		*dateOnly,
+	}
+
+	date1 := s.NewDateOnly(time.Date(2020, 1, 4, 0, 0, 0, 0, time.UTC))
+	singleValue := *date1
+
+	referenceArray := []*s.DateOnly{
+		s.NewDateOnly(time.Date(2020, 1, 4, 0, 0, 0, 0, time.UTC)),
+	}
+
+	referenceValue := s.NewDateOnly(time.Date(2020, 1, 4, 0, 0, 0, 0, time.UTC))
+
+	requestInformation := prepareNormalizedStdTest(arrayValues, singleValue, referenceArray, referenceValue)
+	resultUri, err := requestInformation.GetUri()
+	assert.Nil(t, err)
+	assert.Equal(t, "http://localhost/array/2020-01-04/single/2020-01-04/referenceArray/2020-01-04/referenceValue/2020-01-04", resultUri.String())
+}
+
 func TestItSetsExplodedQueryParameters(t *testing.T) {
 	value := true
 	requestInformation := NewRequestInformation()

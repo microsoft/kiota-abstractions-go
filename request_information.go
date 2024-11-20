@@ -106,16 +106,16 @@ func (request *RequestInformation) GetUri() (*u.URL, error) {
 
 		substitutions := make(map[string]any)
 		for key, value := range request.PathParameters {
-			substitutions[key] = value
+			substitutions[key] = request.sanitizeValue(value)
 		}
 		for key, value := range request.PathParametersAny {
-			substitutions[key] = request.normalizeParameters(reflect.ValueOf(value), value, false)
+			substitutions[key] = request.normalizeParameters(reflect.ValueOf(value), request.sanitizeValue(value), false)
 		}
 		for key, value := range request.QueryParameters {
-			substitutions[key] = value
+			substitutions[key] = request.sanitizeValue(value)
 		}
 		for key, value := range request.QueryParametersAny {
-			substitutions[key] = value
+			substitutions[key] = request.sanitizeValue(value)
 		}
 		url, err := stduritemplate.Expand(request.UrlTemplate, substitutions)
 		if err != nil {
@@ -124,6 +124,76 @@ func (request *RequestInformation) GetUri() (*u.URL, error) {
 		uri, err := u.Parse(url)
 		return uri, err
 	}
+}
+
+func castItem[T any, R interface{}](collection []T, mutator func(t T) R) []R {
+	if len(collection) > 0 {
+		cast := make([]R, len(collection))
+		for i, v := range collection {
+			cast[i] = mutator(v)
+		}
+		return cast
+	}
+	return nil
+}
+
+func (request *RequestInformation) sanitizeValue(value any) any {
+	if value == nil {
+		return nil
+	}
+
+	switch v := value.(type) {
+	case *time.Time:
+		return v.Format(time.RFC3339)
+	case time.Time:
+		return v.Format(time.RFC3339)
+	case []*time.Time:
+		return castItem(v, func(t *time.Time) string {
+			return t.Format(time.RFC3339)
+		})
+	case []time.Time:
+		return castItem(v, func(t time.Time) string {
+			return t.Format(time.RFC3339)
+		})
+	case *s.ISODuration:
+		return v.String()
+	case s.ISODuration:
+		return v.String()
+	case []*s.ISODuration:
+		return castItem(v, func(v *s.ISODuration) string {
+			return v.String()
+		})
+	case []s.ISODuration:
+		return castItem(v, func(v s.ISODuration) string {
+			return v.String()
+		})
+	case *s.TimeOnly:
+		return v.String()
+	case s.TimeOnly:
+		return v.String()
+	case []*s.TimeOnly:
+		return castItem(v, func(v *s.TimeOnly) string {
+			return v.String()
+		})
+	case []s.TimeOnly:
+		return castItem(v, func(v s.TimeOnly) string {
+			return v.String()
+		})
+	case *s.DateOnly:
+		return v.String()
+	case s.DateOnly:
+		return v.String()
+	case []*s.DateOnly:
+		return castItem(v, func(v *s.DateOnly) string {
+			return v.String()
+		})
+	case []s.DateOnly:
+		return castItem(v, func(v s.DateOnly) string {
+			return v.String()
+		})
+	}
+
+	return value
 }
 
 // SetUri updates the URI for the request from a raw URL.
@@ -490,7 +560,7 @@ func (request *RequestInformation) AddQueryParameters(source any) {
 		if tagValue != "" {
 			fieldName = tagValue
 		}
-		value := fieldValue.Interface()
+		value := request.sanitizeValue(fieldValue.Interface())
 		valueOfValue := reflect.ValueOf(value)
 		if valueOfValue.IsNil() {
 			continue

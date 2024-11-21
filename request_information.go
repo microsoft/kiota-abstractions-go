@@ -13,7 +13,7 @@ import (
 
 	"github.com/google/uuid"
 	s "github.com/microsoft/kiota-abstractions-go/serialization"
-	stduritemplate "github.com/std-uritemplate/std-uritemplate/go"
+	stduritemplate "github.com/std-uritemplate/std-uritemplate/go/v2"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"

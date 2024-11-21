@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/cjlapao/common-go v0.0.39
 	github.com/google/uuid v1.6.0
-	github.com/std-uritemplate/std-uritemplate/go v1.0.6
+	github.com/std-uritemplate/std-uritemplate/go/v2 v2.0.1
 	github.com/stretchr/testify v1.9.0
 	go.opentelemetry.io/otel v1.24.0
 	go.opentelemetry.io/otel/trace v1.24.0

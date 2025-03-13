@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.9.0](https://github.com/microsoft/kiota-abstractions-go/compare/v1.8.1...v1.9.0) (2025-03-13)
+
+
+### Features
+
+* upgrades required go version from go1.18 to go 1.22 ([526145f](https://github.com/microsoft/kiota-abstractions-go/commit/526145f3f219287feffe814d2f3efb2d9b7e233d))
+
 ## [1.8.1] - 2024-07-09
 
 ### Changed

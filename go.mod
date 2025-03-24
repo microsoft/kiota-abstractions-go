@@ -1,11 +1,11 @@
 module github.com/microsoft/kiota-abstractions-go
 
-go 1.22.0
+go 1.23.0
 
 toolchain go1.24.1
 
 require (
-	github.com/cjlapao/common-go v0.0.41
+	github.com/cjlapao/common-go v0.0.48
 	github.com/google/uuid v1.6.0
 	github.com/std-uritemplate/std-uritemplate/go/v2 v2.0.3
 	github.com/stretchr/testify v1.10.0

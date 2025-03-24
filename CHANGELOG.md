@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.9.1](https://github.com/microsoft/kiota-abstractions-go/compare/v1.9.0...v1.9.1) (2025-03-24)
+
+
+### Bug Fixes
+
+* upgrades common go dependency to solve triming issues ([5769aa7](https://github.com/microsoft/kiota-abstractions-go/commit/5769aa7c12ddcd01862ded353ffe4b966da25b55))
+* upgrades common go dependency to solve triming issues ([73349ca](https://github.com/microsoft/kiota-abstractions-go/commit/73349ca6ebe5122fad13eb85fd957490ea8cfeea))
+
 ## [1.9.0](https://github.com/microsoft/kiota-abstractions-go/compare/v1.8.1...v1.9.0) (2025-03-13)
 
 

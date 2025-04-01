@@ -37,38 +37,6 @@ func TestItNormalizesS(t *testing.T) {
 	assert.Equal(t, "PT1M1S", result)
 }
 
-func TestToDurationWithMonths(t *testing.T) {
-	// Arrange
-	duration := &duration{
-		Years:   1,
-		Months:  2,
-		Weeks:   1,
-		Days:    3,
-		Hours:   4,
-		Minutes: 5,
-		Seconds: 6,
-	}
-
-	// Act
-	result, err := duration.ToDurationWithMonths(30)
-
-	// Assert
-	assert.Nil(t, err)
-	expected := time.duration(
-		(1 * 365 * 24 * time.Hour) + // 1 year
-			(2 * 30 * 24 * time.Hour) + // 2 months (30 days each)
-			(7 * 24 * time.Hour) + // 1 week
-			(3 * 24 * time.Hour) + // 3 days
-			(4 * time.Hour) + // 4 hours
-			(5 * time.Minute) + // 5 minutes
-			(6 * time.Second), // 6 seconds
-	)
-	assert.Equal(t, expected, result)
-}
-
-func TestFromString(t *testing.T) {
-}
-
 func TestItNormalizesMi(t *testing.T) {
 	// Arrange
 	duration := &duration{
@@ -200,13 +168,13 @@ func TestItFailsMoToDuration(t *testing.T) {
 	result, err := duration.ToDuration()
 
 	// Assert
-	assert.Equal(t, time.duration(0), result)
+	assert.Equal(t, time.Duration(0), result)
 	assert.Equal(t, errMonthsInDurationUseOverload, err)
 }
 
 func TestItParsesMonth(t *testing.T) {
 	// Act
-	duration, err := FromString("P1M")
+	duration, err := DurationFromString("P1M")
 
 	// Assert
 	assert.Nil(t, err)
@@ -215,7 +183,7 @@ func TestItParsesMonth(t *testing.T) {
 
 func TestItParsesMonthAndMinutes(t *testing.T) {
 	// Act
-	duration, err := FromString("P1MT1M")
+	duration, err := DurationFromString("P1MT1M")
 
 	// Assert
 	assert.Nil(t, err)

@@ -2,13 +2,11 @@ package serialization
 
 import (
 	"time"
-
-	"github.com/microsoft/kiota-abstractions-go/duration"
 )
 
 // ISODuration represents an ISO 8601 duration
 type ISODuration struct {
-	duration duration.Duration
+	duration duration
 }
 
 // GetYears returns the number of years.
@@ -83,7 +81,7 @@ func (i ISODuration) SetMilliSeconds(milliSeconds int) {
 
 // ParseISODuration parses a string into an ISODuration following the ISO 8601 standard.
 func ParseISODuration(s string) (*ISODuration, error) {
-	d, err := duration.FromString(s)
+	d, err := DurationFromString(s)
 	if err != nil {
 		return nil, err
 	}
@@ -95,7 +93,7 @@ func ParseISODuration(s string) (*ISODuration, error) {
 // NewISODuration creates a new ISODuration from primitive values.
 func NewDuration(years int, weeks int, days int, hours int, minutes int, seconds int, milliSeconds int) *ISODuration {
 	return &ISODuration{
-		duration: duration.Duration{
+		duration: duration{
 			Years:        years,
 			Weeks:        weeks,
 			Days:         days,

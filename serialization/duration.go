@@ -1,5 +1,6 @@
-// Package duration provides a partial implementation of ISO8601 durations. (no months)
-package duration
+// duration provides a partial implementation of ISO8601 durations. (no months)
+
+package serialization
 
 import (
 	"bytes"
@@ -12,18 +13,18 @@ import (
 )
 
 var (
-	// ErrBadFormat is returned when parsing fails
-	ErrBadFormat = errors.New("bad format string")
+	// errBadFormat is returned when parsing fails
+	errBadFormat = errors.New("bad format string")
 
-	ErrWeeksNotWithYearsOrMonth = errors.New("weeks are not allowed with years or months")
+	errWeeksNotWithYearsOrMonth = errors.New("weeks are not allowed with years or months")
 
-	ErrMonthsInDurationUseOverload = errors.New("months are not allowed with the ToDuration method, use the overload instead")
+	errMonthsInDurationUseOverload = errors.New("months are not allowed with the ToDuration method, use the overload instead")
 
 	full = regexp.MustCompile(`P((?P<year>\d+)Y)?((?P<month>\d+)M)?((?P<day>\d+)D)?(T((?P<hour>\d+)H)?((?P<minute>\d+)M)?((?P<second>\d+(?:\.\d+))S)?)?`)
 	week = regexp.MustCompile(`P((?P<week>\d+)W)`)
 )
 
-type Duration struct {
+type duration struct {
 	Years        int
 	Months       int
 	Weeks        int
@@ -34,7 +35,7 @@ type Duration struct {
 	MilliSeconds int
 }
 
-func FromString(dur string) (*Duration, error) {
+func DurationFromString(dur string) (*duration, error) {
 	var (
 		match []string
 		re    *regexp.Regexp
@@ -47,10 +48,10 @@ func FromString(dur string) (*Duration, error) {
 		match = full.FindStringSubmatch(dur)
 		re = full
 	} else {
-		return nil, ErrBadFormat
+		return nil, errBadFormat
 	}
 
-	d := &Duration{}
+	d := &duration{}
 
 	for i, name := range re.SubexpNames() {
 		part := match[i]
@@ -90,7 +91,7 @@ func FromString(dur string) (*Duration, error) {
 }
 
 // String prints out the value passed in.
-func (d *Duration) String() string {
+func (d *duration) String() string {
 	var s bytes.Buffer
 
 	err := d.Normalize()
@@ -132,7 +133,7 @@ func (d *Duration) String() string {
 // e.g. if you have a duration of 10 day, 25 hour, and 61 minute, it will be normalized to 1 week 5 days, 2 hours, and 1 minute.
 // this function does not normalize days to months, weeks to months or weeks to years as they do not always convert with the same value.
 // it also won't normalize days to weeks if months or years are present, and will return an error if the value is invalid
-func (d *Duration) Normalize() error {
+func (d *duration) Normalize() error {
 	msToS := 1000
 	StoM := 60
 	MtoH := 60
@@ -165,7 +166,7 @@ func (d *Duration) Normalize() error {
 	}
 
 	if d.Weeks != 0 && (d.Years != 0 || d.Months != 0) {
-		return ErrWeeksNotWithYearsOrMonth
+		return errWeeksNotWithYearsOrMonth
 	}
 
 	return nil
@@ -174,18 +175,18 @@ func (d *Duration) Normalize() error {
 	// a year is not always 52 weeks, so we don't normalize that
 }
 
-func (d *Duration) HasTimePart() bool {
+func (d *duration) HasTimePart() bool {
 	return d.Hours != 0 || d.Minutes != 0 || d.Seconds != 0
 }
 
-func (d *Duration) ToDuration() (time.Duration, error) {
+func (d *duration) ToDuration() (time.Duration, error) {
 	if d.Months != 0 {
-		return 0, ErrMonthsInDurationUseOverload
+		return 0, errMonthsInDurationUseOverload
 	}
 	return d.ToDurationWithMonths(31)
 }
 
-func (d *Duration) ToDurationWithMonths(daysInAMonth int) (time.Duration, error) {
+func (d *duration) ToDurationWithMonths(daysInAMonth int) (time.Duration, error) {
 	day := time.Hour * 24
 	year := day * 365
 	month := day * time.Duration(daysInAMonth)

@@ -1,4 +1,4 @@
-package duration
+package serialization
 
 import (
 	"testing"
@@ -9,7 +9,7 @@ import (
 
 func TestItNormalizesMS(t *testing.T) {
 	// Arrange
-	duration := &Duration{
+	duration := &duration{
 		MilliSeconds: 1001,
 	}
 
@@ -24,7 +24,7 @@ func TestItNormalizesMS(t *testing.T) {
 
 func TestItNormalizesS(t *testing.T) {
 	// Arrange
-	duration := &Duration{
+	duration := &duration{
 		Seconds: 61,
 	}
 
@@ -37,9 +37,41 @@ func TestItNormalizesS(t *testing.T) {
 	assert.Equal(t, "PT1M1S", result)
 }
 
+func TestToDurationWithMonths(t *testing.T) {
+	// Arrange
+	duration := &duration{
+		Years:   1,
+		Months:  2,
+		Weeks:   1,
+		Days:    3,
+		Hours:   4,
+		Minutes: 5,
+		Seconds: 6,
+	}
+
+	// Act
+	result, err := duration.ToDurationWithMonths(30)
+
+	// Assert
+	assert.Nil(t, err)
+	expected := time.duration(
+		(1 * 365 * 24 * time.Hour) + // 1 year
+			(2 * 30 * 24 * time.Hour) + // 2 months (30 days each)
+			(7 * 24 * time.Hour) + // 1 week
+			(3 * 24 * time.Hour) + // 3 days
+			(4 * time.Hour) + // 4 hours
+			(5 * time.Minute) + // 5 minutes
+			(6 * time.Second), // 6 seconds
+	)
+	assert.Equal(t, expected, result)
+}
+
+func TestFromString(t *testing.T) {
+}
+
 func TestItNormalizesMi(t *testing.T) {
 	// Arrange
-	duration := &Duration{
+	duration := &duration{
 		Minutes: 61,
 	}
 
@@ -54,7 +86,7 @@ func TestItNormalizesMi(t *testing.T) {
 
 func TestItNormalizesH(t *testing.T) {
 	// Arrange
-	duration := &Duration{
+	duration := &duration{
 		Hours: 25,
 	}
 
@@ -69,7 +101,7 @@ func TestItNormalizesH(t *testing.T) {
 
 func TestItNormalizesD(t *testing.T) {
 	// Arrange
-	duration := &Duration{
+	duration := &duration{
 		Days: 8,
 	}
 
@@ -84,7 +116,7 @@ func TestItNormalizesD(t *testing.T) {
 
 func TestItDoesntNormalizesW(t *testing.T) {
 	// Arrange
-	duration := &Duration{
+	duration := &duration{
 		Weeks: 56,
 	}
 
@@ -99,7 +131,7 @@ func TestItDoesntNormalizesW(t *testing.T) {
 
 func TestItDoesntNormalizesDWithMo(t *testing.T) {
 	// Arrange
-	duration := &Duration{
+	duration := &duration{
 		Days:   15,
 		Months: 2,
 	}
@@ -116,7 +148,7 @@ func TestItDoesntNormalizesDWithMo(t *testing.T) {
 
 func TestItNormalizesMo(t *testing.T) {
 	// Arrange
-	duration := &Duration{
+	duration := &duration{
 		Months: 13,
 	}
 
@@ -131,7 +163,7 @@ func TestItNormalizesMo(t *testing.T) {
 
 func TestItRefusesMoAndW(t *testing.T) {
 	// Arrange
-	duration := &Duration{
+	duration := &duration{
 		Months: 13,
 		Weeks:  10,
 	}
@@ -140,12 +172,12 @@ func TestItRefusesMoAndW(t *testing.T) {
 	result := duration.Normalize()
 
 	// Assert
-	assert.Equal(t, ErrWeeksNotWithYearsOrMonth, result)
+	assert.Equal(t, errWeeksNotWithYearsOrMonth, result)
 }
 
 func TestItRefusesYAndW(t *testing.T) {
 	// Arrange
-	duration := &Duration{
+	duration := &duration{
 		Years: 13,
 		Weeks: 10,
 	}
@@ -154,12 +186,12 @@ func TestItRefusesYAndW(t *testing.T) {
 	result := duration.Normalize()
 
 	// Assert
-	assert.Equal(t, ErrWeeksNotWithYearsOrMonth, result)
+	assert.Equal(t, errWeeksNotWithYearsOrMonth, result)
 }
 
 func TestItFailsMoToDuration(t *testing.T) {
 	// Arrange
-	duration := &Duration{
+	duration := &duration{
 		Months: 13,
 		Weeks:  10,
 	}
@@ -168,8 +200,8 @@ func TestItFailsMoToDuration(t *testing.T) {
 	result, err := duration.ToDuration()
 
 	// Assert
-	assert.Equal(t, time.Duration(0), result)
-	assert.Equal(t, ErrMonthsInDurationUseOverload, err)
+	assert.Equal(t, time.duration(0), result)
+	assert.Equal(t, errMonthsInDurationUseOverload, err)
 }
 
 func TestItParsesMonth(t *testing.T) {

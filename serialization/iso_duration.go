@@ -3,12 +3,12 @@ package serialization
 import (
 	"time"
 
-	cjl "github.com/cjlapao/common-go/duration"
+	"github.com/microsoft/kiota-abstractions-go/duration"
 )
 
 // ISODuration represents an ISO 8601 duration
 type ISODuration struct {
-	duration cjl.Duration
+	duration duration.Duration
 }
 
 // GetYears returns the number of years.
@@ -83,7 +83,7 @@ func (i ISODuration) SetMilliSeconds(milliSeconds int) {
 
 // ParseISODuration parses a string into an ISODuration following the ISO 8601 standard.
 func ParseISODuration(s string) (*ISODuration, error) {
-	d, err := cjl.FromString(s)
+	d, err := duration.FromString(s)
 	if err != nil {
 		return nil, err
 	}
@@ -95,7 +95,7 @@ func ParseISODuration(s string) (*ISODuration, error) {
 // NewISODuration creates a new ISODuration from primitive values.
 func NewDuration(years int, weeks int, days int, hours int, minutes int, seconds int, milliSeconds int) *ISODuration {
 	return &ISODuration{
-		duration: cjl.Duration{
+		duration: duration.Duration{
 			Years:        years,
 			Weeks:        weeks,
 			Days:         days,

@@ -35,7 +35,7 @@ type duration struct {
 	MilliSeconds int
 }
 
-func DurationFromString(dur string) (*duration, error) {
+func durationFromString(dur string) (*duration, error) {
 	var (
 		match []string
 		re    *regexp.Regexp
@@ -91,10 +91,10 @@ func DurationFromString(dur string) (*duration, error) {
 }
 
 // String prints out the value passed in.
-func (d *duration) String() string {
+func (d *duration) string() string {
 	var s bytes.Buffer
 
-	err := d.Normalize()
+	err := d.normalize()
 
 	if err != nil {
 		panic(err)
@@ -113,7 +113,7 @@ func (d *duration) String() string {
 	if d.Days > 0 {
 		s.WriteString(fmt.Sprintf("%dD", d.Days))
 	}
-	if d.HasTimePart() {
+	if d.hasTimePart() {
 		s.WriteString("T")
 		if d.Hours > 0 {
 			s.WriteString(fmt.Sprintf("%dH", d.Hours))
@@ -133,7 +133,7 @@ func (d *duration) String() string {
 // e.g. if you have a duration of 10 day, 25 hour, and 61 minute, it will be normalized to 1 week 5 days, 2 hours, and 1 minute.
 // this function does not normalize days to months, weeks to months or weeks to years as they do not always convert with the same value.
 // it also won't normalize days to weeks if months or years are present, and will return an error if the value is invalid
-func (d *duration) Normalize() error {
+func (d *duration) normalize() error {
 	msToS := 1000
 	StoM := 60
 	MtoH := 60
@@ -175,25 +175,25 @@ func (d *duration) Normalize() error {
 	// a year is not always 52 weeks, so we don't normalize that
 }
 
-func (d *duration) HasTimePart() bool {
+func (d *duration) hasTimePart() bool {
 	return d.Hours != 0 || d.Minutes != 0 || d.Seconds != 0
 }
 
-func (d *duration) ToDuration() (time.Duration, error) {
+func (d *duration) toDuration() (time.Duration, error) {
 	if d.Months != 0 {
 		return 0, errMonthsInDurationUseOverload
 	}
-	return d.ToDurationWithMonths(31)
+	return d.toDurationWithMonths(31)
 }
 
-func (d *duration) ToDurationWithMonths(daysInAMonth int) (time.Duration, error) {
+func (d *duration) toDurationWithMonths(daysInAMonth int) (time.Duration, error) {
 	day := time.Hour * 24
 	year := day * 365
 	month := day * time.Duration(daysInAMonth)
 
 	tot := time.Duration(0)
 
-	err := d.Normalize()
+	err := d.normalize()
 	if err != nil {
 		return tot, err
 	}

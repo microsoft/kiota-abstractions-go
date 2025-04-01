@@ -81,7 +81,7 @@ func (i ISODuration) SetMilliSeconds(milliSeconds int) {
 
 // ParseISODuration parses a string into an ISODuration following the ISO 8601 standard.
 func ParseISODuration(s string) (*ISODuration, error) {
-	d, err := DurationFromString(s)
+	d, err := durationFromString(s)
 	if err != nil {
 		return nil, err
 	}
@@ -107,7 +107,7 @@ func NewDuration(years int, weeks int, days int, hours int, minutes int, seconds
 
 // String returns the ISO 8601 representation of the duration.
 func (i ISODuration) String() string {
-	return i.duration.String()
+	return i.duration.string()
 }
 
 // FromDuration returns an ISODuration from a time.Duration.
@@ -117,5 +117,5 @@ func FromDuration(d time.Duration) *ISODuration {
 
 // ToDuration returns the time.Duration representation of the ISODuration.
 func (d ISODuration) ToDuration() (time.Duration, error) {
-	return d.duration.ToDuration()
+	return d.duration.toDuration()
 }

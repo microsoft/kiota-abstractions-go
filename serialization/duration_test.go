@@ -14,7 +14,7 @@ func TestItNormalizesMS(t *testing.T) {
 	}
 
 	// Act
-	result := duration.String()
+	result := duration.string()
 
 	// Assert
 	assert.Equal(t, 1, duration.Seconds)
@@ -29,7 +29,7 @@ func TestItNormalizesS(t *testing.T) {
 	}
 
 	// Act
-	result := duration.String()
+	result := duration.string()
 
 	// Assert
 	assert.Equal(t, 1, duration.Seconds)
@@ -44,7 +44,7 @@ func TestItNormalizesMi(t *testing.T) {
 	}
 
 	// Act
-	result := duration.String()
+	result := duration.string()
 
 	// Assert
 	assert.Equal(t, 1, duration.Hours)
@@ -59,7 +59,7 @@ func TestItNormalizesH(t *testing.T) {
 	}
 
 	// Act
-	result := duration.String()
+	result := duration.string()
 
 	// Assert
 	assert.Equal(t, 1, duration.Hours)
@@ -74,7 +74,7 @@ func TestItNormalizesD(t *testing.T) {
 	}
 
 	// Act
-	result := duration.String()
+	result := duration.string()
 
 	// Assert
 	assert.Equal(t, 1, duration.Weeks)
@@ -89,7 +89,7 @@ func TestItDoesntNormalizesW(t *testing.T) {
 	}
 
 	// Act
-	result := duration.String()
+	result := duration.string()
 
 	// Assert
 	assert.Equal(t, 56, duration.Weeks)
@@ -105,7 +105,7 @@ func TestItDoesntNormalizesDWithMo(t *testing.T) {
 	}
 
 	// Act
-	result := duration.String()
+	result := duration.string()
 
 	// Assert
 	assert.Equal(t, 15, duration.Days)
@@ -121,7 +121,7 @@ func TestItNormalizesMo(t *testing.T) {
 	}
 
 	// Act
-	result := duration.String()
+	result := duration.string()
 
 	// Assert
 	assert.Equal(t, 1, duration.Months)
@@ -137,7 +137,7 @@ func TestItRefusesMoAndW(t *testing.T) {
 	}
 
 	// Act
-	result := duration.Normalize()
+	result := duration.normalize()
 
 	// Assert
 	assert.Equal(t, errWeeksNotWithYearsOrMonth, result)
@@ -151,7 +151,7 @@ func TestItRefusesYAndW(t *testing.T) {
 	}
 
 	// Act
-	result := duration.Normalize()
+	result := duration.normalize()
 
 	// Assert
 	assert.Equal(t, errWeeksNotWithYearsOrMonth, result)
@@ -165,7 +165,7 @@ func TestItFailsMoToDuration(t *testing.T) {
 	}
 
 	// Act
-	result, err := duration.ToDuration()
+	result, err := duration.toDuration()
 
 	// Assert
 	assert.Equal(t, time.Duration(0), result)
@@ -174,7 +174,7 @@ func TestItFailsMoToDuration(t *testing.T) {
 
 func TestItParsesMonth(t *testing.T) {
 	// Act
-	duration, err := DurationFromString("P1M")
+	duration, err := durationFromString("P1M")
 
 	// Assert
 	assert.Nil(t, err)
@@ -183,7 +183,7 @@ func TestItParsesMonth(t *testing.T) {
 
 func TestItParsesMonthAndMinutes(t *testing.T) {
 	// Act
-	duration, err := DurationFromString("P1MT1M")
+	duration, err := durationFromString("P1MT1M")
 
 	// Assert
 	assert.Nil(t, err)

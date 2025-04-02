@@ -190,3 +190,23 @@ func TestItParsesMonthAndMinutes(t *testing.T) {
 	assert.Equal(t, 1, duration.Months)
 	assert.Equal(t, 1, duration.Minutes)
 }
+
+func TestToDurationWithMonths(t *testing.T) {
+	// Arrange
+	duration := &duration{
+		Years:   1,
+		Months:  2,
+		Days:    4,
+		Hours:   5,
+		Minutes: 6,
+		Seconds: 7,
+	}
+
+	// Act
+	result, err := duration.toDurationWithMonths(30)
+
+	// Assert
+	assert.Nil(t, err)
+	expectedResult := time.Hour*24*365 + time.Hour*24*30*2 + time.Hour*24*4 + time.Hour*5 + time.Minute*6 + time.Second*7
+	assert.Equal(t, expectedResult, result)
+}

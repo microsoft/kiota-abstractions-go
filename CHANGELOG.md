@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.9.2](https://github.com/microsoft/kiota-abstractions-go/compare/v1.9.1...v1.9.2) (2025-04-02)
+
+
+### Bug Fixes
+
+* drop dependency on common-go ([#199](https://github.com/microsoft/kiota-abstractions-go/issues/199)) ([5702488](https://github.com/microsoft/kiota-abstractions-go/commit/57024882f125ff719a2155293d5e28716f2ba9db))
+
 ## [1.9.1](https://github.com/microsoft/kiota-abstractions-go/compare/v1.9.0...v1.9.1) (2025-03-24)
 
 

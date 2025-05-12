@@ -346,16 +346,18 @@ func TestItNormalizesOnStandardizedTimeOnlyParams(t *testing.T) {
 	singleValue := *value
 
 	time2, err := s.ParseTimeOnly("16:20:21.000")
+	assert.Nil(t, err)
 	referenceArray := []*s.TimeOnly{
 		time2,
 	}
 
 	referenceValue, err := s.ParseTimeOnly("16:20:21.000")
+	assert.Nil(t, err)
 
 	requestInformation := prepareNormalizedStdTest(arrayValues, singleValue, referenceArray, referenceValue)
 	resultUri, err := requestInformation.GetUri()
 	assert.Nil(t, err)
-	assert.Equal(t, "http://localhost/array/16%3A20%3A21.000000000/single/16%3A20%3A21.000000000/referenceArray/16%3A20%3A21.000000000/referenceValue/16%3A20%3A21.000000000", resultUri.String())
+	assert.Equal(t, "http://localhost/array/16%3A20%3A21.000/single/16%3A20%3A21.000/referenceArray/16%3A20%3A21.000/referenceValue/16%3A20%3A21.000", resultUri.String())
 }
 
 func TestItNormalizesOnStandardizedDateOnlyParams(t *testing.T) {

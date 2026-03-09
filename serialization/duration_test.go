@@ -68,7 +68,7 @@ func TestItNormalizesH(t *testing.T) {
 }
 
 func TestItNormalizesD(t *testing.T) {
-	// Arrange
+	// Arrange: 8 days is not an exact multiple of 7, so weeks should not be used
 	duration := &duration{
 		Days: 8,
 	}
@@ -77,9 +77,67 @@ func TestItNormalizesD(t *testing.T) {
 	result := duration.string()
 
 	// Assert
+	assert.Equal(t, 0, duration.Weeks)
+	assert.Equal(t, 8, duration.Days)
+	assert.Equal(t, "P8D", result)
+}
+
+func TestItNormalizesExactWeeksFromDays(t *testing.T) {
+	// Arrange: 14 days is exactly 2 weeks, so it should be normalized to P2W
+	duration := &duration{
+		Days: 14,
+	}
+
+	// Act
+	result := duration.string()
+
+	// Assert
+	assert.Equal(t, 2, duration.Weeks)
+	assert.Equal(t, 0, duration.Days)
+	assert.Equal(t, "P2W", result)
+}
+
+func TestItNormalizes7DaysToWeek(t *testing.T) {
+	// Arrange: 7 days is exactly 1 week
+	duration := &duration{
+		Days: 7,
+	}
+
+	// Act
+	result := duration.string()
+
+	// Assert
 	assert.Equal(t, 1, duration.Weeks)
-	assert.Equal(t, 1, duration.Days)
-	assert.Equal(t, "P1W1D", result)
+	assert.Equal(t, 0, duration.Days)
+	assert.Equal(t, "P1W", result)
+}
+
+func TestItRefusesWeeksWithDays(t *testing.T) {
+	// Arrange: weeks cannot coexist with days per ISO 8601
+	duration := &duration{
+		Weeks: 1,
+		Days:  1,
+	}
+
+	// Act
+	result := duration.normalize()
+
+	// Assert
+	assert.Equal(t, errWeeksNotAlone, result)
+}
+
+func TestItRefusesWeeksWithHours(t *testing.T) {
+	// Arrange: weeks cannot coexist with time components per ISO 8601
+	duration := &duration{
+		Weeks: 1,
+		Hours: 2,
+	}
+
+	// Act
+	result := duration.normalize()
+
+	// Assert
+	assert.Equal(t, errWeeksNotAlone, result)
 }
 
 func TestItDoesntNormalizesW(t *testing.T) {

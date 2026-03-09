@@ -34,9 +34,9 @@ func TestItMakesAnNewISODurationFor1dAnd1h(t *testing.T) {
 	assert.Equal(t, "P1DT1H", isoDuration.String())
 }
 
-func TestItMakesAnNewISODurationFor1wAnd1dAnd1h(t *testing.T) {
-	isoDuration := NewDuration(0, 1, 1, 1, 0, 0, 0)
-	assert.Equal(t, "P1W1DT1H", isoDuration.String())
+func TestItMakesAnNewISODurationFor1wOnly(t *testing.T) {
+	isoDuration := NewDuration(0, 1, 0, 0, 0, 0, 0)
+	assert.Equal(t, "P1W", isoDuration.String())
 }
 
 func TestItMakesAnNewISODurationFor1yAnd1dAnd1h(t *testing.T) {

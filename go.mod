@@ -4,7 +4,7 @@ go 1.25.0
 
 require (
 	github.com/google/uuid v1.6.0
-	github.com/std-uritemplate/std-uritemplate/go/v2 v2.0.3
+	github.com/std-uritemplate/std-uritemplate/go/v2 v2.0.8
 	github.com/stretchr/testify v1.11.1
 	go.opentelemetry.io/otel v1.43.0
 	go.opentelemetry.io/otel/trace v1.43.0

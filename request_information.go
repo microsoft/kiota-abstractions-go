@@ -137,6 +137,19 @@ func castItem[T any, R interface{}](collection []T, mutator func(t T) R) []R {
 	return nil
 }
 
+// sanitizeMap converts any map[string]V to map[string]any by applying convert
+// to each value. Entries for which convert returns false are omitted, which is
+// used to skip nil/undefined values per RFC 6570 §2.3 "undefined" semantics.
+func sanitizeMap[V any](m map[string]V, convert func(v V) (any, bool)) map[string]any {
+	sanitized := make(map[string]any, len(m))
+	for k, v := range m {
+		if converted, ok := convert(v); ok {
+			sanitized[k] = converted
+		}
+	}
+	return sanitized
+}
+
 func (request *RequestInformation) sanitizeValue(value any) any {
 	if value == nil {
 		return nil
@@ -190,6 +203,25 @@ func (request *RequestInformation) sanitizeValue(value any) any {
 	case []s.DateOnly:
 		return castItem(v, func(v s.DateOnly) string {
 			return v.String()
+		})
+	case map[string]*string:
+		// Map-style query parameter (nullable values): drop nil entries per
+		// RFC 6570 §2.3 "undefined" semantics; dereference remaining pointers.
+		return sanitizeMap(v, func(ptr *string) (any, bool) {
+			if ptr == nil {
+				return nil, false
+			}
+			return *ptr, true
+		})
+	case map[string]string:
+		return sanitizeMap(v, func(s string) (any, bool) { return s, true })
+	case map[string]any:
+		// Re-sanitize in case any values still need conversion (e.g. nil entries).
+		return sanitizeMap(v, func(val any) (any, bool) {
+			if val == nil {
+				return nil, false
+			}
+			return request.sanitizeValue(val), true
 		})
 	}
 
@@ -590,6 +622,9 @@ func (request *RequestInformation) AddQueryParameters(source any) {
 		}
 		if arr, ok := value.([]any); ok && len(arr) > 0 {
 			request.QueryParametersAny[fieldName] = arr
+		}
+		if mapAny, ok := value.(map[string]any); ok {
+			request.QueryParametersAny[fieldName] = mapAny
 		}
 		normalizedValue := request.normalizeParameters(valueOfValue, value, true)
 		if normalizedValue != nil {

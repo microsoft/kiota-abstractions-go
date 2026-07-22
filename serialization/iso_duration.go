@@ -90,6 +90,20 @@ func ParseISODuration(s string) (*ISODuration, error) {
 	}, nil
 }
 
+// NewISODurationFromString parses an ISO 8601 duration string and preserves the original
+// format on serialization, bypassing normalization. Use this when an API requires an exact
+// duration format such as P90D rather than its normalized equivalent P12W6D.
+func NewISODurationFromString(s string) (*ISODuration, error) {
+	d, err := durationFromString(s)
+	if err != nil {
+		return nil, err
+	}
+	d.skipNormalization = true
+	return &ISODuration{
+		duration: *d,
+	}, nil
+}
+
 // NewISODuration creates a new ISODuration from primitive values.
 func NewDuration(years int, weeks int, days int, hours int, minutes int, seconds int, milliSeconds int) *ISODuration {
 	return &ISODuration{

@@ -137,6 +137,19 @@ func castItem[T any, R interface{}](collection []T, mutator func(t T) R) []R {
 	return nil
 }
 
+func isNil(val any) bool {
+	if val == nil {
+		return true
+	}
+	v := reflect.ValueOf(val)
+	switch v.Kind() {
+	case reflect.Chan, reflect.Func, reflect.Map, reflect.Pointer, reflect.UnsafePointer, reflect.Interface, reflect.Slice:
+		return v.IsNil()
+	default:
+		return false
+	}
+}
+
 // sanitizeMap converts any map[string]V to map[string]any by applying convert
 // to each value. Entries for which convert returns false are omitted, which is
 // used to skip nil/undefined values per RFC 6570 §2.3 "undefined" semantics.
@@ -151,7 +164,7 @@ func sanitizeMap[V any](m map[string]V, convert func(v V) (any, bool)) map[strin
 }
 
 func (request *RequestInformation) sanitizeValue(value any) any {
-	if value == nil {
+	if isNil(value) {
 		return nil
 	}
 
@@ -218,10 +231,14 @@ func (request *RequestInformation) sanitizeValue(value any) any {
 	case map[string]any:
 		// Re-sanitize in case any values still need conversion (e.g. nil entries).
 		return sanitizeMap(v, func(val any) (any, bool) {
-			if val == nil {
+			if isNil(val) {
 				return nil, false
 			}
-			return request.sanitizeValue(val), true
+			sVal := request.sanitizeValue(val)
+			if isNil(sVal) {
+				return nil, false
+			}
+			return sVal, true
 		})
 	}
 
@@ -593,10 +610,10 @@ func (request *RequestInformation) AddQueryParameters(source any) {
 			fieldName = tagValue
 		}
 		value := request.sanitizeValue(fieldValue.Interface())
-		valueOfValue := reflect.ValueOf(value)
-		if valueOfValue.IsNil() {
+		if isNil(value) {
 			continue
 		}
+		valueOfValue := reflect.ValueOf(value)
 		str, ok := value.(*string)
 		if ok && str != nil {
 			request.QueryParameters[fieldName] = *str

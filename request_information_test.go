@@ -662,3 +662,22 @@ func TestItExpandsMapStringQueryParameter(t *testing.T) {
 	assert.Contains(t, uriStr, "filter=equals%28published%2Ctrue%29")
 	assert.Contains(t, uriStr, "sort=-createdAt")
 }
+
+func TestItOmitsNilSanitizedValuesInMapAnyQueryParameter(t *testing.T) {
+	type AnyMapQueryParameters struct {
+		Query map[string]any `uriparametername:"query"`
+	}
+	requestInformation := NewRequestInformation()
+	requestInformation.UrlTemplate = "http://localhost/articles{?query*}"
+	requestInformation.AddQueryParameters(AnyMapQueryParameters{
+		Query: map[string]any{
+			"include": "author",
+			"empty":   []*time.Time{},
+			"nilVal":  nil,
+		},
+	})
+	uri, err := requestInformation.GetUri()
+	assert.Nil(t, err)
+	uriStr := uri.String()
+	assert.Equal(t, "http://localhost/articles?include=author", uriStr)
+}

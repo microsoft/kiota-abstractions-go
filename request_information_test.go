@@ -547,3 +547,137 @@ func (r *MockRequestAdapter) SetBaseUrl(baseUrl string) {
 func (r *MockRequestAdapter) GetBaseUrl() string {
 	return ""
 }
+
+type MapQueryParameters struct {
+	Query map[string]*string `uriparametername:"query"`
+}
+
+func strPtr(s string) *string { return &s }
+
+func TestItExpandsMapQueryParameterAsIndividualKeyValuePairs(t *testing.T) {
+	requestInformation := NewRequestInformation()
+	requestInformation.UrlTemplate = "http://localhost/articles{?query*}"
+	requestInformation.AddQueryParameters(MapQueryParameters{
+		Query: map[string]*string{
+			"filter": strPtr("equals(published,true)"),
+			"sort":   strPtr("-createdAt"),
+		},
+	})
+	uri, err := requestInformation.GetUri()
+	assert.Nil(t, err)
+	uriStr := uri.String()
+	assert.Contains(t, uriStr, "?")
+	assert.Contains(t, uriStr, "filter=equals%28published%2Ctrue%29")
+	assert.Contains(t, uriStr, "sort=-createdAt")
+}
+
+func TestItOmitsNilValuesInMapQueryParameter(t *testing.T) {
+	requestInformation := NewRequestInformation()
+	requestInformation.UrlTemplate = "http://localhost/articles{?query*}"
+	requestInformation.AddQueryParameters(MapQueryParameters{
+		Query: map[string]*string{
+			"include": strPtr("author"),
+			"exclude": nil,
+		},
+	})
+	uri, err := requestInformation.GetUri()
+	assert.Nil(t, err)
+	uriStr := uri.String()
+	assert.Contains(t, uriStr, "include=author")
+	assert.NotContains(t, uriStr, "exclude")
+}
+
+func TestItIncludesEmptyStringValueInMapQueryParameter(t *testing.T) {
+	requestInformation := NewRequestInformation()
+	requestInformation.UrlTemplate = "http://localhost/articles{?query*}"
+	requestInformation.AddQueryParameters(MapQueryParameters{
+		Query: map[string]*string{
+			"search": strPtr(""),
+		},
+	})
+	uri, err := requestInformation.GetUri()
+	assert.Nil(t, err)
+	assert.Contains(t, uri.String(), "search=")
+}
+
+func TestItProducesNoQueryStringForEmptyMap(t *testing.T) {
+	requestInformation := NewRequestInformation()
+	requestInformation.UrlTemplate = "http://localhost/articles{?query*}"
+	requestInformation.AddQueryParameters(MapQueryParameters{
+		Query: map[string]*string{},
+	})
+	uri, err := requestInformation.GetUri()
+	assert.Nil(t, err)
+	assert.NotContains(t, uri.String(), "?")
+}
+
+func TestItProducesNoQueryStringForAllNilMap(t *testing.T) {
+	requestInformation := NewRequestInformation()
+	requestInformation.UrlTemplate = "http://localhost/articles{?query*}"
+	requestInformation.AddQueryParameters(MapQueryParameters{
+		Query: map[string]*string{
+			"a": nil,
+			"b": nil,
+		},
+	})
+	uri, err := requestInformation.GetUri()
+	assert.Nil(t, err)
+	assert.NotContains(t, uri.String(), "?")
+}
+
+func TestItMixesMapAndScalarQueryParameters(t *testing.T) {
+	type MixedQueryParameters struct {
+		Query map[string]*string `uriparametername:"query"`
+		Top   *int32             `uriparametername:"top"`
+	}
+	top := int32(5)
+	requestInformation := NewRequestInformation()
+	requestInformation.UrlTemplate = "http://localhost/articles{?query*,top}"
+	requestInformation.AddQueryParameters(MixedQueryParameters{
+		Query: map[string]*string{"filter": strPtr("active")},
+		Top:   &top,
+	})
+	uri, err := requestInformation.GetUri()
+	assert.Nil(t, err)
+	uriStr := uri.String()
+	assert.Contains(t, uriStr, "filter=active")
+	assert.Contains(t, uriStr, "top=5")
+}
+
+func TestItExpandsMapStringQueryParameter(t *testing.T) {
+	type StringMapQueryParameters struct {
+		Query map[string]string `uriparametername:"query"`
+	}
+	requestInformation := NewRequestInformation()
+	requestInformation.UrlTemplate = "http://localhost/articles{?query*}"
+	requestInformation.AddQueryParameters(StringMapQueryParameters{
+		Query: map[string]string{
+			"filter": "equals(published,true)",
+			"sort":   "-createdAt",
+		},
+	})
+	uri, err := requestInformation.GetUri()
+	assert.Nil(t, err)
+	uriStr := uri.String()
+	assert.Contains(t, uriStr, "filter=equals%28published%2Ctrue%29")
+	assert.Contains(t, uriStr, "sort=-createdAt")
+}
+
+func TestItOmitsNilSanitizedValuesInMapAnyQueryParameter(t *testing.T) {
+	type AnyMapQueryParameters struct {
+		Query map[string]any `uriparametername:"query"`
+	}
+	requestInformation := NewRequestInformation()
+	requestInformation.UrlTemplate = "http://localhost/articles{?query*}"
+	requestInformation.AddQueryParameters(AnyMapQueryParameters{
+		Query: map[string]any{
+			"include": "author",
+			"empty":   []*time.Time{},
+			"nilVal":  nil,
+		},
+	})
+	uri, err := requestInformation.GetUri()
+	assert.Nil(t, err)
+	uriStr := uri.String()
+	assert.Equal(t, "http://localhost/articles?include=author", uriStr)
+}

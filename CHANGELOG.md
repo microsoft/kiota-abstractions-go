@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.10.0](https://github.com/microsoft/kiota-abstractions-go/compare/v1.9.4...v1.10.0) (2026-08-20)
+
+
+### Features
+
+* Handle map-style query parameters with nil values ([#247](https://github.com/microsoft/kiota-abstractions-go/issues/247)) ([dc2d48e](https://github.com/microsoft/kiota-abstractions-go/commit/dc2d48e594ae8d0562280d2b9c5b06a7a623085e))
+
 ## [1.9.4](https://github.com/microsoft/kiota-abstractions-go/compare/v1.9.3...v1.9.4) (2026-03-09)
 
 

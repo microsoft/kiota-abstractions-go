@@ -73,5 +73,17 @@ func (v *AllowedHostsValidator) IsUrlHostValid(uri *u.URL) bool {
 	if host == "" {
 		return false
 	}
-	return len(v.validHosts) == 0 || v.validHosts[strings.ToLower(host)]
+	if len(v.validHosts) == 0 {
+		return true
+	}
+	lowerHost := strings.ToLower(host)
+	if v.validHosts[lowerHost] {
+		return true
+	}
+	for validHost := range v.validHosts {
+		if strings.HasPrefix(validHost, ".") && strings.HasSuffix(lowerHost, validHost) {
+			return true
+		}
+	}
+	return false
 }

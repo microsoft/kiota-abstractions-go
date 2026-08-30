@@ -28,6 +28,12 @@ type QueryParameters struct {
 	Id             *uuid.UUID
 }
 
+type numericQueryParameters struct {
+	Limit  *int64   `uriparametername:"limit"`
+	Offset *int32   `uriparametername:"offset"`
+	Ratio  *float64 `uriparametername:"ratio"`
+}
+
 func TestItAddsStringQueryParameters(t *testing.T) {
 	requestInformation := NewRequestInformation()
 	value := "somefilter"
@@ -60,6 +66,49 @@ func TestItAddsIntQueryParameters(t *testing.T) {
 	requestInformation.AddQueryParameters(queryParameters)
 	assert.Equal(t, "42", requestInformation.QueryParameters["Top"])
 	assert.Nil(t, requestInformation.QueryParametersAny["Top"])
+}
+
+func TestItAddsInt64QueryParameters(t *testing.T) {
+	requestInformation := NewRequestInformation()
+	value := int64(42)
+	queryParameters := numericQueryParameters{
+		Limit: &value,
+	}
+	requestInformation.AddQueryParameters(queryParameters)
+	assert.Equal(t, int64(42), requestInformation.QueryParametersAny["limit"])
+}
+
+func TestItAddsFloat64QueryParameters(t *testing.T) {
+	requestInformation := NewRequestInformation()
+	value := 1.5
+	queryParameters := numericQueryParameters{
+		Ratio: &value,
+	}
+	requestInformation.AddQueryParameters(queryParameters)
+	assert.Equal(t, 1.5, requestInformation.QueryParametersAny["ratio"])
+}
+
+func TestItSetsScalarNumericQueryParameters(t *testing.T) {
+	limit, offset, ratio := int64(10), int32(20), 1.5
+	requestInformation := NewRequestInformation()
+	requestInformation.UrlTemplate = "http://localhost/items{?limit*,offset*,ratio*}"
+	requestInformation.AddQueryParameters(numericQueryParameters{
+		Limit:  &limit,
+		Offset: &offset,
+		Ratio:  &ratio,
+	})
+	resultUri, err := requestInformation.GetUri()
+	assert.Nil(t, err)
+	assert.Equal(t, "http://localhost/items?limit=10&offset=20&ratio=1.5", resultUri.String())
+}
+
+func TestItDoesNotSetNilNumericQueryParameters(t *testing.T) {
+	requestInformation := NewRequestInformation()
+	requestInformation.UrlTemplate = "http://localhost/items{?limit*}"
+	requestInformation.AddQueryParameters(numericQueryParameters{})
+	resultUri, err := requestInformation.GetUri()
+	assert.Nil(t, err)
+	assert.Equal(t, "http://localhost/items", resultUri.String())
 }
 
 func TestItAddsStringArrayQueryParameters(t *testing.T) {

@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.10.1](https://github.com/microsoft/kiota-abstractions-go/compare/v1.10.0...v1.10.1) (2026-08-31)
+
+
+### Bug Fixes
+
+* stop dropping scalar numeric query parameters ([#267](https://github.com/microsoft/kiota-abstractions-go/issues/267)) ([6bcceab](https://github.com/microsoft/kiota-abstractions-go/commit/6bcceab3ddf49d0710c1352d33c793d5428141b3))
+
 ## [1.10.0](https://github.com/microsoft/kiota-abstractions-go/compare/v1.9.4...v1.10.0) (2026-08-27)
 
 

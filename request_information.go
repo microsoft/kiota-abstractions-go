@@ -624,7 +624,10 @@ func (request *RequestInformation) AddQueryParameters(source any) {
 		}
 		it, ok := value.(*int32)
 		if ok && it != nil {
+			// rendered into the deprecated QueryParameters map only; QueryParametersAny is
+			// documented to stay empty for it, so don't let it reach normalizeParameters
 			request.QueryParameters[fieldName] = strconv.FormatInt(int64(*it), 10)
+			continue
 		}
 		strArr, ok := value.([]string)
 		if ok && len(strArr) > 0 {
@@ -654,6 +657,7 @@ func (request *RequestInformation) AddQueryParameters(source any) {
 // enum -> string (name)
 // []enum -> []string (containing names)
 // []non_interface -> []any (like []int64 -> []any)
+// *numeric -> numeric (like *int64 -> int64)
 func (request *RequestInformation) normalizeParameters(valueOfValue reflect.Value, value any, returnNilIfNotNormalizable bool) any {
 	if valueOfValue.Kind() == reflect.Slice && valueOfValue.Len() > 0 {
 		//type assertions to "enums" don't work if you don't know the enum type in advance, we need to use reflection
@@ -674,6 +678,13 @@ func (request *RequestInformation) normalizeParameters(valueOfValue reflect.Valu
 		}
 	} else if enum, ok := value.(kiotaEnum); ok {
 		return enum.String()
+	} else if valueOfValue.Kind() == reflect.Pointer && !valueOfValue.IsNil() {
+		switch elem := valueOfValue.Elem(); elem.Kind() {
+		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
+			reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64,
+			reflect.Float32, reflect.Float64:
+			return elem.Interface()
+		}
 	}
 
 	if returnNilIfNotNormalizable {

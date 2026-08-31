@@ -180,6 +180,20 @@ func TestItSetsUUIDPathParameters(t *testing.T) {
 	assert.Equal(t, "http://localhost/users/95e943b8-52d5-4228-902d-61d65792ced7", resultUri.String())
 }
 
+func TestItSetsScalarNumericPathParameters(t *testing.T) {
+	requestInformation := NewRequestInformation()
+	requestInformation.UrlTemplate = "http://localhost/items/{limit}/{offset}/{ratio}"
+	limit := int64(10)
+	offset := int32(20)
+	ratio := 1.5
+	requestInformation.PathParametersAny["limit"] = &limit
+	requestInformation.PathParametersAny["offset"] = &offset
+	requestInformation.PathParametersAny["ratio"] = &ratio
+	resultUri, err := requestInformation.GetUri()
+	assert.Nil(t, err)
+	assert.Equal(t, "http://localhost/items/10/20/1.5", resultUri.String())
+}
+
 func TestItSetsNumberArrayQueryParameters(t *testing.T) {
 	requestInformation := NewRequestInformation()
 	requestInformation.UrlTemplate = "http://localhost/me{?%24number}"

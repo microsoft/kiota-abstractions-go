@@ -27,14 +27,15 @@ var (
 )
 
 type duration struct {
-	Years        int
-	Months       int
-	Weeks        int
-	Days         int
-	Hours        int
-	Minutes      int
-	Seconds      int
-	MilliSeconds int
+	Years             int
+	Months            int
+	Weeks             int
+	Days              int
+	Hours             int
+	Minutes           int
+	Seconds           int
+	MilliSeconds      int
+	skipNormalization bool
 }
 
 func durationFromString(dur string) (*duration, error) {
@@ -96,10 +97,11 @@ func durationFromString(dur string) (*duration, error) {
 func (d *duration) string() string {
 	var s bytes.Buffer
 
-	err := d.normalize()
-
-	if err != nil {
-		panic(err)
+	if !d.skipNormalization {
+		err := d.normalize()
+		if err != nil {
+			panic(err)
+		}
 	}
 
 	s.WriteString("P")

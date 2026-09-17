@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.11.0](https://github.com/microsoft/kiota-abstractions-go/compare/v1.10.1...v1.11.0) (2026-09-17)
+
+
+### Features
+
+* Add support for the HTTP QUERY verb (RFC 10008) ([#273](https://github.com/microsoft/kiota-abstractions-go/issues/273)) ([9a1d756](https://github.com/microsoft/kiota-abstractions-go/commit/9a1d756af48aa2ea2c978803b4425e40ab41c402))
+
 ## [1.10.1](https://github.com/microsoft/kiota-abstractions-go/compare/v1.10.0...v1.10.1) (2026-08-31)
 
 

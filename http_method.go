@@ -22,9 +22,11 @@ const (
 	TRACE
 	// The HTTP HEAD method.
 	HEAD
+	// The HTTP QUERY method.
+	QUERY
 )
 
 // String returns the string representation of the HTTP method.
 func (m HttpMethod) String() string {
-	return []string{"GET", "POST", "PATCH", "DELETE", "OPTIONS", "CONNECT", "PUT", "TRACE", "HEAD"}[m]
+	return []string{"GET", "POST", "PATCH", "DELETE", "OPTIONS", "CONNECT", "PUT", "TRACE", "HEAD", "QUERY"}[m]
 }

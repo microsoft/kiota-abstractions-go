@@ -25,6 +25,8 @@ Revisions of this nature will result in a 0.X.X change of the version number.
 To support our automated release process, pull requests are required to follow the [Conventional Commit](https://www.conventionalcommits.org/en/v1.0.0/)
 format.
 
+The changelog is generated automatically from conventional commits during the release process. Do not update `CHANGELOG.md` as part of pull requests.
+
 Each commit message consists of a **header**, an optional **body** and an optional **footer**. The header is the first line of the commit and
 MUST have a **type** (see below for a list of types) and a **description**. An optional **scope** can be added to the header to give extra context.
 

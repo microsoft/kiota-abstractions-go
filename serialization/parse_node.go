@@ -1,6 +1,7 @@
 package serialization
 
 import (
+	"math/big"
 	"time"
 
 	"github.com/google/uuid"
@@ -30,6 +31,8 @@ type ParseNode interface {
 	GetFloat32Value() (*float32, error)
 	// GetFloat64Value returns a Float64 value from the nodes.
 	GetFloat64Value() (*float64, error)
+	// GetFloat128Value returns a Float128 value from the nodes.
+	GetFloat128Value() (*big.Float, error)
 	// GetInt32Value returns a Int32 value from the nodes.
 	GetInt32Value() (*int32, error)
 	// GetInt64Value returns a Int64 value from the nodes.

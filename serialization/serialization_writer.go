@@ -2,6 +2,7 @@ package serialization
 
 import (
 	i "io"
+	"math/big"
 	"time"
 
 	"github.com/google/uuid"
@@ -26,6 +27,8 @@ type SerializationWriter interface {
 	WriteFloat32Value(key string, value *float32) error
 	// WriteFloat64Value writes a Float64 value to underlying the byte array.
 	WriteFloat64Value(key string, value *float64) error
+	// WriteFloat128Value writes a Float128 value to underlying the byte array.
+	WriteFloat128Value(key string, value *big.Float) error
 	// WriteByteArrayValue writes a ByteArray value to underlying the byte array.
 	WriteByteArrayValue(key string, value []byte) error
 	// WriteTimeValue writes a Time value to underlying the byte array.
@@ -58,6 +61,8 @@ type SerializationWriter interface {
 	WriteCollectionOfFloat32Values(key string, collection []float32) error
 	// WriteCollectionOfFloat64Values writes a collection of Float64 values to underlying the byte array.
 	WriteCollectionOfFloat64Values(key string, collection []float64) error
+	// WriteCollectionOfFloat128Values writes a collection of Float128 values to underlying the byte array.
+	WriteCollectionOfFloat128Values(key string, collection []*big.Float) error
 	// WriteCollectionOfTimeValues writes a collection of Time values to underlying the byte array.
 	WriteCollectionOfTimeValues(key string, collection []time.Time) error
 	// WriteCollectionOfISODurationValues writes a collection of ISODuration values to underlying the byte array.

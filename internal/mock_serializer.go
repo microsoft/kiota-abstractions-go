@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"math/big"
 	"time"
 
 	"github.com/google/uuid"
@@ -65,6 +66,9 @@ func (*MockSerializer) WriteFloat32Value(key string, value *float32) error {
 func (*MockSerializer) WriteFloat64Value(key string, value *float64) error {
 	return nil
 }
+func (*MockSerializer) WriteFloat128Value(key string, value *big.Float) error {
+	return nil
+}
 func (*MockSerializer) WriteByteArrayValue(key string, value []byte) error {
 	return nil
 }
@@ -114,6 +118,9 @@ func (*MockSerializer) WriteCollectionOfFloat32Values(key string, collection []f
 	return nil
 }
 func (*MockSerializer) WriteCollectionOfFloat64Values(key string, collection []float64) error {
+	return nil
+}
+func (*MockSerializer) WriteCollectionOfFloat128Values(key string, collection []*big.Float) error {
 	return nil
 }
 func (*MockSerializer) WriteCollectionOfTimeValues(key string, collection []time.Time) error {
@@ -200,5 +207,8 @@ func (m *MockParseNode) GetCollectionOfObjectValues(ctor serialization.ParsableF
 	if ok {
 		return castValue, nil
 	}
+	return nil, nil
+}
+func (m *MockParseNode) GetFloat128Value() (*big.Float, error) {
 	return nil, nil
 }

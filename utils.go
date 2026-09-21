@@ -3,6 +3,7 @@ package abstractions
 import (
 	"github.com/google/uuid"
 	"github.com/microsoft/kiota-abstractions-go/serialization"
+	"math/big"
 	"time"
 )
 
@@ -240,6 +241,13 @@ func SetFloat32Value(setter func(t *float32)) serialization.NodeParser {
 func SetFloat64Value(setter func(t *float64)) serialization.NodeParser {
 	return func(n serialization.ParseNode) error {
 		return SetValue(n.GetFloat64Value, setter)
+	}
+}
+
+// SetFloat128Value returns a *big.Float prototype for deserialization
+func SetFloat128Value(setter func(t *big.Float)) serialization.NodeParser {
+	return func(n serialization.ParseNode) error {
+		return SetValue(n.GetFloat128Value, setter)
 	}
 }
 

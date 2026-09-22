@@ -67,3 +67,41 @@ func TestItValidatesHostsUseNewAllowedHostsValidatorErrorCheck(t *testing.T) {
 	assert.EqualValues(t, ErrInvalidHostPrefix, err)
 	assert.Nil(t, validator)
 }
+
+func TestItOnlyAcceptsTheExactAllowedAsciiHost(t *testing.T) {
+	validator := NewAllowedHostsValidator([]string{"graph.microsoft.com"})
+	testCases := []struct {
+		name     string
+		url      string
+		expected bool
+	}{
+		{
+			name:     "a non-ascii variant of the allowed host is rejected",
+			url:      "https://graph.m\u0130crosoft.com/v1.0/me",
+			expected: false,
+		},
+		{
+			name:     "an encoded variant of the allowed host is rejected",
+			url:      "https://graph.xn--mcrosoft-kkb.com/v1.0/me",
+			expected: false,
+		},
+		{
+			name:     "the exact allowed host is accepted",
+			url:      "https://graph.microsoft.com/v1.0/me",
+			expected: true,
+		},
+		{
+			name:     "an untrusted host is rejected",
+			url:      "https://attacker.invalid/v1.0/me",
+			expected: false,
+		},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			url, err := u.Parse(testCase.url)
+			assert.Nil(t, err)
+			assert.Equal(t, testCase.expected, validator.IsUrlHostValid(url))
+		})
+	}
+}

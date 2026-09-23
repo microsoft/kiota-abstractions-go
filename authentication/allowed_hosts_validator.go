@@ -4,7 +4,19 @@ import (
 	"errors"
 	u "net/url"
 	"strings"
+	"unicode"
 )
+
+// isASCIIHost reports whether host is pure ASCII. Non-ASCII hosts are rejected
+// to avoid ambiguous comparisons against an ASCII-only allowlist.
+func isASCIIHost(host string) bool {
+	for i := 0; i < len(host); i++ {
+		if host[i] > unicode.MaxASCII {
+			return false
+		}
+	}
+	return true
+}
 
 // AllowedHostsValidator maintains a list of valid hosts and allows authentication providers to check whether a host is valid before authenticating a request
 type AllowedHostsValidator struct {
@@ -76,12 +88,16 @@ func (v *AllowedHostsValidator) IsUrlHostValid(uri *u.URL) bool {
 	if len(v.validHosts) == 0 {
 		return true
 	}
-	lowerHost := strings.ToLower(host)
-	if v.validHosts[lowerHost] {
+	if !isASCIIHost(host) {
+		// Reject before lowercasing, since case-folding could change comparison results.
+		return false
+	}
+	comparableHost := strings.ToLower(host)
+	if v.validHosts[comparableHost] {
 		return true
 	}
 	for validHost := range v.validHosts {
-		if strings.HasPrefix(validHost, ".") && strings.HasSuffix(lowerHost, validHost) {
+		if strings.HasPrefix(validHost, ".") && strings.HasSuffix(comparableHost, validHost) {
 			return true
 		}
 	}

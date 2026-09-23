@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.11.1](https://github.com/microsoft/kiota-abstractions-go/compare/v1.11.0...v1.11.1) (2026-09-23)
+
+
+### Bug Fixes
+
+* Harden host comparison in AllowedHostsValidator ([#277](https://github.com/microsoft/kiota-abstractions-go/issues/277)) ([38675e4](https://github.com/microsoft/kiota-abstractions-go/commit/38675e4070cd50d25ed192d769f73e113a675322))
+
 ## [1.11.0](https://github.com/microsoft/kiota-abstractions-go/compare/v1.10.1...v1.11.0) (2026-09-17)
 
 

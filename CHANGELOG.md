@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.11.2](https://github.com/microsoft/kiota-abstractions-go/compare/v1.11.1...v1.11.2) (2026-10-16)
+
+
+### Bug Fixes
+
+* preserve original serialization start callbacks ([#287](https://github.com/microsoft/kiota-abstractions-go/issues/287)) ([4c759ff](https://github.com/microsoft/kiota-abstractions-go/commit/4c759ff17b8c6e84eff0097ebd23d97b2868603e))
+
 ## [1.11.1](https://github.com/microsoft/kiota-abstractions-go/compare/v1.11.0...v1.11.1) (2026-09-23)
 
 

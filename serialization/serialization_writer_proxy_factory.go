@@ -86,7 +86,7 @@ func (s *SerializationWriterProxyFactory) GetSerializationWriter(contentType str
 				return err
 			}
 		}
-		if originalBefore != nil {
+		if originalStart != nil {
 			err := originalStart(parsable, writer)
 			if err != nil {
 				return err

@@ -49,6 +49,46 @@ func TestEnumeratesValuesChangedToNullInStore(t *testing.T) {
 	assert.Equal(t, memoryStore.EnumerateKeysForValuesChangedToNil(), []string{"phone"})
 }
 
+func TestEnumeratesTypedNilCollections(t *testing.T) {
+	value := "value"
+	for _, test := range []struct {
+		name       string
+		previous   interface{}
+		value      interface{}
+		changedNil bool
+	}{
+		{"nil slice", []string{"old"}, []string(nil), true},
+		{"nil object slice", []*testEntity{NewTestEntity()}, []*testEntity(nil), true},
+		{"nil byte slice", []byte{1}, []byte(nil), true},
+		{"nil map", map[string]string{"old": "value"}, map[string]string(nil), true},
+		{"nil pointer", &value, (*string)(nil), true},
+		{"nil interface", "old", nil, true},
+		{"empty slice", []string{"old"}, []string{}, false},
+		{"empty map", map[string]string{"old": "value"}, map[string]string{}, false},
+		{"populated slice", []string{"old"}, []string{"new"}, false},
+		{"populated map", map[string]string{"old": "value"}, map[string]string{"new": "value"}, false},
+		{"unchanged nil slice", []string(nil), []string(nil), false},
+		{"unchanged nil map", map[string]string(nil), map[string]string(nil), false},
+		{"zero integer", 1, 0, false},
+		{"false boolean", true, false, false},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			memoryStore := NewInMemoryBackingStore()
+			memoryStore.SetInitializationCompleted(false)
+			assert.NoError(t, memoryStore.Set("value", test.previous))
+			memoryStore.SetInitializationCompleted(true)
+			assert.NoError(t, memoryStore.Set("value", test.value))
+
+			keys := memoryStore.EnumerateKeysForValuesChangedToNil()
+			if test.changedNil {
+				assert.Equal(t, []string{"value"}, keys)
+			} else {
+				assert.Empty(t, keys)
+			}
+		})
+	}
+}
+
 func TestBackingStoreEmbeddedInModel(t *testing.T) {
 	testUser := NewTestEntity()
 	testUser.GetBackingStore().SetInitializationCompleted(false)

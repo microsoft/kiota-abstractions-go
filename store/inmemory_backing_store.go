@@ -99,7 +99,8 @@ func (i *InMemoryBackingStore) EnumerateKeysForValuesChangedToNil() []string {
 	keys := make([]string, 0)
 	for k, v := range i.store {
 		valueOfV := reflect.ValueOf(v)
-		if i.changedValues[k] && (v == nil || valueOfV.Kind() == reflect.Ptr && valueOfV.IsNil()) {
+		kind := valueOfV.Kind()
+		if i.changedValues[k] && (v == nil || (kind == reflect.Ptr || kind == reflect.Slice || kind == reflect.Map) && valueOfV.IsNil()) {
 			keys = append(keys, k)
 		}
 	}

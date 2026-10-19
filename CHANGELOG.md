@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.11.3](https://github.com/microsoft/kiota-abstractions-go/compare/v1.11.2...v1.11.3) (2026-10-19)
+
+
+### Bug Fixes
+
+* track typed nil collections in backing store ([#289](https://github.com/microsoft/kiota-abstractions-go/issues/289)) ([3f8d682](https://github.com/microsoft/kiota-abstractions-go/commit/3f8d6820f5bd34574430a23062a0011b8285f5bf))
+
 ## [1.11.2](https://github.com/microsoft/kiota-abstractions-go/compare/v1.11.1...v1.11.2) (2026-10-16)
 
 

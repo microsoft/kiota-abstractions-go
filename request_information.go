@@ -75,7 +75,12 @@ func ConfigureRequestInformation[T any](request *RequestInformation, config *Req
 	if config.QueryParameters != nil {
 		request.AddQueryParameters(*(config.QueryParameters))
 	}
-	request.Headers.AddAll(config.Headers)
+	if config.Headers != nil {
+		if request.Headers == nil {
+			request.Headers = NewRequestHeaders()
+		}
+		request.Headers.AddAll(config.Headers)
+	}
 	request.AddRequestOptions(config.Options)
 }
 

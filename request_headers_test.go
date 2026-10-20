@@ -96,3 +96,50 @@ func TestIdListKeys(t *testing.T) {
 	assert.True(t, instance.ContainsKey("key"))
 	assert.Equal(t, "key", instance.ListKeys()[0])
 }
+
+func TestNilReceiverAddAllDoesNotPanic(t *testing.T) {
+	var nilHeaders *RequestHeaders
+	other := NewRequestHeaders()
+	other.Add("key", "value")
+	assert.NotPanics(t, func() {
+		nilHeaders.AddAll(other)
+	})
+
+	var nilResponseHeaders *ResponseHeaders
+	otherResp := NewResponseHeaders()
+	otherResp.Add("key", "value")
+	assert.NotPanics(t, func() {
+		nilResponseHeaders.AddAll(otherResp)
+	})
+}
+
+func TestAddWithEmptyFirstValueAndValidAdditionalValues(t *testing.T) {
+	instance := NewRequestHeaders()
+	instance.Add("key", "", "val1", "val2")
+	assert.True(t, instance.ContainsKey("key"))
+	values := instance.Get("key")
+	assert.Len(t, values, 2)
+	assert.Contains(t, values, "val1")
+	assert.Contains(t, values, "val2")
+}
+
+func TestHeaderKeyWhitespaceTrimming(t *testing.T) {
+	instance := NewRequestHeaders()
+	instance.Add("\tcontent-type\r\n", "application/json")
+	assert.True(t, instance.ContainsKey("content-type"))
+	assert.Equal(t, "application/json", instance.Get("content-type")[0])
+}
+
+func TestConfigureRequestInformationWithNilHeaders(t *testing.T) {
+	req := &RequestInformation{}
+	cfg := &RequestConfiguration[struct{}]{
+		Headers: NewRequestHeaders(),
+	}
+	cfg.Headers.Add("Authorization", "Bearer token")
+	assert.NotPanics(t, func() {
+		ConfigureRequestInformation(req, cfg)
+	})
+	assert.NotNil(t, req.Headers)
+	assert.True(t, req.Headers.ContainsKey("authorization"))
+}
+

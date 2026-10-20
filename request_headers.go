@@ -14,7 +14,7 @@ func NewRequestHeaders() *RequestHeaders {
 
 // AddAll adds all headers from the other headers
 func (r *RequestHeaders) AddAll(other *RequestHeaders) {
-	if other == nil || other.headers == nil {
+	if r == nil || other == nil || other.headers == nil {
 		return
 	}
 	for k, v := range other.headers {

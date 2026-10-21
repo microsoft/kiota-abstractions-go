@@ -129,10 +129,10 @@ func (m *multipartBody) Serialize(writer serialization.SerializationWriter) erro
 		}
 		if parsable, ok := part.Content.(serialization.Parsable); ok {
 			partWriter, error := serializationWriterFactory.GetSerializationWriter(part.ContentType)
-			defer partWriter.Close()
 			if error != nil {
 				return error
 			}
+			defer partWriter.Close()
 			if error = partWriter.WriteObjectValue("", parsable); error != nil {
 				return error
 			}

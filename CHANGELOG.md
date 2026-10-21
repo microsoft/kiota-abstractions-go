@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.11.4](https://github.com/microsoft/kiota-abstractions-go/compare/v1.11.3...v1.11.4) (2026-10-21)
+
+
+### Bug Fixes
+
+* **abstractions:** add nil receiver guards to headers and fix multipart close error check ([#294](https://github.com/microsoft/kiota-abstractions-go/issues/294)) ([a8125d6](https://github.com/microsoft/kiota-abstractions-go/commit/a8125d62282c4cc55162481da54f601b83b38e30))
+* **auth, abstractions:** add nil receiver checks, host trimming, and request options safety ([#295](https://github.com/microsoft/kiota-abstractions-go/issues/295)) ([8c9bd9a](https://github.com/microsoft/kiota-abstractions-go/commit/8c9bd9aa995a0a50c7a1482185b599373c203ddf))
+* **headers:** add nil receiver checks and improve whitespace trimming and additional value handling ([#292](https://github.com/microsoft/kiota-abstractions-go/issues/292)) ([83e3471](https://github.com/microsoft/kiota-abstractions-go/commit/83e3471416a0a7eba7637cab36331173bf3a1f5e))
+
 ## [1.11.3](https://github.com/microsoft/kiota-abstractions-go/compare/v1.11.2...v1.11.3) (2026-10-19)
 
 

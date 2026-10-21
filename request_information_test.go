@@ -744,3 +744,35 @@ func TestItOmitsNilSanitizedValuesInMapAnyQueryParameter(t *testing.T) {
 	uriStr := uri.String()
 	assert.Equal(t, "http://localhost/articles?include=author", uriStr)
 }
+func TestRequestInformationNilGuardsAndOptionHandling(t *testing.T) {
+	var nilReq *RequestInformation
+	nilReq.AddRequestOptions([]RequestOption{NewRequestHandlerOption()})
+	assert.Empty(t, nilReq.GetRequestOptions())
+	nilReq.SetStreamContentAndContentType([]byte("test"), "text/plain")
+
+	req := NewRequestInformation()
+	req.AddRequestOptions(nil)
+	req.AddRequestOptions([]RequestOption{nil, NewRequestHandlerOption()})
+	options := req.GetRequestOptions()
+	assert.Equal(t, 1, len(options))
+
+	reqWithoutHeaders := &RequestInformation{}
+	reqWithoutHeaders.SetStreamContentAndContentType([]byte("stream-bytes"), "application/json")
+	assert.NotNil(t, reqWithoutHeaders.Headers)
+	assert.Equal(t, "application/json", reqWithoutHeaders.Headers.Get("Content-Type")[0])
+	assert.Equal(t, []byte("stream-bytes"), reqWithoutHeaders.Content)
+}
+
+func TestApiErrorNilGuards(t *testing.T) {
+	var nilErr *ApiError
+	assert.Empty(t, nilErr.Error())
+	assert.Nil(t, nilErr.GetResponseHeaders())
+	assert.Equal(t, 0, nilErr.GetStatusCode())
+	nilErr.SetResponseHeaders(NewResponseHeaders())
+	nilErr.SetStatusCode(500)
+
+	apiErr := NewApiError()
+	assert.Equal(t, "error status code received from the API", apiErr.Error())
+	apiErr.Message = "Custom error"
+	assert.Equal(t, "Custom error", apiErr.Error())
+}

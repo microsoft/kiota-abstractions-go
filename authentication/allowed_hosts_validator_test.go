@@ -105,3 +105,41 @@ func TestItOnlyAcceptsTheExactAllowedAsciiHost(t *testing.T) {
 		})
 	}
 }
+func TestAllowedHostsValidatorNilReceiverAndWhitespaceTrimming(t *testing.T) {
+	var nilValidator *AllowedHostsValidator
+	assert.Empty(t, nilValidator.GetAllowedHosts())
+	nilValidator.SetAllowedHosts([]string{"graph.microsoft.com"})
+	assert.Error(t, nilValidator.SetAllowedHostsErrorCheck([]string{"graph.microsoft.com"}))
+	uri, err := u.Parse("https://graph.microsoft.com")
+	assert.Nil(t, err)
+	assert.False(t, nilValidator.IsUrlHostValid(uri))
+
+	validator, err := NewAllowedHostsValidatorErrorCheck([]string{"  graph.microsoft.com  ", "  login.microsoftonline.com  "})
+	assert.Nil(t, err)
+	assert.True(t, validator.IsUrlHostValid(uri))
+	loginUri, err := u.Parse("https://login.microsoftonline.com")
+	assert.Nil(t, err)
+	assert.True(t, validator.IsUrlHostValid(loginUri))
+}
+func TestAllowedHostsValidatorBlankOnlyListRemainsRestrictive(t *testing.T) {
+	uri, err := u.Parse("https://graph.microsoft.com")
+	assert.Nil(t, err)
+
+	// Genuinely empty allowlist allows all hosts
+	emptyValidator := NewAllowedHostsValidator([]string{})
+	assert.True(t, emptyValidator.IsUrlHostValid(uri))
+
+	// Blank-only allowlist via SetAllowedHosts must remain restrictive
+	blankValidator := NewAllowedHostsValidator([]string{"", "   "})
+	assert.False(t, blankValidator.IsUrlHostValid(uri))
+
+	// Blank-only allowlist via SetAllowedHostsErrorCheck must remain restrictive
+	blankErrValidator, err := NewAllowedHostsValidatorErrorCheck([]string{"", "   "})
+	assert.Nil(t, err)
+	assert.False(t, blankErrValidator.IsUrlHostValid(uri))
+
+	// Non-blank hosts with surrounding whitespace are correctly trimmed and matched
+	trimmedValidator, err := NewAllowedHostsValidatorErrorCheck([]string{"  graph.microsoft.com  "})
+	assert.Nil(t, err)
+	assert.True(t, trimmedValidator.IsUrlHostValid(uri))
+}

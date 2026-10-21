@@ -22,3 +22,9 @@ func TestBaseBearerProviderHonoursInterface(t *testing.T) {
 	instance := NewBaseBearerTokenAuthenticationProvider(mockToken)
 	assert.Implements(t, (*AuthenticationProvider)(nil), instance)
 }
+func TestBaseBearerProviderNilGuards(t *testing.T) {
+	var nilProvider *BaseBearerTokenAuthenticationProvider
+	assert.Nil(t, nilProvider.GetAuthorizationTokenProvider())
+	err := nilProvider.AuthenticateRequest(context.Background(), nil, nil)
+	assert.Error(t, err)
+}

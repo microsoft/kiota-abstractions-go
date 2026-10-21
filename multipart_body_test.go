@@ -82,3 +82,43 @@ func TestItRemovesPart(t *testing.T) {
 }
 
 //serialize method is being tested in the serialization library
+type errorMockSerializerFactory struct{}
+
+func (*errorMockSerializerFactory) GetValidContentType() (string, error) {
+	return "application/json", nil
+}
+
+func (*errorMockSerializerFactory) GetSerializationWriter(contentType string) (serialization.SerializationWriter, error) {
+	return nil, assert.AnError
+}
+
+type dummyParsable struct {
+	serialization.Parsable
+}
+
+func (*dummyParsable) Serialize(writer serialization.SerializationWriter) error {
+	return nil
+}
+
+func (*dummyParsable) GetFieldDeserializers() map[string]func(serialization.ParseNode) error {
+	return nil
+}
+
+func TestMultipartSerializationErrorDoesNotPanicOnClose(t *testing.T) {
+	multipart := NewMultipartBody()
+	mockWriter := &internal.MockSerializer{
+		CallsCounter: make(map[string]int),
+	}
+	mockRequestAdapter := &MockRequestAdapter{
+		SerializationWriterFactory: &errorMockSerializerFactory{},
+	}
+	multipart.SetRequestAdapter(mockRequestAdapter)
+
+	err := multipart.AddOrReplacePart("part1", "application/json", &dummyParsable{})
+	assert.NoError(t, err)
+
+	assert.NotPanics(t, func() {
+		err := multipart.Serialize(mockWriter)
+		assert.Error(t, err)
+	})
+}

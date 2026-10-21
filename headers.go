@@ -16,6 +16,9 @@ func normalizeHeaderKey(key string) string {
 
 // Add adds a new header or appends a new value to an existing header
 func (r *header) Add(key string, value string, additionalValues ...string) {
+	if r == nil {
+		return
+	}
 	normalizedKey := normalizeHeaderKey(key)
 	if normalizedKey == "" {
 		return
@@ -49,7 +52,7 @@ func (r *header) Add(key string, value string, additionalValues ...string) {
 
 // Get returns the values for the specific header
 func (r *header) Get(key string) []string {
-	if r.headers == nil {
+	if r == nil || r.headers == nil {
 		return nil
 	}
 	normalizedKey := normalizeHeaderKey(key)
@@ -65,7 +68,7 @@ func (r *header) Get(key string) []string {
 
 // Remove removes the specific header and all its values
 func (r *header) Remove(key string) {
-	if r.headers == nil {
+	if r == nil || r.headers == nil {
 		return
 	}
 	normalizedKey := normalizeHeaderKey(key)
@@ -74,7 +77,7 @@ func (r *header) Remove(key string) {
 
 // RemoveValue removes the value for the specific header
 func (r *header) RemoveValue(key string, value string) {
-	if r.headers == nil {
+	if r == nil || r.headers == nil {
 		return
 	}
 	normalizedKey := normalizeHeaderKey(key)
@@ -89,7 +92,7 @@ func (r *header) RemoveValue(key string, value string) {
 
 // ContainsKey checks if the key exists in the headers
 func (r *header) ContainsKey(key string) bool {
-	if r.headers == nil {
+	if r == nil || r.headers == nil {
 		return false
 	}
 	normalizedKey := normalizeHeaderKey(key)
@@ -98,6 +101,9 @@ func (r *header) ContainsKey(key string) bool {
 
 // Clear clears all headers
 func (r *header) Clear() {
+	if r == nil {
+		return
+	}
 	r.headers = nil
 }
 
@@ -115,7 +121,7 @@ func (r *header) AddAll(other *header) {
 
 // ListKeys returns all the keys in the headers
 func (r *header) ListKeys() []string {
-	if r.headers == nil {
+	if r == nil || r.headers == nil {
 		return make([]string, 0)
 	}
 	keys := make([]string, 0, len(r.headers))

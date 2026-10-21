@@ -19,3 +19,9 @@ func TestRequestHandlerOption(t *testing.T) {
 	assert.Implements(t, (*RequestHandlerOption)(nil), handlerOption)
 	assert.Implements(t, (*RequestOption)(nil), handlerOption)
 }
+func TestRequestHandlerOptionNilReceiver(t *testing.T) {
+	var nilOption *requestHandlerOption
+	assert.Nil(t, nilOption.GetResponseHandler())
+	nilOption.SetResponseHandler(testHandler)
+	assert.Equal(t, ResponseHandlerOptionKey, nilOption.GetKey())
+}

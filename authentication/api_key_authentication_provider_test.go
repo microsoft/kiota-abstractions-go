@@ -73,3 +73,21 @@ func TestItAddsInHeader(t *testing.T) {
 	assert.Equal(t, "https://localhost", resultUri.String())
 	assert.Equal(t, "key", request.Headers.Get("param")[0])
 }
+func TestApiKeyAuthenticationProviderNilGuardsAndUninitializedHeaders(t *testing.T) {
+	var nilProvider *ApiKeyAuthenticationProvider
+	err := nilProvider.AuthenticateRequest(context.Background(), abstractions.NewRequestInformation(), nil)
+	assert.Error(t, err)
+
+	provider, err := NewApiKeyAuthenticationProvider("secret", "X-API-Key", HEADER_KEYLOCATION)
+	assert.Nil(t, err)
+	err = provider.AuthenticateRequest(context.Background(), nil, nil)
+	assert.Error(t, err)
+
+	reqWithoutHeaders := abstractions.NewRequestInformation()
+	reqWithoutHeaders.UrlTemplate = "https://localhost"
+	reqWithoutHeaders.Headers = nil
+	err = provider.AuthenticateRequest(context.Background(), reqWithoutHeaders, nil)
+	assert.Nil(t, err)
+	assert.NotNil(t, reqWithoutHeaders.Headers)
+	assert.Equal(t, "secret", reqWithoutHeaders.Headers.Get("X-API-Key")[0])
+}

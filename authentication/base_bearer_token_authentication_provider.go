@@ -23,6 +23,9 @@ func NewBaseBearerTokenAuthenticationProvider(accessTokenProvider AccessTokenPro
 
 // AuthenticateRequest authenticates the provided RequestInformation instance using the provided authorization token callback.
 func (provider *BaseBearerTokenAuthenticationProvider) AuthenticateRequest(ctx context.Context, request *abs.RequestInformation, additionalAuthenticationContext map[string]interface{}) error {
+	if provider == nil {
+		return errors.New("provider is nil")
+	}
 	if request == nil {
 		return errors.New("request is nil")
 	}
@@ -56,5 +59,8 @@ func (provider *BaseBearerTokenAuthenticationProvider) AuthenticateRequest(ctx c
 
 // GetAuthorizationTokenProvider returns the access token provider the BaseBearerTokenAuthenticationProvider class uses to authenticate the request.
 func (provider *BaseBearerTokenAuthenticationProvider) GetAuthorizationTokenProvider() AccessTokenProvider {
+	if provider == nil {
+		return nil
+	}
 	return provider.accessTokenProvider
 }

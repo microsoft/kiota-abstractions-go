@@ -44,6 +44,9 @@ func NewAllowedHostsValidatorErrorCheck(validHosts []string) (*AllowedHostsValid
 
 // GetAllowedHosts returns the list of valid hosts.
 func (v *AllowedHostsValidator) GetAllowedHosts() map[string]bool {
+	if v == nil {
+		return make(map[string]bool)
+	}
 	hosts := make(map[string]bool, len(v.validHosts))
 	for host := range v.validHosts {
 		hosts[host] = true
@@ -53,20 +56,26 @@ func (v *AllowedHostsValidator) GetAllowedHosts() map[string]bool {
 
 // Deprecated: SetAllowedHosts sets the list of valid hosts.
 func (v *AllowedHostsValidator) SetAllowedHosts(hosts []string) {
+	if v == nil {
+		return
+	}
 	v.validHosts = make(map[string]bool, len(hosts))
 	if len(hosts) > 0 {
 		for _, host := range hosts {
-			v.validHosts[strings.ToLower(host)] = true
+			v.validHosts[strings.ToLower(strings.TrimSpace(host))] = true
 		}
 	}
 }
 
 // SetAllowedHostsErrorCheck sets the list of valid hosts with error checking.
 func (v *AllowedHostsValidator) SetAllowedHostsErrorCheck(hosts []string) error {
+	if v == nil {
+		return errors.New("validator is nil")
+	}
 	v.validHosts = make(map[string]bool, len(hosts))
 	if len(hosts) > 0 {
 		for _, host := range hosts {
-			lowerHost := strings.ToLower(host)
+			lowerHost := strings.ToLower(strings.TrimSpace(host))
 			if strings.HasPrefix(lowerHost, "http://") || strings.HasPrefix(lowerHost, "https://") {
 				return ErrInvalidHostPrefix
 			}
@@ -78,7 +87,7 @@ func (v *AllowedHostsValidator) SetAllowedHostsErrorCheck(hosts []string) error 
 
 // IsValidHost returns true if the host is valid.
 func (v *AllowedHostsValidator) IsUrlHostValid(uri *u.URL) bool {
-	if uri == nil {
+	if v == nil || uri == nil {
 		return false
 	}
 	host := uri.Hostname()

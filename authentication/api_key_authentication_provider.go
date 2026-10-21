@@ -58,6 +58,9 @@ func NewApiKeyAuthenticationProviderWithValidHosts(apiKey string, parameterName 
 func (p *ApiKeyAuthenticationProvider) AuthenticateRequest(ctx context.Context, request *abs.RequestInformation, additionalAuthenticationContext map[string]interface{}) error {
 	ctx, span := otel.GetTracerProvider().Tracer("github.com/microsoft/kiota-abstractions-go").Start(ctx, "GetAuthorizationToken")
 	defer span.End()
+	if p == nil {
+		return errors.New("provider cannot be nil")
+	}
 	if request == nil {
 		return errors.New("request cannot be nil")
 	}
@@ -68,7 +71,7 @@ func (p *ApiKeyAuthenticationProvider) AuthenticateRequest(ctx context.Context, 
 		return err
 	}
 
-	if !(*(p.validator)).IsUrlHostValid(url) {
+	if p.validator == nil || !p.validator.IsUrlHostValid(url) {
 		span.SetAttributes(attribute.Bool("com.microsoft.kiota.authentication.is_url_valid", false))
 		return nil
 	}
@@ -87,6 +90,9 @@ func (p *ApiKeyAuthenticationProvider) AuthenticateRequest(ctx context.Context, 
 		url.RawQuery = query.Encode()
 		request.SetUri(*url)
 	case HEADER_KEYLOCATION:
+		if request.Headers == nil {
+			request.Headers = abs.NewRequestHeaders()
+		}
 		request.Headers.Add(p.parameterName, p.apiKey)
 	}
 

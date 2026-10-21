@@ -17,6 +17,9 @@ type ApiError struct {
 }
 
 func (e *ApiError) Error() string {
+	if e == nil {
+		return ""
+	}
 	if len(e.Message) > 0 {
 		return fmt.Sprint(e.Message)
 	} else {
@@ -30,17 +33,27 @@ func NewApiError() *ApiError {
 }
 
 func (e *ApiError) SetResponseHeaders(ResponseHeaders *ResponseHeaders) {
-	e.ResponseHeaders = ResponseHeaders
+	if e != nil {
+		e.ResponseHeaders = ResponseHeaders
+	}
 }
 
 func (e *ApiError) SetStatusCode(ResponseStatusCode int) {
-	e.ResponseStatusCode = ResponseStatusCode
+	if e != nil {
+		e.ResponseStatusCode = ResponseStatusCode
+	}
 }
 
 func (e *ApiError) GetResponseHeaders() *ResponseHeaders {
+	if e == nil {
+		return nil
+	}
 	return e.ResponseHeaders
 }
 
 func (e *ApiError) GetStatusCode() int {
+	if e == nil {
+		return 0
+	}
 	return e.ResponseStatusCode
 }

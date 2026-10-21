@@ -266,20 +266,22 @@ func (request *RequestInformation) SetUri(url u.URL) {
 
 // AddRequestOptions adds an option to the request to be read by the middleware infrastructure.
 func (request *RequestInformation) AddRequestOptions(options []RequestOption) {
-	if options == nil {
+	if request == nil || options == nil {
 		return
 	}
 	if request.options == nil {
 		request.options = make(map[string]RequestOption, len(options))
 	}
 	for _, option := range options {
-		request.options[option.GetKey().Key] = option
+		if option != nil {
+			request.options[option.GetKey().Key] = option
+		}
 	}
 }
 
 // GetRequestOptions returns the options for this request. Options are unique by type. If an option of the same type is added twice, the last one wins.
 func (request *RequestInformation) GetRequestOptions() []RequestOption {
-	if request.options == nil {
+	if request == nil || request.options == nil {
 		return []RequestOption{}
 	}
 	result := make([]RequestOption, len(request.options))
@@ -302,13 +304,20 @@ func (request *RequestInformation) SetStreamContent(content []byte) {
 
 // SetStreamContentAndContentType sets the request body to a binary stream with the specified content type.
 func (request *RequestInformation) SetStreamContentAndContentType(content []byte, contentType string) {
-	request.Content = content
-	if request.Headers != nil {
-		request.Headers.Add(contentTypeHeader, contentType)
+	if request == nil {
+		return
 	}
+	request.Content = content
+	if request.Headers == nil {
+		request.Headers = NewRequestHeaders()
+	}
+	request.Headers.Add(contentTypeHeader, contentType)
 }
 
 func (request *RequestInformation) setContentAndContentType(writer s.SerializationWriter, contentType string) error {
+	if request == nil {
+		return errors.New("request is nil")
+	}
 	content, err := writer.GetSerializedContent()
 	if err != nil {
 		return err
@@ -316,9 +325,10 @@ func (request *RequestInformation) setContentAndContentType(writer s.Serializati
 		return errors.New("content cannot be nil")
 	}
 	request.Content = content
-	if request.Headers != nil {
-		request.Headers.TryAdd(contentTypeHeader, contentType)
+	if request.Headers == nil {
+		request.Headers = NewRequestHeaders()
 	}
+	request.Headers.TryAdd(contentTypeHeader, contentType)
 	return nil
 }
 

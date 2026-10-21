@@ -21,10 +21,16 @@ func NewRequestHandlerOption() RequestHandlerOption {
 }
 
 func (r *requestHandlerOption) GetResponseHandler() ResponseHandler {
+	if r == nil {
+		return nil
+	}
 	return r.handler
 }
 
 func (r *requestHandlerOption) SetResponseHandler(responseHandler ResponseHandler) {
+	if r == nil {
+		return
+	}
 	r.handler = responseHandler
 }
 

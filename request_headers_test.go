@@ -142,4 +142,27 @@ func TestConfigureRequestInformationWithNilHeaders(t *testing.T) {
 	assert.NotNil(t, req.Headers)
 	assert.True(t, req.Headers.ContainsKey("authorization"))
 }
+func TestNilReceiverHeaderMethodsDoNotPanic(t *testing.T) {
+	var nilHeader *RequestHeaders
+	assert.NotPanics(t, func() {
+		nilHeader.Add("key", "val")
+		assert.Nil(t, nilHeader.Get("key"))
+		nilHeader.Remove("key")
+		nilHeader.RemoveValue("key", "val")
+		assert.False(t, nilHeader.ContainsKey("key"))
+		nilHeader.Clear()
+		assert.Empty(t, nilHeader.ListKeys())
+		assert.False(t, nilHeader.TryAdd("key", "val"))
+	})
 
+	var nilRespHeader *ResponseHeaders
+	assert.NotPanics(t, func() {
+		nilRespHeader.Add("key", "val")
+		assert.Nil(t, nilRespHeader.Get("key"))
+		nilRespHeader.Remove("key")
+		nilRespHeader.RemoveValue("key", "val")
+		assert.False(t, nilRespHeader.ContainsKey("key"))
+		nilRespHeader.Clear()
+		assert.Empty(t, nilRespHeader.ListKeys())
+	})
+}

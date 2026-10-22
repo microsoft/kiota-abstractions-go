@@ -35,6 +35,9 @@ func NewInMemoryBackingStore() BackingStore {
 }
 
 func (i *InMemoryBackingStore) Get(key string) (interface{}, error) {
+	if i == nil || i.store == nil {
+		return nil, errors.New("backing store is nil")
+	}
 	key = strings.TrimSpace(key)
 	if key == "" {
 		return nil, errors.New("key cannot be an empty string")
@@ -50,6 +53,9 @@ func (i *InMemoryBackingStore) Get(key string) (interface{}, error) {
 }
 
 func (i *InMemoryBackingStore) Set(key string, value interface{}) error {
+	if i == nil || i.store == nil {
+		return errors.New("backing store is nil")
+	}
 	key = strings.TrimSpace(key)
 	if key == "" {
 		return errors.New("key cannot be an empty string")
@@ -85,6 +91,9 @@ func hasChanged(current interface{}, value interface{}) bool {
 
 func (i *InMemoryBackingStore) Enumerate() map[string]interface{} {
 	items := make(map[string]interface{})
+	if i == nil || i.store == nil {
+		return items
+	}
 
 	for k, v := range i.store {
 		if !i.GetReturnOnlyChangedValues() || i.changedValues[k] { // change flag not set or object changed
@@ -97,6 +106,9 @@ func (i *InMemoryBackingStore) Enumerate() map[string]interface{} {
 
 func (i *InMemoryBackingStore) EnumerateKeysForValuesChangedToNil() []string {
 	keys := make([]string, 0)
+	if i == nil || i.store == nil {
+		return keys
+	}
 	for k, v := range i.store {
 		valueOfV := reflect.ValueOf(v)
 		kind := valueOfV.Kind()
@@ -109,12 +121,18 @@ func (i *InMemoryBackingStore) EnumerateKeysForValuesChangedToNil() []string {
 }
 
 func (i *InMemoryBackingStore) Subscribe(callback BackingStoreSubscriber) string {
+	if i == nil || i.subscribers == nil {
+		return ""
+	}
 	id := uuid.New().String()
 	i.subscribers[id] = callback
 	return id
 }
 
 func (i *InMemoryBackingStore) SubscribeWithId(callback BackingStoreSubscriber, subscriptionId string) error {
+	if i == nil || i.subscribers == nil {
+		return errors.New("backing store is nil")
+	}
 	subscriptionId = strings.TrimSpace(subscriptionId)
 	if subscriptionId == "" {
 		return errors.New("subscriptionId cannot be an empty string")
@@ -126,6 +144,9 @@ func (i *InMemoryBackingStore) SubscribeWithId(callback BackingStoreSubscriber, 
 }
 
 func (i *InMemoryBackingStore) Unsubscribe(subscriptionId string) error {
+	if i == nil || i.subscribers == nil {
+		return nil
+	}
 	subscriptionId = strings.TrimSpace(subscriptionId)
 	if subscriptionId == "" {
 		return errors.New("subscriptionId cannot be an empty string")
@@ -137,6 +158,9 @@ func (i *InMemoryBackingStore) Unsubscribe(subscriptionId string) error {
 }
 
 func (i *InMemoryBackingStore) Clear() {
+	if i == nil || i.store == nil {
+		return
+	}
 	for k := range i.store {
 		delete(i.store, k)
 		delete(i.changedValues, k) // changed values must be an element in the store
@@ -144,17 +168,29 @@ func (i *InMemoryBackingStore) Clear() {
 }
 
 func (i *InMemoryBackingStore) GetInitializationCompleted() bool {
+	if i == nil {
+		return false
+	}
 	return i.initializationCompleted
 }
 
 func (i *InMemoryBackingStore) SetInitializationCompleted(val bool) {
+	if i == nil {
+		return
+	}
 	i.initializationCompleted = val
 }
 
 func (i *InMemoryBackingStore) GetReturnOnlyChangedValues() bool {
+	if i == nil {
+		return false
+	}
 	return i.returnOnlyChangedValues
 }
 
 func (i *InMemoryBackingStore) SetReturnOnlyChangedValues(val bool) {
+	if i == nil {
+		return
+	}
 	i.returnOnlyChangedValues = val
 }

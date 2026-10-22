@@ -62,3 +62,16 @@ func IsNotType(t assert.TestingT, expectedType interface{}, object interface{}, 
 
 	return true
 }
+
+func TestApiClientBuilderNilGuards(t *testing.T) {
+	assert.NotPanics(t, func() {
+		RegisterDefaultSerializer(nil)
+		RegisterDefaultSerializer(func() serialization.SerializationWriterFactory { return nil })
+		RegisterDefaultDeserializer(nil)
+		RegisterDefaultDeserializer(func() serialization.ParseNodeFactory { return nil })
+		resWriter := EnableBackingStoreForSerializationWriterFactory(nil)
+		assert.Nil(t, resWriter)
+		resParser := EnableBackingStoreForParseNodeFactory(nil)
+		assert.Nil(t, resParser)
+	})
+}

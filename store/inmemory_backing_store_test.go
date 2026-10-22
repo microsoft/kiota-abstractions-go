@@ -334,3 +334,37 @@ func NewTestEntity() *testEntity {
 		backingStore: BackingStoreFactoryInstance(),
 	}
 }
+
+func TestInMemoryBackingStoreNilReceiverSafety(t *testing.T) {
+	var nilStore *InMemoryBackingStore
+
+	assert.NotPanics(t, func() {
+		val, err := nilStore.Get("test")
+		assert.Nil(t, val)
+		assert.NotNil(t, err)
+
+		err = nilStore.Set("test", "val")
+		assert.NotNil(t, err)
+
+		enum := nilStore.Enumerate()
+		assert.Empty(t, enum)
+
+		keys := nilStore.EnumerateKeysForValuesChangedToNil()
+		assert.Empty(t, keys)
+
+		subId := nilStore.Subscribe(func(key string, oldVal interface{}, newVal interface{}) {})
+		assert.Empty(t, subId)
+
+		err = nilStore.SubscribeWithId(func(key string, oldVal interface{}, newVal interface{}) {}, "sub")
+		assert.NotNil(t, err)
+
+		err = nilStore.Unsubscribe("sub")
+		assert.Nil(t, err)
+
+		nilStore.Clear()
+		assert.False(t, nilStore.GetInitializationCompleted())
+		nilStore.SetInitializationCompleted(true)
+		assert.False(t, nilStore.GetReturnOnlyChangedValues())
+		nilStore.SetReturnOnlyChangedValues(true)
+	})
+}

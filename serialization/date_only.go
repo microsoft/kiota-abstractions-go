@@ -19,7 +19,8 @@ func (t DateOnly) String() string {
 
 // ParseDateOnly parses a string into a DateOnly following the RFC3339 standard.
 func ParseDateOnly(s string) (*DateOnly, error) {
-	if len(strings.TrimSpace(s)) <= 0 {
+	s = strings.TrimSpace(s)
+	if s == "" {
 		return nil, nil
 	}
 	timeValue, err := time.Parse(dateOnlyFormat, s)

@@ -65,7 +65,8 @@ func (*MockSerializer) WriteFloat32Value(key string, value *float32) error {
 func (*MockSerializer) WriteFloat64Value(key string, value *float64) error {
 	return nil
 }
-func (*MockSerializer) WriteByteArrayValue(key string, value []byte) error {
+func (m *MockSerializer) WriteByteArrayValue(key string, value []byte) error {
+	m.CallsCounter["WriteByteArrayValue"]++
 	return nil
 }
 func (*MockSerializer) WriteTimeValue(key string, value *time.Time) error {

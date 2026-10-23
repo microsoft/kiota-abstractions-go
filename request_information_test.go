@@ -2,6 +2,7 @@ package abstractions
 
 import (
 	"context"
+	neturl "net/url"
 	"testing"
 	"time"
 
@@ -775,4 +776,61 @@ func TestApiErrorNilGuards(t *testing.T) {
 	assert.Equal(t, "error status code received from the API", apiErr.Error())
 	apiErr.Message = "Custom error"
 	assert.Equal(t, "Custom error", apiErr.Error())
+}
+
+func TestRequestInformationNilReceiverGuards(t *testing.T) {
+	var nilRequest *RequestInformation
+
+	assert.NotPanics(t, func() {
+		uri, err := nilRequest.GetUri()
+		assert.Error(t, err)
+		assert.Nil(t, uri)
+
+		nilRequest.SetUri(neturl.URL{})
+		nilRequest.SetStreamContent([]byte{1, 2, 3})
+		nilRequest.SetStreamContentAndContentType([]byte{1, 2, 3}, "application/octet-stream")
+
+		err = nilRequest.SetContentFromParsable(context.Background(), nil, "application/json", nil)
+		assert.Error(t, err)
+
+		err = nilRequest.SetContentFromParsableCollection(context.Background(), nil, "application/json", nil)
+		assert.Error(t, err)
+
+		err = nilRequest.SetContentFromScalar(context.Background(), nil, "application/json", "val")
+		assert.Error(t, err)
+
+		err = nilRequest.SetContentFromScalarCollection(context.Background(), nil, "application/json", []interface{}{"val"})
+		assert.Error(t, err)
+	})
+}
+
+func TestSetContentFromScalarDirectValueTypesAndByteArray(t *testing.T) {
+	requestInformation := NewRequestInformation()
+	requestInformation.UrlTemplate = "{+baseurl}/users"
+	requestInformation.Method = POST
+	requestInformation.PathParameters["baseurl"] = "http://localhost"
+
+	callsCounter := make(map[string]int)
+	requestAdapter := &MockRequestAdapter{
+		SerializationWriterFactory: &internal.MockSerializerFactory{
+			SerializationWriter: &internal.MockSerializer{
+				CallsCounter: callsCounter,
+			},
+		},
+	}
+
+	// Direct non-pointer string
+	err := requestInformation.SetContentFromScalar(context.Background(), requestAdapter, "text/plain", "hello world")
+	assert.NoError(t, err)
+	assert.Equal(t, 1, callsCounter["WriteStringValue"])
+
+	// Byte array
+	callsCounter["WriteByteArrayValue"] = 0
+	err = requestInformation.SetContentFromScalar(context.Background(), requestAdapter, "application/octet-stream", []byte("raw data"))
+	assert.NoError(t, err)
+	assert.Equal(t, 1, callsCounter["WriteByteArrayValue"])
+
+	// Unsupported type returns error
+	err = requestInformation.SetContentFromScalar(context.Background(), requestAdapter, "application/json", struct{}{})
+	assert.Error(t, err)
 }

@@ -10,6 +10,7 @@ import (
 type MockSerializer struct {
 	CallsCounter    map[string]int
 	SerializedValue string
+	LastWritten     any
 }
 
 func (m *MockSerializer) WriteNullValue(key string) error {
@@ -41,59 +42,171 @@ func (m *MockSerializer) SetOnStartObjectSerialization(writer serialization.Pars
 }
 
 func (m *MockSerializer) WriteStringValue(key string, value *string) error {
-	m.CallsCounter["WriteStringValue"]++
+	if m.CallsCounter != nil {
+		m.CallsCounter["WriteStringValue"]++
+	}
+	if value != nil {
+		m.LastWritten = *value
+	} else {
+		m.LastWritten = nil
+	}
 	return nil
 }
-func (*MockSerializer) WriteBoolValue(key string, value *bool) error {
+func (m *MockSerializer) WriteBoolValue(key string, value *bool) error {
+	if m.CallsCounter != nil {
+		m.CallsCounter["WriteBoolValue"]++
+	}
+	if value != nil {
+		m.LastWritten = *value
+	} else {
+		m.LastWritten = nil
+	}
 	return nil
 }
-func (*MockSerializer) WriteByteValue(key string, value *byte) error {
+func (m *MockSerializer) WriteByteValue(key string, value *byte) error {
+	if m.CallsCounter != nil {
+		m.CallsCounter["WriteByteValue"]++
+	}
+	if value != nil {
+		m.LastWritten = *value
+	} else {
+		m.LastWritten = nil
+	}
 	return nil
 }
-func (*MockSerializer) WriteInt8Value(key string, value *int8) error {
+func (m *MockSerializer) WriteInt8Value(key string, value *int8) error {
+	if m.CallsCounter != nil {
+		m.CallsCounter["WriteInt8Value"]++
+	}
+	if value != nil {
+		m.LastWritten = *value
+	} else {
+		m.LastWritten = nil
+	}
 	return nil
 }
-func (*MockSerializer) WriteInt32Value(key string, value *int32) error {
+func (m *MockSerializer) WriteInt32Value(key string, value *int32) error {
+	if m.CallsCounter != nil {
+		m.CallsCounter["WriteInt32Value"]++
+	}
+	if value != nil {
+		m.LastWritten = *value
+	} else {
+		m.LastWritten = nil
+	}
 	return nil
 }
-func (*MockSerializer) WriteInt64Value(key string, value *int64) error {
+func (m *MockSerializer) WriteInt64Value(key string, value *int64) error {
+	if m.CallsCounter != nil {
+		m.CallsCounter["WriteInt64Value"]++
+	}
+	if value != nil {
+		m.LastWritten = *value
+	} else {
+		m.LastWritten = nil
+	}
 	return nil
 }
-func (*MockSerializer) WriteFloat32Value(key string, value *float32) error {
+func (m *MockSerializer) WriteFloat32Value(key string, value *float32) error {
+	if m.CallsCounter != nil {
+		m.CallsCounter["WriteFloat32Value"]++
+	}
+	if value != nil {
+		m.LastWritten = *value
+	} else {
+		m.LastWritten = nil
+	}
 	return nil
 }
-func (*MockSerializer) WriteFloat64Value(key string, value *float64) error {
+func (m *MockSerializer) WriteFloat64Value(key string, value *float64) error {
+	if m.CallsCounter != nil {
+		m.CallsCounter["WriteFloat64Value"]++
+	}
+	if value != nil {
+		m.LastWritten = *value
+	} else {
+		m.LastWritten = nil
+	}
 	return nil
 }
 func (m *MockSerializer) WriteByteArrayValue(key string, value []byte) error {
-	m.CallsCounter["WriteByteArrayValue"]++
+	if m.CallsCounter != nil {
+		m.CallsCounter["WriteByteArrayValue"]++
+	}
+	m.LastWritten = value
 	return nil
 }
-func (*MockSerializer) WriteTimeValue(key string, value *time.Time) error {
+func (m *MockSerializer) WriteTimeValue(key string, value *time.Time) error {
+	if m.CallsCounter != nil {
+		m.CallsCounter["WriteTimeValue"]++
+	}
+	if value != nil {
+		m.LastWritten = *value
+	} else {
+		m.LastWritten = nil
+	}
 	return nil
 }
-func (*MockSerializer) WriteISODurationValue(key string, value *serialization.ISODuration) error {
+func (m *MockSerializer) WriteISODurationValue(key string, value *serialization.ISODuration) error {
+	if m.CallsCounter != nil {
+		m.CallsCounter["WriteISODurationValue"]++
+	}
+	if value != nil {
+		m.LastWritten = *value
+	} else {
+		m.LastWritten = nil
+	}
 	return nil
 }
-func (*MockSerializer) WriteDateOnlyValue(key string, value *serialization.DateOnly) error {
+func (m *MockSerializer) WriteDateOnlyValue(key string, value *serialization.DateOnly) error {
+	if m.CallsCounter != nil {
+		m.CallsCounter["WriteDateOnlyValue"]++
+	}
+	if value != nil {
+		m.LastWritten = *value
+	} else {
+		m.LastWritten = nil
+	}
 	return nil
 }
-func (*MockSerializer) WriteTimeOnlyValue(key string, value *serialization.TimeOnly) error {
+func (m *MockSerializer) WriteTimeOnlyValue(key string, value *serialization.TimeOnly) error {
+	if m.CallsCounter != nil {
+		m.CallsCounter["WriteTimeOnlyValue"]++
+	}
+	if value != nil {
+		m.LastWritten = *value
+	} else {
+		m.LastWritten = nil
+	}
 	return nil
 }
-func (*MockSerializer) WriteUUIDValue(key string, value *uuid.UUID) error {
+func (m *MockSerializer) WriteUUIDValue(key string, value *uuid.UUID) error {
+	if m.CallsCounter != nil {
+		m.CallsCounter["WriteUUIDValue"]++
+	}
+	if value != nil {
+		m.LastWritten = *value
+	} else {
+		m.LastWritten = nil
+	}
 	return nil
 }
 func (m *MockSerializer) WriteObjectValue(key string, item serialization.Parsable, additionalValuesToMerge ...serialization.Parsable) error {
-	m.CallsCounter["WriteObjectValue"]++
+	if m.CallsCounter != nil {
+		m.CallsCounter["WriteObjectValue"]++
+	}
 	return nil
 }
 func (m *MockSerializer) WriteCollectionOfObjectValues(key string, collection []serialization.Parsable) error {
-	m.CallsCounter["WriteCollectionOfObjectValues"]++
+	if m.CallsCounter != nil {
+		m.CallsCounter["WriteCollectionOfObjectValues"]++
+	}
 	return nil
 }
 func (m *MockSerializer) WriteCollectionOfStringValues(key string, collection []string) error {
-	m.CallsCounter["WriteCollectionOfStringValues"]++
+	if m.CallsCounter != nil {
+		m.CallsCounter["WriteCollectionOfStringValues"]++
+	}
 	return nil
 }
 func (*MockSerializer) WriteCollectionOfBoolValues(key string, collection []bool) error {

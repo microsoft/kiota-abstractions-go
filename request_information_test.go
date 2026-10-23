@@ -2,6 +2,7 @@ package abstractions
 
 import (
 	"context"
+	neturl "net/url"
 	"testing"
 	"time"
 
@@ -775,4 +776,138 @@ func TestApiErrorNilGuards(t *testing.T) {
 	assert.Equal(t, "error status code received from the API", apiErr.Error())
 	apiErr.Message = "Custom error"
 	assert.Equal(t, "Custom error", apiErr.Error())
+}
+
+func TestRequestInformationNilReceiverGuards(t *testing.T) {
+	var nilRequest *RequestInformation
+
+	assert.NotPanics(t, func() {
+		uri, err := nilRequest.GetUri()
+		assert.EqualError(t, err, "request is nil")
+		assert.Nil(t, uri)
+
+		nilRequest.SetUri(neturl.URL{})
+		nilRequest.SetStreamContent([]byte{1, 2, 3})
+		nilRequest.SetStreamContentAndContentType([]byte{1, 2, 3}, "application/octet-stream")
+
+		err = nilRequest.SetContentFromParsable(context.Background(), nil, "application/json", nil)
+		assert.EqualError(t, err, "request is nil")
+
+		err = nilRequest.SetContentFromParsableCollection(context.Background(), nil, "application/json", nil)
+		assert.EqualError(t, err, "request is nil")
+
+		err = nilRequest.SetContentFromScalar(context.Background(), nil, "application/json", "val")
+		assert.EqualError(t, err, "request is nil")
+
+		err = nilRequest.SetContentFromScalarCollection(context.Background(), nil, "application/json", []interface{}{"val"})
+		assert.EqualError(t, err, "request is nil")
+	})
+}
+
+func TestSetContentFromScalarDirectValueTypesAndByteArray(t *testing.T) {
+	requestInformation := NewRequestInformation()
+	requestInformation.UrlTemplate = "{+baseurl}/users"
+	requestInformation.Method = POST
+	requestInformation.PathParameters["baseurl"] = "http://localhost"
+
+	callsCounter := make(map[string]int)
+	mockSerializer := &internal.MockSerializer{
+		CallsCounter: callsCounter,
+	}
+	requestAdapter := &MockRequestAdapter{
+		SerializationWriterFactory: &internal.MockSerializerFactory{
+			SerializationWriter: mockSerializer,
+		},
+	}
+
+	testCases := []struct {
+		name          string
+		input         any
+		expectedCall  string
+		expectedValue any
+	}{
+		{"direct string", "hello world", "WriteStringValue", "hello world"},
+		{"pointer string", ptr("hello pointer"), "WriteStringValue", "hello pointer"},
+		{"direct bool", true, "WriteBoolValue", true},
+		{"pointer bool", ptr(true), "WriteBoolValue", true},
+		{"direct byte", byte(42), "WriteByteValue", byte(42)},
+		{"pointer byte", ptr(byte(42)), "WriteByteValue", byte(42)},
+		{"direct []byte", []byte{1, 2, 3}, "WriteByteArrayValue", []byte{1, 2, 3}},
+		{"pointer []byte", &[]byte{4, 5, 6}, "WriteByteArrayValue", []byte{4, 5, 6}},
+		{"direct int8", int8(8), "WriteInt8Value", int8(8)},
+		{"pointer int8", ptr(int8(8)), "WriteInt8Value", int8(8)},
+		{"direct int32", int32(32), "WriteInt32Value", int32(32)},
+		{"pointer int32", ptr(int32(32)), "WriteInt32Value", int32(32)},
+		{"direct int64", int64(64), "WriteInt64Value", int64(64)},
+		{"pointer int64", ptr(int64(64)), "WriteInt64Value", int64(64)},
+		{"direct float32", float32(3.14), "WriteFloat32Value", float32(3.14)},
+		{"pointer float32", ptr(float32(3.14)), "WriteFloat32Value", float32(3.14)},
+		{"direct float64", float64(6.28), "WriteFloat64Value", float64(6.28)},
+		{"pointer float64", ptr(float64(6.28)), "WriteFloat64Value", float64(6.28)},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			callsCounter[tc.expectedCall] = 0
+			mockSerializer.LastWritten = nil
+
+			err := requestInformation.SetContentFromScalar(context.Background(), requestAdapter, "application/json", tc.input)
+			assert.NoError(t, err)
+			assert.Equal(t, 1, callsCounter[tc.expectedCall], "expected %s to be called once", tc.expectedCall)
+			assert.Equal(t, tc.expectedValue, mockSerializer.LastWritten, "forwarded value mismatch for %s", tc.name)
+		})
+	}
+
+	// Test UUID
+	testUUID := uuid.New()
+	callsCounter["WriteUUIDValue"] = 0
+	mockSerializer.LastWritten = nil
+	err := requestInformation.SetContentFromScalar(context.Background(), requestAdapter, "application/json", testUUID)
+	assert.NoError(t, err)
+	assert.Equal(t, 1, callsCounter["WriteUUIDValue"])
+	assert.Equal(t, testUUID, mockSerializer.LastWritten)
+
+	// Test Time
+	testTime := time.Now().UTC().Truncate(time.Second)
+	callsCounter["WriteTimeValue"] = 0
+	mockSerializer.LastWritten = nil
+	err = requestInformation.SetContentFromScalar(context.Background(), requestAdapter, "application/json", testTime)
+	assert.NoError(t, err)
+	assert.Equal(t, 1, callsCounter["WriteTimeValue"])
+	assert.Equal(t, testTime, mockSerializer.LastWritten)
+
+	// Test ISODuration
+	testDur, _ := s.ParseISODuration("PT1H")
+	callsCounter["WriteISODurationValue"] = 0
+	mockSerializer.LastWritten = nil
+	err = requestInformation.SetContentFromScalar(context.Background(), requestAdapter, "application/json", *testDur)
+	assert.NoError(t, err)
+	assert.Equal(t, 1, callsCounter["WriteISODurationValue"])
+	assert.Equal(t, *testDur, mockSerializer.LastWritten)
+
+	// Test DateOnly
+	testDate, _ := s.ParseDateOnly("2026-10-23")
+	callsCounter["WriteDateOnlyValue"] = 0
+	mockSerializer.LastWritten = nil
+	err = requestInformation.SetContentFromScalar(context.Background(), requestAdapter, "application/json", *testDate)
+	assert.NoError(t, err)
+	assert.Equal(t, 1, callsCounter["WriteDateOnlyValue"])
+	assert.Equal(t, *testDate, mockSerializer.LastWritten)
+
+	// Test TimeOnly
+	testTimeOnly, _ := s.ParseTimeOnly("12:30:00")
+	callsCounter["WriteTimeOnlyValue"] = 0
+	mockSerializer.LastWritten = nil
+	err = requestInformation.SetContentFromScalar(context.Background(), requestAdapter, "application/json", *testTimeOnly)
+	assert.NoError(t, err)
+	assert.Equal(t, 1, callsCounter["WriteTimeOnlyValue"])
+	assert.Equal(t, *testTimeOnly, mockSerializer.LastWritten)
+
+	// Unsupported type returns error
+	err = requestInformation.SetContentFromScalar(context.Background(), requestAdapter, "application/json", struct{}{})
+	assert.Error(t, err)
+}
+
+func ptr[T any](v T) *T {
+	return &v
 }

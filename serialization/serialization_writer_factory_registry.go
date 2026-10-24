@@ -33,12 +33,19 @@ func (m *SerializationWriterFactoryRegistry) GetValidContentType() (string, erro
 
 // GetSerializationWriter returns the relevant SerializationWriter instance for the given content type
 func (m *SerializationWriterFactoryRegistry) GetSerializationWriter(contentType string) (SerializationWriter, error) {
-	if contentType == "" {
+	if m == nil {
+		return nil, errors.New("registry is nil")
+	}
+	trimmed := strings.TrimSpace(contentType)
+	if trimmed == "" {
 		return nil, errors.New("the content type is empty")
 	}
-	vendorSpecificContentType := strings.Split(contentType, ";")[0]
+	vendorSpecificContentType := strings.TrimSpace(strings.Split(trimmed, ";")[0])
 	factory, ok := m.ContentTypeAssociatedFactories[vendorSpecificContentType]
 	if ok {
+		return factory.GetSerializationWriter(contentType)
+	}
+	if factory, ok := m.getFactoryCaseInsensitive(vendorSpecificContentType); ok {
 		return factory.GetSerializationWriter(contentType)
 	}
 	cleanedContentType := contentTypeVendorCleanupPattern.ReplaceAllString(vendorSpecificContentType, "")
@@ -46,13 +53,32 @@ func (m *SerializationWriterFactoryRegistry) GetSerializationWriter(contentType 
 	if ok {
 		return factory.GetSerializationWriter(cleanedContentType)
 	}
+	if factory, ok := m.getFactoryCaseInsensitive(cleanedContentType); ok {
+		return factory.GetSerializationWriter(cleanedContentType)
+	}
 	return nil, errors.New("Content type " + cleanedContentType + " does not have a factory registered to be parsed")
 }
 
+func (m *SerializationWriterFactoryRegistry) getFactoryCaseInsensitive(target string) (SerializationWriterFactory, bool) {
+	lowerTarget := strings.ToLower(target)
+	for k, v := range m.ContentTypeAssociatedFactories {
+		if strings.ToLower(k) == lowerTarget {
+			return v, true
+		}
+	}
+	return nil, false
+}
+
 func (m *SerializationWriterFactoryRegistry) Lock() {
+	if m == nil || m.lock == nil {
+		return
+	}
 	m.lock.Lock()
 }
 
 func (m *SerializationWriterFactoryRegistry) Unlock() {
+	if m == nil || m.lock == nil {
+		return
+	}
 	m.lock.Unlock()
 }

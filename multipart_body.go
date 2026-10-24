@@ -47,6 +47,9 @@ func stringReference(original string) *string {
 
 // AddOrReplacePart adds or replaces a part in the multipart body.
 func (m *multipartBody) AddOrReplacePart(name string, contentType string, content any) error {
+	if m == nil {
+		return errors.New("multipartBody is nil")
+	}
 	if name == "" {
 		return errors.New("name cannot be empty")
 	}
@@ -68,6 +71,9 @@ func (m *multipartBody) AddOrReplacePart(name string, contentType string, conten
 
 // GetPartValue gets the value of a part in the multipart body.
 func (m *multipartBody) GetPartValue(name string) (any, error) {
+	if m == nil {
+		return nil, errors.New("multipartBody is nil")
+	}
 	if name == "" {
 		return nil, errors.New("name cannot be empty")
 	}
@@ -80,6 +86,9 @@ func (m *multipartBody) GetPartValue(name string) (any, error) {
 
 // RemovePart removes a part from the multipart body.
 func (m *multipartBody) RemovePart(name string) error {
+	if m == nil {
+		return errors.New("multipartBody is nil")
+	}
 	if name == "" {
 		return errors.New("name cannot be empty")
 	}
@@ -91,6 +100,9 @@ func (m *multipartBody) RemovePart(name string) error {
 
 // Serialize writes the objects properties to the current writer.
 func (m *multipartBody) Serialize(writer serialization.SerializationWriter) error {
+	if m == nil {
+		return errors.New("multipartBody is nil")
+	}
 	if writer == nil {
 		return errors.New("writer cannot be nil")
 	}
@@ -172,16 +184,25 @@ func (m *multipartBody) GetFieldDeserializers() map[string]func(serialization.Pa
 
 // GetRequestAdapter gets the request adapter to use for serialization.
 func (m *multipartBody) GetRequestAdapter() RequestAdapter {
+	if m == nil {
+		return nil
+	}
 	return m.requestAdapter
 }
 
 // SetRequestAdapter sets the request adapter to use for serialization.
 func (m *multipartBody) SetRequestAdapter(requestAdapter RequestAdapter) {
+	if m == nil {
+		return
+	}
 	m.requestAdapter = requestAdapter
 }
 
 // GetBoundary returns the boundary used in the multipart body.
 func (m *multipartBody) GetBoundary() string {
+	if m == nil {
+		return ""
+	}
 	return m.boundary
 }
 

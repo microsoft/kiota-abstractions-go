@@ -122,3 +122,18 @@ func TestMultipartSerializationErrorDoesNotPanicOnClose(t *testing.T) {
 		assert.Error(t, err)
 	})
 }
+
+func TestMultipartBodyNilReceiverGuards(t *testing.T) {
+	var nilMultipart *multipartBody
+	assert.NotPanics(t, func() {
+		assert.Error(t, nilMultipart.AddOrReplacePart("part1", "text/plain", "content"))
+		val, err := nilMultipart.GetPartValue("part1")
+		assert.Error(t, err)
+		assert.Nil(t, val)
+		assert.Error(t, nilMultipart.RemovePart("part1"))
+		assert.Error(t, nilMultipart.Serialize(nil))
+		assert.Nil(t, nilMultipart.GetRequestAdapter())
+		nilMultipart.SetRequestAdapter(nil)
+		assert.Empty(t, nilMultipart.GetBoundary())
+	})
+}

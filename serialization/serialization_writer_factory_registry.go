@@ -43,30 +43,38 @@ func (m *SerializationWriterFactoryRegistry) GetSerializationWriter(contentType 
 	vendorSpecificContentType := strings.TrimSpace(strings.Split(trimmed, ";")[0])
 	factory, ok := m.ContentTypeAssociatedFactories[vendorSpecificContentType]
 	if ok {
-		return factory.GetSerializationWriter(contentType)
+		return factory.GetSerializationWriter(normalizeWithParameters(vendorSpecificContentType, trimmed))
 	}
-	if factory, ok := m.getFactoryCaseInsensitive(vendorSpecificContentType); ok {
-		return factory.GetSerializationWriter(contentType)
+	if matchedKey, factory, ok := m.getFactoryCaseInsensitive(vendorSpecificContentType); ok {
+		return factory.GetSerializationWriter(normalizeWithParameters(matchedKey, trimmed))
 	}
 	cleanedContentType := contentTypeVendorCleanupPattern.ReplaceAllString(vendorSpecificContentType, "")
 	factory, ok = m.ContentTypeAssociatedFactories[cleanedContentType]
 	if ok {
 		return factory.GetSerializationWriter(cleanedContentType)
 	}
-	if factory, ok := m.getFactoryCaseInsensitive(cleanedContentType); ok {
-		return factory.GetSerializationWriter(cleanedContentType)
+	if matchedKey, factory, ok := m.getFactoryCaseInsensitive(cleanedContentType); ok {
+		return factory.GetSerializationWriter(matchedKey)
 	}
 	return nil, errors.New("Content type " + cleanedContentType + " does not have a factory registered to be parsed")
 }
 
-func (m *SerializationWriterFactoryRegistry) getFactoryCaseInsensitive(target string) (SerializationWriterFactory, bool) {
+func normalizeWithParameters(matchedKey string, trimmed string) string {
+	parts := strings.SplitN(trimmed, ";", 2)
+	if len(parts) > 1 {
+		return matchedKey + ";" + parts[1]
+	}
+	return matchedKey
+}
+
+func (m *SerializationWriterFactoryRegistry) getFactoryCaseInsensitive(target string) (string, SerializationWriterFactory, bool) {
 	lowerTarget := strings.ToLower(target)
 	for k, v := range m.ContentTypeAssociatedFactories {
 		if strings.ToLower(k) == lowerTarget {
-			return v, true
+			return k, v, true
 		}
 	}
-	return nil, false
+	return "", nil, false
 }
 
 func (m *SerializationWriterFactoryRegistry) Lock() {

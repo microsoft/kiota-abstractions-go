@@ -51,28 +51,28 @@ func (m *ParseNodeFactoryRegistry) GetRootParseNode(contentType string, content 
 	if ok {
 		return factory.GetRootParseNode(vendorSpecificContentType, content)
 	}
-	if factory, ok := m.getFactoryCaseInsensitive(vendorSpecificContentType); ok {
-		return factory.GetRootParseNode(vendorSpecificContentType, content)
+	if matchedKey, factory, ok := m.getFactoryCaseInsensitive(vendorSpecificContentType); ok {
+		return factory.GetRootParseNode(matchedKey, content)
 	}
 	cleanedContentType := contentTypeVendorCleanupPattern.ReplaceAllString(vendorSpecificContentType, "")
 	factory, ok = m.ContentTypeAssociatedFactories[cleanedContentType]
 	if ok {
 		return factory.GetRootParseNode(cleanedContentType, content)
 	}
-	if factory, ok := m.getFactoryCaseInsensitive(cleanedContentType); ok {
-		return factory.GetRootParseNode(cleanedContentType, content)
+	if matchedKey, factory, ok := m.getFactoryCaseInsensitive(cleanedContentType); ok {
+		return factory.GetRootParseNode(matchedKey, content)
 	}
 	return nil, errors.New("content type " + cleanedContentType + " does not have a factory registered to be parsed")
 }
 
-func (m *ParseNodeFactoryRegistry) getFactoryCaseInsensitive(target string) (ParseNodeFactory, bool) {
+func (m *ParseNodeFactoryRegistry) getFactoryCaseInsensitive(target string) (string, ParseNodeFactory, bool) {
 	lowerTarget := strings.ToLower(target)
 	for k, v := range m.ContentTypeAssociatedFactories {
 		if strings.ToLower(k) == lowerTarget {
-			return v, true
+			return k, v, true
 		}
 	}
-	return nil, false
+	return "", nil, false
 }
 
 func (m *ParseNodeFactoryRegistry) Lock() {

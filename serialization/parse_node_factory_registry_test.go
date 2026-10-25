@@ -1,6 +1,7 @@
 package serialization
 
 import (
+	"errors"
 	"testing"
 
 	assert "github.com/stretchr/testify/assert"
@@ -10,27 +11,37 @@ func TestParseNodeFactoryRegistryHonoursInterface(t *testing.T) {
 	assert.Implements(t, (*ParseNodeFactory)(nil), DefaultParseNodeFactoryInstance)
 }
 
-type stubParseNodeFactory struct {
-	contentType string
+type validatingParseNodeFactory struct {
+	expectedContentType string
+	calledWith          string
 }
 
-func (s *stubParseNodeFactory) GetValidContentType() (string, error) {
-	return s.contentType, nil
+func (s *validatingParseNodeFactory) GetValidContentType() (string, error) {
+	return s.expectedContentType, nil
 }
 
-func (s *stubParseNodeFactory) GetRootParseNode(contentType string, content []byte) (ParseNode, error) {
+func (s *validatingParseNodeFactory) GetRootParseNode(contentType string, content []byte) (ParseNode, error) {
+	s.calledWith = contentType
+	if contentType != s.expectedContentType {
+		return nil, errors.New("expected contentType: " + s.expectedContentType + ", got: " + contentType)
+	}
 	return nil, nil
 }
 
-type stubWriterFactory struct {
-	contentType string
+type validatingWriterFactory struct {
+	expectedContentType string
+	calledWith          string
 }
 
-func (s *stubWriterFactory) GetValidContentType() (string, error) {
-	return s.contentType, nil
+func (s *validatingWriterFactory) GetValidContentType() (string, error) {
+	return s.expectedContentType, nil
 }
 
-func (s *stubWriterFactory) GetSerializationWriter(contentType string) (SerializationWriter, error) {
+func (s *validatingWriterFactory) GetSerializationWriter(contentType string) (SerializationWriter, error) {
+	s.calledWith = contentType
+	if contentType != s.expectedContentType {
+		return nil, errors.New("expected contentType: " + s.expectedContentType + ", got: " + contentType)
+	}
 	return nil, nil
 }
 
@@ -58,22 +69,41 @@ func TestSerializationWriterFactoryRegistryNilGuards(t *testing.T) {
 
 func TestFactoryRegistryContentTypeTolerance(t *testing.T) {
 	parseRegistry := NewParseNodeFactoryRegistry()
-	stubNode := &stubParseNodeFactory{contentType: "application/json"}
+	stubNode := &validatingParseNodeFactory{expectedContentType: "application/json"}
 	parseRegistry.ContentTypeAssociatedFactories["application/json"] = stubNode
 
 	// Case-insensitivity & whitespace trimming
 	_, err := parseRegistry.GetRootParseNode("  APPLICATION/JSON; charset=utf-8  ", []byte("{}"))
 	assert.NoError(t, err)
+	assert.Equal(t, "application/json", stubNode.calledWith)
+
+	// Vendor cleanup fallback with uppercase
+	_, errVendor := parseRegistry.GetRootParseNode("  APPLICATION/VND.GITHUB+JSON; charset=utf-8  ", []byte("{}"))
+	assert.NoError(t, errVendor)
+	assert.Equal(t, "application/json", stubNode.calledWith)
 
 	_, errEmpty := parseRegistry.GetRootParseNode("   ", []byte("{}"))
 	assert.Error(t, errEmpty)
 
 	writerRegistry := NewSerializationWriterFactoryRegistry()
-	stubWriter := &stubWriterFactory{contentType: "application/json"}
+	stubWriter := &validatingWriterFactory{expectedContentType: "application/json; charset=utf-8"}
 	writerRegistry.ContentTypeAssociatedFactories["application/json"] = stubWriter
 
+	// Direct match case-insensitivity preserving parameters
 	_, errW := writerRegistry.GetSerializationWriter("  APPLICATION/JSON; charset=utf-8  ")
 	assert.NoError(t, errW)
+	assert.Equal(t, "application/json; charset=utf-8", stubWriter.calledWith)
+
+	// Direct match whitespace trimming without parameters
+	stubWriter.expectedContentType = "application/json"
+	_, errWNoParams := writerRegistry.GetSerializationWriter("  APPLICATION/JSON  ")
+	assert.NoError(t, errWNoParams)
+	assert.Equal(t, "application/json", stubWriter.calledWith)
+
+	// Vendor cleanup fallback with uppercase
+	_, errWVendor := writerRegistry.GetSerializationWriter("  APPLICATION/VND.GITHUB+JSON; charset=utf-8  ")
+	assert.NoError(t, errWVendor)
+	assert.Equal(t, "application/json", stubWriter.calledWith)
 
 	_, errWEmpty := writerRegistry.GetSerializationWriter("   ")
 	assert.Error(t, errWEmpty)

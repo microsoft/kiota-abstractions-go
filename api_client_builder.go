@@ -11,7 +11,7 @@ func RegisterDefaultSerializer(metaFactory func() s.SerializationWriterFactory) 
 		return
 	}
 	factory := metaFactory()
-	if factory == nil {
+	if isNil(factory) {
 		return
 	}
 	contentType, err := factory.GetValidContentType()
@@ -34,7 +34,7 @@ func RegisterDefaultDeserializer(metaFactory func() s.ParseNodeFactory) {
 		return
 	}
 	factory := metaFactory()
-	if factory == nil {
+	if isNil(factory) {
 		return
 	}
 	contentType, err := factory.GetValidContentType()
@@ -53,7 +53,7 @@ func RegisterDefaultDeserializer(metaFactory func() s.ParseNodeFactory) {
 
 // EnableBackingStoreForSerializationWriterFactory Enables the backing store on default serialization writers and the given serialization writer.
 func EnableBackingStoreForSerializationWriterFactory(factory s.SerializationWriterFactory) s.SerializationWriterFactory {
-	if factory == nil {
+	if isNil(factory) {
 		return nil
 	}
 	switch v := factory.(type) {
@@ -81,7 +81,7 @@ func enableBackingStoreForSerializationRegistry(registry *s.SerializationWriterF
 
 // EnableBackingStoreForParseNodeFactory Enables the backing store on default parse nodes factories and the given parse node factory.
 func EnableBackingStoreForParseNodeFactory(factory s.ParseNodeFactory) s.ParseNodeFactory {
-	if factory == nil {
+	if isNil(factory) {
 		return nil
 	}
 	switch v := factory.(type) {

@@ -67,11 +67,26 @@ func TestApiClientBuilderNilGuards(t *testing.T) {
 	assert.NotPanics(t, func() {
 		RegisterDefaultSerializer(nil)
 		RegisterDefaultSerializer(func() serialization.SerializationWriterFactory { return nil })
+		RegisterDefaultSerializer(func() serialization.SerializationWriterFactory {
+			var f *serialization.SerializationWriterProxyFactory
+			return f
+		})
 		RegisterDefaultDeserializer(nil)
 		RegisterDefaultDeserializer(func() serialization.ParseNodeFactory { return nil })
+		RegisterDefaultDeserializer(func() serialization.ParseNodeFactory {
+			var f *serialization.ParseNodeProxyFactory
+			return f
+		})
 		resWriter := EnableBackingStoreForSerializationWriterFactory(nil)
 		assert.Nil(t, resWriter)
+		var nilWriterProxy *serialization.SerializationWriterProxyFactory
+		resWriterTypedNil := EnableBackingStoreForSerializationWriterFactory(nilWriterProxy)
+		assert.Nil(t, resWriterTypedNil)
+
 		resParser := EnableBackingStoreForParseNodeFactory(nil)
 		assert.Nil(t, resParser)
+		var nilParseNodeProxy *serialization.ParseNodeProxyFactory
+		resParserTypedNil := EnableBackingStoreForParseNodeFactory(nilParseNodeProxy)
+		assert.Nil(t, resParserTypedNil)
 	})
 }

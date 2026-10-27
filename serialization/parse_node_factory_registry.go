@@ -51,10 +51,22 @@ func (m *ParseNodeFactoryRegistry) GetRootParseNode(contentType string, content 
 	if ok {
 		return factory.GetRootParseNode(vendorSpecificContentType, content)
 	}
+	lowerVendorSpecific := strings.ToLower(vendorSpecificContentType)
+	if lowerVendorSpecific != vendorSpecificContentType {
+		if factory, ok = m.ContentTypeAssociatedFactories[lowerVendorSpecific]; ok {
+			return factory.GetRootParseNode(lowerVendorSpecific, content)
+		}
+	}
 	cleanedContentType := contentTypeVendorCleanupPattern.ReplaceAllString(vendorSpecificContentType, "")
 	factory, ok = m.ContentTypeAssociatedFactories[cleanedContentType]
 	if ok {
 		return factory.GetRootParseNode(cleanedContentType, content)
+	}
+	lowerCleaned := strings.ToLower(cleanedContentType)
+	if lowerCleaned != cleanedContentType {
+		if factory, ok = m.ContentTypeAssociatedFactories[lowerCleaned]; ok {
+			return factory.GetRootParseNode(lowerCleaned, content)
+		}
 	}
 	return nil, errors.New("content type " + cleanedContentType + " does not have a factory registered to be parsed")
 }

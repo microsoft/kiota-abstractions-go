@@ -43,14 +43,34 @@ func (m *SerializationWriterFactoryRegistry) GetSerializationWriter(contentType 
 	vendorSpecificContentType := strings.TrimSpace(strings.Split(trimmed, ";")[0])
 	factory, ok := m.ContentTypeAssociatedFactories[vendorSpecificContentType]
 	if ok {
-		return factory.GetSerializationWriter(contentType)
+		return factory.GetSerializationWriter(trimmed)
+	}
+	lowerVendorSpecific := strings.ToLower(vendorSpecificContentType)
+	if lowerVendorSpecific != vendorSpecificContentType {
+		if factory, ok = m.ContentTypeAssociatedFactories[lowerVendorSpecific]; ok {
+			return factory.GetSerializationWriter(normalizeWithParameters(lowerVendorSpecific, trimmed))
+		}
 	}
 	cleanedContentType := contentTypeVendorCleanupPattern.ReplaceAllString(vendorSpecificContentType, "")
 	factory, ok = m.ContentTypeAssociatedFactories[cleanedContentType]
 	if ok {
 		return factory.GetSerializationWriter(cleanedContentType)
 	}
+	lowerCleaned := strings.ToLower(cleanedContentType)
+	if lowerCleaned != cleanedContentType {
+		if factory, ok = m.ContentTypeAssociatedFactories[lowerCleaned]; ok {
+			return factory.GetSerializationWriter(lowerCleaned)
+		}
+	}
 	return nil, errors.New("Content type " + cleanedContentType + " does not have a factory registered to be parsed")
+}
+
+func normalizeWithParameters(matchedKey string, trimmed string) string {
+	parts := strings.SplitN(trimmed, ";", 2)
+	if len(parts) > 1 {
+		return matchedKey + "; " + strings.TrimSpace(parts[1])
+	}
+	return matchedKey
 }
 
 func (m *SerializationWriterFactoryRegistry) Lock() {

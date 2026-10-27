@@ -77,8 +77,13 @@ func TestFactoryRegistryContentTypeTolerance(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, "application/json", stubNode.calledWith)
 
-	// Vendor cleanup fallback
-	_, errVendor := parseRegistry.GetRootParseNode("  application/vnd.github+json; charset=utf-8  ", []byte("{}"))
+	// Mixed-case resolution
+	_, errUpper := parseRegistry.GetRootParseNode("  APPLICATION/JSON; charset=utf-8  ", []byte("{}"))
+	assert.NoError(t, errUpper)
+	assert.Equal(t, "application/json", stubNode.calledWith)
+
+	// Vendor cleanup fallback with mixed-case
+	_, errVendor := parseRegistry.GetRootParseNode("  APPLICATION/VND.GITHUB+JSON; charset=utf-8  ", []byte("{}"))
 	assert.NoError(t, errVendor)
 	assert.Equal(t, "application/json", stubNode.calledWith)
 
@@ -86,13 +91,18 @@ func TestFactoryRegistryContentTypeTolerance(t *testing.T) {
 	assert.Error(t, errEmpty)
 
 	writerRegistry := NewSerializationWriterFactoryRegistry()
-	stubWriter := &validatingWriterFactory{expectedContentType: "  application/json; charset=utf-8  "}
+	stubWriter := &validatingWriterFactory{expectedContentType: "application/json; charset=utf-8"}
 	writerRegistry.ContentTypeAssociatedFactories["application/json"] = stubWriter
 
-	// Direct match with parameters
+	// Direct match with whitespace and parameters (delegates trimmed)
 	_, errW := writerRegistry.GetSerializationWriter("  application/json; charset=utf-8  ")
 	assert.NoError(t, errW)
-	assert.Equal(t, "  application/json; charset=utf-8  ", stubWriter.calledWith)
+	assert.Equal(t, "application/json; charset=utf-8", stubWriter.calledWith)
+
+	// Direct match with mixed-case and parameters
+	_, errWUpper := writerRegistry.GetSerializationWriter("  APPLICATION/JSON; charset=utf-8  ")
+	assert.NoError(t, errWUpper)
+	assert.Equal(t, "application/json; charset=utf-8", stubWriter.calledWith)
 
 	// Direct match without parameters
 	stubWriter.expectedContentType = "application/json"
@@ -100,8 +110,8 @@ func TestFactoryRegistryContentTypeTolerance(t *testing.T) {
 	assert.NoError(t, errWNoParams)
 	assert.Equal(t, "application/json", stubWriter.calledWith)
 
-	// Vendor cleanup fallback
-	_, errWVendor := writerRegistry.GetSerializationWriter("  application/vnd.github+json; charset=utf-8  ")
+	// Vendor cleanup fallback with mixed-case
+	_, errWVendor := writerRegistry.GetSerializationWriter("  APPLICATION/VND.GITHUB+JSON; charset=utf-8  ")
 	assert.NoError(t, errWVendor)
 	assert.Equal(t, "application/json", stubWriter.calledWith)
 

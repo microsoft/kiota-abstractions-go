@@ -76,7 +76,8 @@ func (r *ResponseHeaders) AddAll(other *ResponseHeaders) {
 	r.header.AddAll(&other.header)
 }
 
-// TryAdd adds the header if it's not already present
+// TryAdd adds the header if it's not already present. It returns true if the header was added,
+// or false if it already existed, the receiver is nil, or the key/value was rejected.
 func (r *ResponseHeaders) TryAdd(key string, value string) bool {
 	if r == nil {
 		return false
@@ -86,5 +87,5 @@ func (r *ResponseHeaders) TryAdd(key string, value string) bool {
 	}
 
 	r.Add(key, value)
-	return true
+	return r.ContainsKey(key)
 }

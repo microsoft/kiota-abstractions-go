@@ -97,6 +97,13 @@ func TestResponseHeadersTryAdd(t *testing.T) {
 	assert.True(t, instance.ContainsKey("key"))
 	assert.Equal(t, "value", instance.Get("key")[0])
 
+	assert.False(t, instance.TryAdd("anotherKey", ""))
+	assert.False(t, instance.ContainsKey("anotherKey"))
+	assert.False(t, instance.TryAdd("   ", "val"))
+	assert.False(t, instance.ContainsKey("   "))
+	assert.False(t, instance.TryAdd("", "val"))
+
 	var nilInstance *ResponseHeaders
 	assert.False(t, nilInstance.TryAdd("key", "value"))
 }
+

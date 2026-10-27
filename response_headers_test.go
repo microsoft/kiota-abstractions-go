@@ -88,3 +88,15 @@ func TestResponseHeadersAddAll(t *testing.T) {
 	assert.True(t, instance1.ContainsKey("key2"))
 	assert.Equal(t, 2, len(instance1.Get("key1")))
 }
+
+func TestResponseHeadersTryAdd(t *testing.T) {
+	instance := NewResponseHeaders()
+	assert.NotNil(t, instance)
+	assert.True(t, instance.TryAdd("key", "value"))
+	assert.False(t, instance.TryAdd("key", "value2"))
+	assert.True(t, instance.ContainsKey("key"))
+	assert.Equal(t, "value", instance.Get("key")[0])
+
+	var nilInstance *ResponseHeaders
+	assert.False(t, nilInstance.TryAdd("key", "value"))
+}

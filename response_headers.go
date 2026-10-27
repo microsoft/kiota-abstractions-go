@@ -73,9 +73,18 @@ func (r *ResponseHeaders) AddAll(other *ResponseHeaders) {
 	if r == nil || other == nil || other.headers == nil {
 		return
 	}
-	for k, v := range other.headers {
-		for k2 := range v {
-			r.Add(k, k2)
-		}
+	r.header.AddAll(&other.header)
+}
+
+// TryAdd adds the header if it's not already present
+func (r *ResponseHeaders) TryAdd(key string, value string) bool {
+	if r == nil {
+		return false
 	}
+	if r.ContainsKey(key) {
+		return false
+	}
+
+	r.Add(key, value)
+	return true
 }

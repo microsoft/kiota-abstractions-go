@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.12.0](https://github.com/microsoft/kiota-abstractions-go/compare/v1.11.4...v1.12.0) (2026-10-28)
+
+
+### Features
+
+* **headers:** add TryAdd to ResponseHeaders and add comprehensive tests for response headers and errors ([#301](https://github.com/microsoft/kiota-abstractions-go/issues/301)) ([6f450ec](https://github.com/microsoft/kiota-abstractions-go/commit/6f450ece9773ad7a4d18418880d23c58d51dee01))
+
+
+### Bug Fixes
+
+* **abstractions:** add nil guards to multipartBody and support case-insensitive media types in registries ([#299](https://github.com/microsoft/kiota-abstractions-go/issues/299)) ([e27abf7](https://github.com/microsoft/kiota-abstractions-go/commit/e27abf77c6f54cdec9a2e1db4cf6452dfe4814f2))
+* **abstractions:** add nil guards to RequestInformation and support direct values in SetContentFromScalar ([#298](https://github.com/microsoft/kiota-abstractions-go/issues/298)) ([eed598c](https://github.com/microsoft/kiota-abstractions-go/commit/eed598cb6e69c6c144e825ef25988de1506a8ba0))
+* **store, serialization:** add nil guards to InMemoryBackingStore, api_client_builder, and trim whitespace in ParseDateOnly ([#296](https://github.com/microsoft/kiota-abstractions-go/issues/296)) ([6c50f38](https://github.com/microsoft/kiota-abstractions-go/commit/6c50f38da78fe8769727b47127e4a7a70f184bcd))
+
 ## [1.11.4](https://github.com/microsoft/kiota-abstractions-go/compare/v1.11.3...v1.11.4) (2026-10-21)
 
 

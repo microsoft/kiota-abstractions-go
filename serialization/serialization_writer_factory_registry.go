@@ -33,26 +33,48 @@ func (m *SerializationWriterFactoryRegistry) GetValidContentType() (string, erro
 
 // GetSerializationWriter returns the relevant SerializationWriter instance for the given content type
 func (m *SerializationWriterFactoryRegistry) GetSerializationWriter(contentType string) (SerializationWriter, error) {
-	if contentType == "" {
+	if m == nil {
+		return nil, errors.New("registry is nil")
+	}
+	trimmed := strings.TrimSpace(contentType)
+	if trimmed == "" {
 		return nil, errors.New("the content type is empty")
 	}
-	vendorSpecificContentType := strings.Split(contentType, ";")[0]
+	vendorSpecificContentType := strings.TrimSpace(strings.Split(trimmed, ";")[0])
 	factory, ok := m.ContentTypeAssociatedFactories[vendorSpecificContentType]
 	if ok {
-		return factory.GetSerializationWriter(contentType)
+		return factory.GetSerializationWriter(vendorSpecificContentType)
+	}
+	lowerVendorSpecific := strings.ToLower(vendorSpecificContentType)
+	if lowerVendorSpecific != vendorSpecificContentType {
+		if factory, ok = m.ContentTypeAssociatedFactories[lowerVendorSpecific]; ok {
+			return factory.GetSerializationWriter(lowerVendorSpecific)
+		}
 	}
 	cleanedContentType := contentTypeVendorCleanupPattern.ReplaceAllString(vendorSpecificContentType, "")
 	factory, ok = m.ContentTypeAssociatedFactories[cleanedContentType]
 	if ok {
 		return factory.GetSerializationWriter(cleanedContentType)
 	}
+	lowerCleaned := strings.ToLower(cleanedContentType)
+	if lowerCleaned != cleanedContentType {
+		if factory, ok = m.ContentTypeAssociatedFactories[lowerCleaned]; ok {
+			return factory.GetSerializationWriter(lowerCleaned)
+		}
+	}
 	return nil, errors.New("Content type " + cleanedContentType + " does not have a factory registered to be parsed")
 }
 
 func (m *SerializationWriterFactoryRegistry) Lock() {
+	if m == nil || m.lock == nil {
+		return
+	}
 	m.lock.Lock()
 }
 
 func (m *SerializationWriterFactoryRegistry) Unlock() {
+	if m == nil || m.lock == nil {
+		return
+	}
 	m.lock.Unlock()
 }

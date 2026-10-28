@@ -91,18 +91,18 @@ func TestFactoryRegistryContentTypeTolerance(t *testing.T) {
 	assert.Error(t, errEmpty)
 
 	writerRegistry := NewSerializationWriterFactoryRegistry()
-	stubWriter := &validatingWriterFactory{expectedContentType: "application/json; charset=utf-8"}
+	stubWriter := &validatingWriterFactory{expectedContentType: "application/json"}
 	writerRegistry.ContentTypeAssociatedFactories["application/json"] = stubWriter
 
-	// Direct match with whitespace and parameters (delegates trimmed)
+	// Direct match with whitespace and parameters
 	_, errW := writerRegistry.GetSerializationWriter("  application/json; charset=utf-8  ")
 	assert.NoError(t, errW)
-	assert.Equal(t, "application/json; charset=utf-8", stubWriter.calledWith)
+	assert.Equal(t, "application/json", stubWriter.calledWith)
 
 	// Direct match with mixed-case and parameters
 	_, errWUpper := writerRegistry.GetSerializationWriter("  APPLICATION/JSON; charset=utf-8  ")
 	assert.NoError(t, errWUpper)
-	assert.Equal(t, "application/json; charset=utf-8", stubWriter.calledWith)
+	assert.Equal(t, "application/json", stubWriter.calledWith)
 
 	// Direct match without parameters
 	stubWriter.expectedContentType = "application/json"

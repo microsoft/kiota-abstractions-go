@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.12.1](https://github.com/microsoft/kiota-abstractions-go/compare/v1.12.0...v1.12.1) (2026-10-29)
+
+
+### Bug Fixes
+
+* **headers:** validate addition in RequestHeaders.TryAdd and delegate AddAll ([#303](https://github.com/microsoft/kiota-abstractions-go/issues/303)) ([840be4e](https://github.com/microsoft/kiota-abstractions-go/commit/840be4ef2049766d97c07fab12b1b6b588e6cbc6))
+
 ## [1.12.0](https://github.com/microsoft/kiota-abstractions-go/compare/v1.11.4...v1.12.0) (2026-10-28)
 
 

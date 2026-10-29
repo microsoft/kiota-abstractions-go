@@ -74,10 +74,13 @@ func TestItAddsAll(t *testing.T) {
 	assert.NotNil(t, instance)
 	instance2 := NewRequestHeaders()
 	instance2.Add("key", "value")
+	instance2.Add("key", "value2")
+	instance2.Add("key2", "value3")
 	assert.False(t, instance.ContainsKey("key"))
 	instance.AddAll(instance2)
 	assert.True(t, instance.ContainsKey("key"))
-	assert.Equal(t, "value", instance.Get("key")[0])
+	assert.True(t, instance.ContainsKey("key2"))
+	assert.Equal(t, 2, len(instance.Get("key")))
 }
 
 func TestItTryAdds(t *testing.T) {
@@ -87,6 +90,15 @@ func TestItTryAdds(t *testing.T) {
 	assert.True(t, instance.ContainsKey("key"))
 	assert.False(t, instance.TryAdd("key", "value2"))
 	assert.Equal(t, "value", instance.Get("key")[0])
+
+	assert.False(t, instance.TryAdd("anotherKey", ""))
+	assert.False(t, instance.ContainsKey("anotherKey"))
+	assert.False(t, instance.TryAdd("   ", "val"))
+	assert.False(t, instance.ContainsKey("   "))
+	assert.False(t, instance.TryAdd("", "val"))
+
+	var nilInstance *RequestHeaders
+	assert.False(t, nilInstance.TryAdd("key", "value"))
 }
 
 func TestIdListKeys(t *testing.T) {

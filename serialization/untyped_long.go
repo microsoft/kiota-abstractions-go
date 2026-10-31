@@ -7,6 +7,9 @@ type UntypedLong struct {
 
 // GetValue returns the int64 value.
 func (un *UntypedLong) GetValue() *int64 {
+	if un == nil {
+		return nil
+	}
 	castValue, ok := un.value.(*int64)
 	if ok {
 		return castValue

@@ -7,7 +7,14 @@ type UntypedArray struct {
 
 // GetValue returns a collection of UntypedNode.
 func (un *UntypedArray) GetValue() []UntypedNodeable {
-	return un.value.([]UntypedNodeable)
+	if un == nil {
+		return nil
+	}
+	castValue, ok := un.value.([]UntypedNodeable)
+	if ok {
+		return castValue
+	}
+	return nil
 }
 
 // NewUntypedArray creates a new UntypedArray object.

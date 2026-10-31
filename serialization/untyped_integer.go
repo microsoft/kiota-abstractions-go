@@ -7,6 +7,9 @@ type UntypedInteger struct {
 
 // GetValue returns the int32 value.
 func (un *UntypedInteger) GetValue() *int32 {
+	if un == nil {
+		return nil
+	}
 	castValue, ok := un.value.(*int32)
 	if ok {
 		return castValue

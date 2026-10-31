@@ -10,7 +10,7 @@ func (un *UntypedNull) GetValue() any {
 	return nil
 }
 
-// NewUntypedString creates a new UntypedNull object.
+// NewUntypedNull creates a new UntypedNull object.
 func NewUntypedNull() *UntypedNull {
 	m := &UntypedNull{}
 	return m

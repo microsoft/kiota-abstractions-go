@@ -12,11 +12,17 @@ type UntypedNode struct {
 
 // GetIsUntypedNode returns true if the node is untyped, false otherwise.
 func (m *UntypedNode) GetIsUntypedNode() bool {
+	if m == nil {
+		return false
+	}
 	return true
 }
 
 // GetValue gets the underlying object value.
 func (m *UntypedNode) GetValue() any {
+	if m == nil {
+		return nil
+	}
 	return m.value
 }
 
@@ -38,7 +44,7 @@ func NewUntypedNode(value any) *UntypedNode {
 	return m
 }
 
-// CreateUntypedNodeFromDiscriminatorValue a new untyped node and from a parse node.
+// CreateUntypedNodeFromDiscriminatorValue creates a new untyped node from a parse node.
 func CreateUntypedNodeFromDiscriminatorValue(parseNode ParseNode) (Parsable, error) {
 	return NewUntypedNode(nil), nil
 }

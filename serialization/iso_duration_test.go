@@ -43,3 +43,41 @@ func TestItMakesAnNewISODurationFor1yAnd1dAnd1h(t *testing.T) {
 	isoDuration := NewDuration(1, 0, 1, 1, 0, 0, 0)
 	assert.Equal(t, "P1Y1DT1H", isoDuration.String())
 }
+
+func TestISODurationSetters(t *testing.T) {
+	d := NewDuration(0, 0, 0, 0, 0, 0, 0)
+
+	d.SetYears(2)
+	assert.Equal(t, 2, d.GetYears())
+
+	d.SetWeeks(3)
+	assert.Equal(t, 3, d.GetWeeks())
+
+	d.SetDays(4)
+	assert.Equal(t, 4, d.GetDays())
+
+	d.SetHours(5)
+	assert.Equal(t, 5, d.GetHours())
+
+	d.SetMinutes(6)
+	assert.Equal(t, 6, d.GetMinutes())
+
+	d.SetSeconds(7)
+	assert.Equal(t, 7, d.GetSeconds())
+
+	d.SetMilliSeconds(8)
+	assert.Equal(t, 8, d.GetMilliSeconds())
+}
+
+func TestISODurationSettersNilReceiver(t *testing.T) {
+	var d *ISODuration
+	assert.NotPanics(t, func() {
+		d.SetYears(1)
+		d.SetWeeks(1)
+		d.SetDays(1)
+		d.SetHours(1)
+		d.SetMinutes(1)
+		d.SetSeconds(1)
+		d.SetMilliSeconds(1)
+	})
+}

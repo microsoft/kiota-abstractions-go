@@ -268,3 +268,23 @@ func TestToDurationWithMonths(t *testing.T) {
 	expectedResult := time.Hour*24*365 + time.Hour*24*30*2 + time.Hour*24*4 + time.Hour*5 + time.Minute*6 + time.Second*7
 	assert.Equal(t, expectedResult, result)
 }
+
+func TestItNormalizes12MonthsTo1Year(t *testing.T) {
+	duration := &duration{
+		Months: 12,
+	}
+	result := duration.string()
+	assert.Equal(t, 0, duration.Months)
+	assert.Equal(t, 1, duration.Years)
+	assert.Equal(t, "P1Y", result)
+}
+
+func TestItNormalizes24MonthsTo2Years(t *testing.T) {
+	duration := &duration{
+		Months: 24,
+	}
+	result := duration.string()
+	assert.Equal(t, 0, duration.Months)
+	assert.Equal(t, 2, duration.Years)
+	assert.Equal(t, "P2Y", result)
+}

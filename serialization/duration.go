@@ -164,7 +164,7 @@ func (d *duration) normalize() error {
 		d.Weeks += d.Days / DtoW
 		d.Days = 0
 	}
-	if d.Months > MtoY {
+	if d.Months >= MtoY {
 		d.Years += d.Months / MtoY
 		d.Months %= MtoY
 	}

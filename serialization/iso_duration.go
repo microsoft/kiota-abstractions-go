@@ -45,37 +45,58 @@ func (i ISODuration) GetMilliSeconds() int {
 }
 
 // SetYears sets the number of years.
-func (i ISODuration) SetYears(years int) {
+func (i *ISODuration) SetYears(years int) {
+	if i == nil {
+		return
+	}
 	i.duration.Years = years
 }
 
 // SetWeeks sets the number of weeks.
-func (i ISODuration) SetWeeks(weeks int) {
+func (i *ISODuration) SetWeeks(weeks int) {
+	if i == nil {
+		return
+	}
 	i.duration.Weeks = weeks
 }
 
 // SetDays sets the number of days.
-func (i ISODuration) SetDays(days int) {
+func (i *ISODuration) SetDays(days int) {
+	if i == nil {
+		return
+	}
 	i.duration.Days = days
 }
 
 // SetHours sets the number of hours.
-func (i ISODuration) SetHours(hours int) {
+func (i *ISODuration) SetHours(hours int) {
+	if i == nil {
+		return
+	}
 	i.duration.Hours = hours
 }
 
 // SetMinutes sets the number of minutes.
-func (i ISODuration) SetMinutes(minutes int) {
+func (i *ISODuration) SetMinutes(minutes int) {
+	if i == nil {
+		return
+	}
 	i.duration.Minutes = minutes
 }
 
 // SetSeconds sets the number of seconds.
-func (i ISODuration) SetSeconds(seconds int) {
+func (i *ISODuration) SetSeconds(seconds int) {
+	if i == nil {
+		return
+	}
 	i.duration.Seconds = seconds
 }
 
 // SetMilliSeconds sets the number of milliseconds.
-func (i ISODuration) SetMilliSeconds(milliSeconds int) {
+func (i *ISODuration) SetMilliSeconds(milliSeconds int) {
+	if i == nil {
+		return
+	}
 	i.duration.MilliSeconds = milliSeconds
 }
 

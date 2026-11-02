@@ -911,3 +911,141 @@ func TestSetContentFromScalarDirectValueTypesAndByteArray(t *testing.T) {
 func ptr[T any](v T) *T {
 	return &v
 }
+
+type mockTestRequestOption struct {
+	key string
+}
+
+func (m mockTestRequestOption) GetKey() RequestOptionKey {
+	return RequestOptionKey{Key: m.key}
+}
+
+func TestAddQueryParametersPointerAndNilSafety(t *testing.T) {
+	// Pointer to struct
+	requestInformation := NewRequestInformation()
+	filter := "testfilter"
+	qp := &QueryParameters{
+		Filter: &filter,
+	}
+	assert.NotPanics(t, func() {
+		requestInformation.AddQueryParameters(qp)
+	})
+	assert.Equal(t, filter, requestInformation.QueryParameters["Filter"])
+
+	// Pointer to pointer to struct
+	requestInformation2 := NewRequestInformation()
+	qp2 := &qp
+	assert.NotPanics(t, func() {
+		requestInformation2.AddQueryParameters(qp2)
+	})
+	assert.Equal(t, filter, requestInformation2.QueryParameters["Filter"])
+
+	// Typed nil pointer
+	requestInformation3 := NewRequestInformation()
+	var nilQP *QueryParameters
+	assert.NotPanics(t, func() {
+		requestInformation3.AddQueryParameters(nilQP)
+	})
+	assert.Empty(t, requestInformation3.QueryParameters)
+
+	// Non-struct types
+	assert.NotPanics(t, func() {
+		requestInformation.AddQueryParameters("not-a-struct")
+		requestInformation.AddQueryParameters(123)
+		requestInformation.AddQueryParameters(nil)
+	})
+
+	// Uninitialized (nil) QueryParameters maps on RequestInformation
+	rawReq := &RequestInformation{}
+	assert.NotPanics(t, func() {
+		rawReq.AddQueryParameters(QueryParameters{Filter: &filter})
+	})
+	assert.Equal(t, filter, rawReq.QueryParameters["Filter"])
+
+	// Struct with unexported fields
+	type paramsWithUnexported struct {
+		Exported   *string `uriparametername:"exported"`
+		unexported *string
+	}
+	exportedVal := "exportedVal"
+	unexportedVal := "unexportedVal"
+	reqUnexp := NewRequestInformation()
+	assert.NotPanics(t, func() {
+		reqUnexp.AddQueryParameters(&paramsWithUnexported{
+			Exported:   &exportedVal,
+			unexported: &unexportedVal,
+		})
+	})
+	assert.Equal(t, exportedVal, reqUnexp.QueryParameters["exported"])
+}
+
+func TestRemoveRequestOptions(t *testing.T) {
+	opt1 := mockTestRequestOption{key: "Option1"}
+	opt2 := mockTestRequestOption{key: "Option2"}
+	opt3 := mockTestRequestOption{key: "Option3"}
+
+	req := NewRequestInformation()
+	req.AddRequestOptions([]RequestOption{opt1, opt2, opt3})
+	assert.Equal(t, 3, len(req.GetRequestOptions()))
+
+	// Remove single option
+	req.RemoveRequestOptions(opt1)
+	opts := req.GetRequestOptions()
+	assert.Equal(t, 2, len(opts))
+	for _, o := range opts {
+		assert.NotEqual(t, "Option1", o.GetKey().Key)
+	}
+
+	// Remove multiple options including nil
+	req.RemoveRequestOptions(opt2, nil, opt3)
+	assert.Empty(t, req.GetRequestOptions())
+
+	// Remove non-existent option
+	req.RemoveRequestOptions(opt1)
+	assert.Empty(t, req.GetRequestOptions())
+
+	// Nil receiver and uninitialized options map
+	var nilReq *RequestInformation
+	assert.NotPanics(t, func() {
+		nilReq.RemoveRequestOptions(opt1)
+	})
+
+	emptyReq := &RequestInformation{}
+	assert.NotPanics(t, func() {
+		emptyReq.RemoveRequestOptions(opt1)
+	})
+}
+
+func TestCastItemNilPointerSliceSafety(t *testing.T) {
+	req := NewRequestInformation()
+	req.UrlTemplate = "http://localhost/dates{?dates*}"
+
+	d1, err := s.ParseDateOnly("2026-01-01")
+	assert.NoError(t, err)
+	d2, err := s.ParseDateOnly("2026-01-02")
+	assert.NoError(t, err)
+
+	// Slice of DateOnly pointers containing nil
+	req.QueryParametersAny["dates"] = []*s.DateOnly{d1, nil, d2}
+	uri, err := req.GetUri()
+	assert.NoError(t, err)
+	assert.Equal(t, "http://localhost/dates?dates=2026-01-01&dates=2026-01-02", uri.String())
+
+	// Slice of DateOnly pointers containing only nil
+	reqAllNil := NewRequestInformation()
+	reqAllNil.UrlTemplate = "http://localhost/dates{?dates*}"
+	reqAllNil.QueryParametersAny["dates"] = []*s.DateOnly{nil, nil}
+	uriAllNil, err := reqAllNil.GetUri()
+	assert.NoError(t, err)
+	assert.Equal(t, "http://localhost/dates", uriAllNil.String())
+
+	// Slice of TimeOnly pointers containing nil
+	t1, err := s.ParseTimeOnly("10:00:00")
+	assert.NoError(t, err)
+	reqTime := NewRequestInformation()
+	reqTime.UrlTemplate = "http://localhost/times{?times*}"
+	reqTime.QueryParametersAny["times"] = []*s.TimeOnly{t1, nil}
+	uriTime, err := reqTime.GetUri()
+	assert.NoError(t, err)
+	assert.Equal(t, "http://localhost/times?times=10%3A00%3A00", uriTime.String())
+}

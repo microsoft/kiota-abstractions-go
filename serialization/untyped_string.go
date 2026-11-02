@@ -7,6 +7,9 @@ type UntypedString struct {
 
 // GetValue returns the string object.
 func (un *UntypedString) GetValue() *string {
+	if un == nil {
+		return nil
+	}
 	castValue, ok := un.value.(*string)
 	if ok {
 		return castValue

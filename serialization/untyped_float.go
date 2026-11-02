@@ -7,6 +7,9 @@ type UntypedFloat struct {
 
 // GetValue returns the float32 value.
 func (un *UntypedFloat) GetValue() *float32 {
+	if un == nil {
+		return nil
+	}
 	castValue, ok := un.value.(*float32)
 	if ok {
 		return castValue

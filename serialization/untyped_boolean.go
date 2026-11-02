@@ -7,6 +7,9 @@ type UntypedBoolean struct {
 
 // GetValue returns the bool value.
 func (un *UntypedBoolean) GetValue() *bool {
+	if un == nil {
+		return nil
+	}
 	castValue, ok := un.value.(*bool)
 	if ok {
 		return castValue

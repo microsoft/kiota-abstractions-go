@@ -7,6 +7,9 @@ type UntypedDouble struct {
 
 // GetValue returns the float64 value.
 func (un *UntypedDouble) GetValue() *float64 {
+	if un == nil {
+		return nil
+	}
 	castValue, ok := un.value.(*float64)
 	if ok {
 		return castValue

@@ -7,6 +7,9 @@ type UntypedObject struct {
 
 // GetValue gets a map of the properties of the object.
 func (un *UntypedObject) GetValue() map[string]UntypedNodeable {
+	if un == nil {
+		return nil
+	}
 	castValue, ok := un.value.(map[string]UntypedNodeable)
 	if ok {
 		return castValue

@@ -52,7 +52,7 @@ func (s *SerializationWriterProxyFactory) GetSerializationWriter(contentType str
 
 	originalBefore := writer.GetOnBeforeSerialization()
 	err = writer.SetOnBeforeSerialization(func(parsable Parsable) error {
-		if s != nil && s.onBeforeAction != nil {
+		if s != nil && s.onBeforeAction != nil && parsable != nil {
 			err := s.onBeforeAction(parsable)
 			if err != nil {
 				return err
@@ -71,7 +71,7 @@ func (s *SerializationWriterProxyFactory) GetSerializationWriter(contentType str
 	}
 	originalAfter := writer.GetOnAfterObjectSerialization()
 	err = writer.SetOnAfterObjectSerialization(func(parsable Parsable) error {
-		if s != nil && s.onAfterAction != nil {
+		if s != nil && s.onAfterAction != nil && parsable != nil {
 			err := s.onAfterAction(parsable)
 			if err != nil {
 				return err
@@ -91,7 +91,7 @@ func (s *SerializationWriterProxyFactory) GetSerializationWriter(contentType str
 
 	originalStart := writer.GetOnStartObjectSerialization()
 	err = writer.SetOnStartObjectSerialization(func(parsable Parsable, writer SerializationWriter) error {
-		if s != nil && s.onSerializationStart != nil {
+		if s != nil && s.onSerializationStart != nil && parsable != nil {
 			err := s.onSerializationStart(parsable, writer)
 			if err != nil {
 				return err

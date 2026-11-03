@@ -205,3 +205,37 @@ func TestSerializationWriterProxyNilCallbacks(t *testing.T) {
 		}
 	})
 }
+
+func TestSerializationWriterProxyFactory_NilParsableSkipsActions(t *testing.T) {
+	writer := &mockWriterWithAllCallbacks{}
+	factory := serialization.NewSerializationWriterProxyFactory(
+		&internal.MockSerializerFactory{SerializationWriter: writer},
+		func(p serialization.Parsable) error {
+			_ = p.GetFieldDeserializers()
+			return nil
+		},
+		func(p serialization.Parsable) error {
+			_ = p.GetFieldDeserializers()
+			return nil
+		},
+		func(p serialization.Parsable, w serialization.SerializationWriter) error {
+			_ = p.GetFieldDeserializers()
+			return nil
+		},
+	)
+	result, err := factory.GetSerializationWriter("application/json")
+	require.NoError(t, err)
+
+	assert.NotPanics(t, func() {
+		err := result.GetOnBeforeSerialization()(nil)
+		assert.NoError(t, err)
+	})
+	assert.NotPanics(t, func() {
+		err := result.GetOnAfterObjectSerialization()(nil)
+		assert.NoError(t, err)
+	})
+	assert.NotPanics(t, func() {
+		err := result.GetOnStartObjectSerialization()(nil, result)
+		assert.NoError(t, err)
+	})
+}

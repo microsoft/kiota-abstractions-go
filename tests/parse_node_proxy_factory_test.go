@@ -164,3 +164,29 @@ func TestParseNodeProxyFactory_NilGuards(t *testing.T) {
 	assert.Error(t, err)
 	assert.Nil(t, node)
 }
+
+func TestParseNodeProxyFactory_NilParsableSkipsActions(t *testing.T) {
+	node := &mockParseNodeWithCallbacks{}
+	factory := serialization.NewParseNodeProxyFactory(
+		&mockParseNodeFactoryWithNode{node: node},
+		func(p serialization.Parsable) error {
+			_ = p.GetFieldDeserializers()
+			return nil
+		},
+		func(p serialization.Parsable) error {
+			_ = p.GetFieldDeserializers()
+			return nil
+		},
+	)
+	resultNode, err := factory.GetRootParseNode("application/json", []byte{})
+	require.NoError(t, err)
+
+	assert.NotPanics(t, func() {
+		err := resultNode.GetOnBeforeAssignFieldValues()(nil)
+		assert.NoError(t, err)
+	})
+	assert.NotPanics(t, func() {
+		err := resultNode.GetOnAfterAssignFieldValues()(nil)
+		assert.NoError(t, err)
+	})
+}

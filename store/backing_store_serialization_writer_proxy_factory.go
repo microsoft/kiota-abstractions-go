@@ -1,6 +1,8 @@
 package store
 
 import (
+	"errors"
+
 	"github.com/microsoft/kiota-abstractions-go/serialization"
 )
 
@@ -10,10 +12,16 @@ type BackingStoreSerializationWriterProxyFactory struct {
 }
 
 func (b *BackingStoreSerializationWriterProxyFactory) GetValidContentType() (string, error) {
+	if b == nil || b.factory == nil {
+		return "", errors.New("factory is nil")
+	}
 	return b.factory.GetValidContentType()
 }
 
 func (b *BackingStoreSerializationWriterProxyFactory) GetSerializationWriter(contentType string) (serialization.SerializationWriter, error) {
+	if b == nil || b.factory == nil {
+		return nil, errors.New("factory is nil")
+	}
 	return b.factory.GetSerializationWriter(contentType)
 }
 

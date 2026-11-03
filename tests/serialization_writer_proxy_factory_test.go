@@ -87,3 +87,155 @@ func (w *startCallbackWriter) SetOnStartObjectSerialization(action serialization
 	w.start = action
 	return nil
 }
+
+type mockWriterWithAllCallbacks struct {
+	internal.MockSerializer
+	before serialization.ParsableAction
+	after  serialization.ParsableAction
+	start  serialization.ParsableWriter
+}
+
+func (w *mockWriterWithAllCallbacks) GetOnBeforeSerialization() serialization.ParsableAction {
+	return w.before
+}
+
+func (w *mockWriterWithAllCallbacks) SetOnBeforeSerialization(action serialization.ParsableAction) error {
+	w.before = action
+	return nil
+}
+
+func (w *mockWriterWithAllCallbacks) GetOnAfterObjectSerialization() serialization.ParsableAction {
+	return w.after
+}
+
+func (w *mockWriterWithAllCallbacks) SetOnAfterObjectSerialization(action serialization.ParsableAction) error {
+	w.after = action
+	return nil
+}
+
+func (w *mockWriterWithAllCallbacks) GetOnStartObjectSerialization() serialization.ParsableWriter {
+	return w.start
+}
+
+func (w *mockWriterWithAllCallbacks) SetOnStartObjectSerialization(action serialization.ParsableWriter) error {
+	w.start = action
+	return nil
+}
+
+type mockWriterFactory struct {
+	writer serialization.SerializationWriter
+	err    error
+}
+
+func (m *mockWriterFactory) GetValidContentType() (string, error) {
+	return "application/json", nil
+}
+
+func (m *mockWriterFactory) GetSerializationWriter(contentType string) (serialization.SerializationWriter, error) {
+	if m.err != nil {
+		return nil, m.err
+	}
+	return m.writer, nil
+}
+
+func TestSerializationWriterProxyNilGuards(t *testing.T) {
+	var nilFactory *serialization.SerializationWriterProxyFactory
+
+	ct, err := nilFactory.GetValidContentType()
+	assert.Error(t, err)
+	assert.Empty(t, ct)
+
+	writer, err := nilFactory.GetSerializationWriter("application/json")
+	assert.Error(t, err)
+	assert.Nil(t, writer)
+
+	emptyFactory := serialization.NewSerializationWriterProxyFactory(nil, nil, nil, nil)
+
+	ct, err = emptyFactory.GetValidContentType()
+	assert.Error(t, err)
+	assert.Empty(t, ct)
+
+	writer, err = emptyFactory.GetSerializationWriter("application/json")
+	assert.Error(t, err)
+	assert.Nil(t, writer)
+
+	nilWriterFactory := &mockWriterFactory{writer: nil}
+	proxyWithNilWriter := serialization.NewSerializationWriterProxyFactory(nilWriterFactory, nil, nil, nil)
+	writer, err = proxyWithNilWriter.GetSerializationWriter("application/json")
+	assert.Error(t, err)
+	assert.Nil(t, writer)
+}
+
+func TestSerializationWriterProxyNilCallbacks(t *testing.T) {
+	writer := &mockWriterWithAllCallbacks{}
+	factory := serialization.NewSerializationWriterProxyFactory(
+		&internal.MockSerializerFactory{SerializationWriter: writer},
+		nil,
+		nil,
+		nil,
+	)
+
+	result, err := factory.GetSerializationWriter("application/json")
+	require.NoError(t, err)
+	require.NotNil(t, result)
+
+	model := internal.NewPerson()
+
+	assert.NotPanics(t, func() {
+		before := result.GetOnBeforeSerialization()
+		if before != nil {
+			err := before(model)
+			assert.NoError(t, err)
+		}
+	})
+
+	assert.NotPanics(t, func() {
+		after := result.GetOnAfterObjectSerialization()
+		if after != nil {
+			err := after(model)
+			assert.NoError(t, err)
+		}
+	})
+
+	assert.NotPanics(t, func() {
+		start := result.GetOnStartObjectSerialization()
+		if start != nil {
+			err := start(model, result)
+			assert.NoError(t, err)
+		}
+	})
+}
+
+func TestSerializationWriterProxyFactory_NilParsableSkipsActions(t *testing.T) {
+	writer := &mockWriterWithAllCallbacks{}
+	factory := serialization.NewSerializationWriterProxyFactory(
+		&internal.MockSerializerFactory{SerializationWriter: writer},
+		func(p serialization.Parsable) error {
+			_ = p.GetFieldDeserializers()
+			return nil
+		},
+		func(p serialization.Parsable) error {
+			_ = p.GetFieldDeserializers()
+			return nil
+		},
+		func(p serialization.Parsable, w serialization.SerializationWriter) error {
+			_ = p.GetFieldDeserializers()
+			return nil
+		},
+	)
+	result, err := factory.GetSerializationWriter("application/json")
+	require.NoError(t, err)
+
+	assert.NotPanics(t, func() {
+		err := result.GetOnBeforeSerialization()(nil)
+		assert.NoError(t, err)
+	})
+	assert.NotPanics(t, func() {
+		err := result.GetOnAfterObjectSerialization()(nil)
+		assert.NoError(t, err)
+	})
+	assert.NotPanics(t, func() {
+		err := result.GetOnStartObjectSerialization()(nil, result)
+		assert.NoError(t, err)
+	})
+}

@@ -996,8 +996,18 @@ func TestRemoveRequestOptions(t *testing.T) {
 		assert.NotEqual(t, "Option1", o.GetKey().Key)
 	}
 
-	// Remove multiple options including nil
-	req.RemoveRequestOptions(opt2, nil, opt3)
+	// Remove multiple options including untyped nil and typed nil
+	var typedNilOpt *mockTestRequestOption
+	assert.NotPanics(t, func() {
+		req.RemoveRequestOptions(opt2, nil, typedNilOpt, opt3)
+	})
+	assert.Empty(t, req.GetRequestOptions())
+
+	// Typed nil option in AddRequestOptions and RemoveRequestOptions should not panic
+	assert.NotPanics(t, func() {
+		req.AddRequestOptions([]RequestOption{typedNilOpt})
+		req.RemoveRequestOptions(typedNilOpt)
+	})
 	assert.Empty(t, req.GetRequestOptions())
 
 	// Remove non-existent option

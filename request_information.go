@@ -284,7 +284,7 @@ func (request *RequestInformation) AddRequestOptions(options []RequestOption) {
 		request.options = make(map[string]RequestOption, len(options))
 	}
 	for _, option := range options {
-		if option != nil {
+		if !isNil(option) {
 			request.options[option.GetKey().Key] = option
 		}
 	}
@@ -310,7 +310,7 @@ func (request *RequestInformation) RemoveRequestOptions(options ...RequestOption
 		return
 	}
 	for _, option := range options {
-		if option != nil {
+		if !isNil(option) {
 			delete(request.options, option.GetKey().Key)
 		}
 	}

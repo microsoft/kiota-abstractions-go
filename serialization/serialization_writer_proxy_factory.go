@@ -1,5 +1,7 @@
 package serialization
 
+import "errors"
+
 // ParsableAction Encapsulates a method with a single Parsable parameter
 type ParsableAction func(Parsable) error
 
@@ -30,18 +32,27 @@ func NewSerializationWriterProxyFactory(
 }
 
 func (s *SerializationWriterProxyFactory) GetValidContentType() (string, error) {
+	if s == nil || s.factory == nil {
+		return "", errors.New("factory is nil")
+	}
 	return s.factory.GetValidContentType()
 }
 
 func (s *SerializationWriterProxyFactory) GetSerializationWriter(contentType string) (SerializationWriter, error) {
+	if s == nil || s.factory == nil {
+		return nil, errors.New("factory is nil")
+	}
 	writer, err := s.factory.GetSerializationWriter(contentType)
 	if err != nil {
 		return nil, err
 	}
+	if writer == nil {
+		return nil, errors.New("writer is nil")
+	}
 
 	originalBefore := writer.GetOnBeforeSerialization()
 	err = writer.SetOnBeforeSerialization(func(parsable Parsable) error {
-		if s != nil {
+		if s != nil && s.onBeforeAction != nil {
 			err := s.onBeforeAction(parsable)
 			if err != nil {
 				return err
@@ -60,7 +71,7 @@ func (s *SerializationWriterProxyFactory) GetSerializationWriter(contentType str
 	}
 	originalAfter := writer.GetOnAfterObjectSerialization()
 	err = writer.SetOnAfterObjectSerialization(func(parsable Parsable) error {
-		if s != nil {
+		if s != nil && s.onAfterAction != nil {
 			err := s.onAfterAction(parsable)
 			if err != nil {
 				return err
@@ -80,7 +91,7 @@ func (s *SerializationWriterProxyFactory) GetSerializationWriter(contentType str
 
 	originalStart := writer.GetOnStartObjectSerialization()
 	err = writer.SetOnStartObjectSerialization(func(parsable Parsable, writer SerializationWriter) error {
-		if s != nil {
+		if s != nil && s.onSerializationStart != nil {
 			err := s.onSerializationStart(parsable, writer)
 			if err != nil {
 				return err

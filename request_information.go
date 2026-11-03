@@ -137,11 +137,15 @@ func (request *RequestInformation) GetUri() (*u.URL, error) {
 
 func castItem[T any, R interface{}](collection []T, mutator func(t T) R) []R {
 	if len(collection) > 0 {
-		cast := make([]R, len(collection))
-		for i, v := range collection {
-			cast[i] = mutator(v)
+		cast := make([]R, 0, len(collection))
+		for _, v := range collection {
+			if !isNil(v) {
+				cast = append(cast, mutator(v))
+			}
 		}
-		return cast
+		if len(cast) > 0 {
+			return cast
+		}
 	}
 	return nil
 }
@@ -280,7 +284,7 @@ func (request *RequestInformation) AddRequestOptions(options []RequestOption) {
 		request.options = make(map[string]RequestOption, len(options))
 	}
 	for _, option := range options {
-		if option != nil {
+		if !isNil(option) {
 			request.options[option.GetKey().Key] = option
 		}
 	}
@@ -298,6 +302,18 @@ func (request *RequestInformation) GetRequestOptions() []RequestOption {
 		idx++
 	}
 	return result
+}
+
+// RemoveRequestOptions removes the given options from the request.
+func (request *RequestInformation) RemoveRequestOptions(options ...RequestOption) {
+	if request == nil || request.options == nil || len(options) == 0 {
+		return
+	}
+	for _, option := range options {
+		if !isNil(option) {
+			delete(request.options, option.GetKey().Key)
+		}
+	}
 }
 
 const contentTypeHeader = "Content-Type"
@@ -662,12 +678,24 @@ func (request *RequestInformation) AddQueryParameters(source any) {
 		return
 	}
 	valOfP := reflect.ValueOf(source)
-	fields := reflect.TypeOf(source)
+	for valOfP.Kind() == reflect.Pointer {
+		if valOfP.IsNil() {
+			return
+		}
+		valOfP = valOfP.Elem()
+	}
+	if valOfP.Kind() != reflect.Struct {
+		return
+	}
+	fields := valOfP.Type()
 	numOfFields := fields.NumField()
 	for i := 0; i < numOfFields; i++ {
 		field := fields.Field(i)
 		fieldName := field.Name
 		fieldValue := valOfP.Field(i)
+		if !fieldValue.CanInterface() {
+			continue
+		}
 		tagValue := field.Tag.Get("uriparametername")
 		if tagValue != "" {
 			fieldName = tagValue
@@ -675,6 +703,12 @@ func (request *RequestInformation) AddQueryParameters(source any) {
 		value := request.sanitizeValue(fieldValue.Interface())
 		if isNil(value) {
 			continue
+		}
+		if request.QueryParameters == nil {
+			request.QueryParameters = make(map[string]string)
+		}
+		if request.QueryParametersAny == nil {
+			request.QueryParametersAny = make(map[string]any)
 		}
 		valueOfValue := reflect.ValueOf(value)
 		str, ok := value.(*string)

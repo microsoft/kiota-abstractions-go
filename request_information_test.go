@@ -1059,3 +1059,65 @@ func TestCastItemNilPointerSliceSafety(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, "http://localhost/times?times=10%3A00%3A00", uriTime.String())
 }
+
+
+func TestSetUriClearsPathParametersAny(t *testing.T) {
+	req := NewRequestInformation()
+	req.PathParameters["param1"] = "val1"
+	req.PathParametersAny["param2"] = 123
+	req.QueryParameters["q1"] = "test"
+	req.QueryParametersAny["q2"] = true
+
+	targetUrl, err := neturl.Parse("https://example.com/target")
+	assert.NoError(t, err)
+
+	req.SetUri(*targetUrl)
+
+	assert.Equal(t, "https://example.com/target", req.uri.String())
+	assert.Empty(t, req.PathParameters)
+	assert.Empty(t, req.PathParametersAny)
+	assert.Empty(t, req.QueryParameters)
+	assert.Empty(t, req.QueryParametersAny)
+}
+
+func TestItSetsTheRawURLFromPathParametersAny(t *testing.T) {
+	req := NewRequestInformation()
+	req.PathParametersAny[raw_url_key] = "https://rawfromany.com"
+	req.UrlTemplate = "https://someotherurl.com{?select}"
+	req.AddQueryParameters(QueryParameters{
+		Select_escaped: []string{"somefield", "somefield2"},
+	})
+
+	uri, err := req.GetUri()
+	assert.NoError(t, err)
+	assert.Equal(t, "https://rawfromany.com", uri.String())
+	assert.Empty(t, req.PathParameters)
+	assert.Empty(t, req.PathParametersAny)
+	assert.Empty(t, req.QueryParameters)
+	assert.Empty(t, req.QueryParametersAny)
+}
+
+func TestItSetsTheRawURLFromPathParametersAnyPointer(t *testing.T) {
+	req := NewRequestInformation()
+	raw := "https://rawfrompointer.com"
+	req.PathParametersAny[raw_url_key] = &raw
+	req.UrlTemplate = "https://someotherurl.com{?select}"
+
+	uri, err := req.GetUri()
+	assert.NoError(t, err)
+	assert.Equal(t, "https://rawfrompointer.com", uri.String())
+	assert.Empty(t, req.PathParametersAny)
+}
+
+func TestGetUriWithOnlyPathParametersAnyInitialized(t *testing.T) {
+	req := &RequestInformation{
+		UrlTemplate:        "https://example.com/{user}",
+		PathParametersAny:  map[string]any{"user": "alice"},
+		QueryParameters:    make(map[string]string),
+		QueryParametersAny: make(map[string]any),
+	}
+
+	uri, err := req.GetUri()
+	assert.NoError(t, err)
+	assert.Equal(t, "https://example.com/alice", uri.String())
+}

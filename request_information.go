@@ -386,19 +386,19 @@ func (request *RequestInformation) setContentAndContentType(writer s.Serializati
 func (request *RequestInformation) getSerializationWriter(requestAdapter RequestAdapter, contentType string, items ...interface{}) (s.SerializationWriter, error) {
 	if contentType == "" {
 		return nil, errors.New("content type cannot be empty")
-	} else if requestAdapter == nil {
+	} else if isNil(requestAdapter) {
 		return nil, errors.New("requestAdapter cannot be nil")
 	} else if len(items) == 0 {
 		return nil, errors.New("items cannot be nil or empty")
 	}
 	factory := requestAdapter.GetSerializationWriterFactory()
-	if factory == nil {
+	if isNil(factory) {
 		return nil, errors.New("factory cannot be nil")
 	}
 	writer, err := factory.GetSerializationWriter(contentType)
 	if err != nil {
 		return nil, err
-	} else if writer == nil {
+	} else if isNil(writer) {
 		return nil, errors.New("writer cannot be nil")
 	} else {
 		return writer, nil

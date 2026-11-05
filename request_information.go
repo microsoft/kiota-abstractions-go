@@ -783,6 +783,9 @@ func (request *RequestInformation) AddQueryParameters(source any) {
 // []non_interface -> []any (like []int64 -> []any)
 // *numeric -> numeric (like *int64 -> int64)
 func (request *RequestInformation) normalizeParameters(valueOfValue reflect.Value, value any, returnNilIfNotNormalizable bool) any {
+	if isNil(value) {
+		return nil
+	}
 	if valueOfValue.Kind() == reflect.Slice && valueOfValue.Len() > 0 {
 		//type assertions to "enums" don't work if you don't know the enum type in advance, we need to use reflection
 		enumArr := valueOfValue.Slice(0, valueOfValue.Len())

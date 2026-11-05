@@ -739,10 +739,12 @@ func (request *RequestInformation) AddQueryParameters(source any) {
 		str, ok := value.(*string)
 		if ok && str != nil {
 			request.QueryParameters[fieldName] = *str
+			continue
 		}
 		bl, ok := value.(*bool)
 		if ok && bl != nil {
 			request.QueryParameters[fieldName] = strconv.FormatBool(*bl)
+			continue
 		}
 		it, ok := value.(*int32)
 		if ok && it != nil {
@@ -804,7 +806,7 @@ func (request *RequestInformation) normalizeParameters(valueOfValue reflect.Valu
 		switch elem := valueOfValue.Elem(); elem.Kind() {
 		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
 			reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64,
-			reflect.Float32, reflect.Float64:
+			reflect.Float32, reflect.Float64, reflect.Bool, reflect.String:
 			return elem.Interface()
 		}
 	}

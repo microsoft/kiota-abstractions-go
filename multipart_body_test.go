@@ -168,3 +168,36 @@ func TestMultipartBodyTypedNilSafety(t *testing.T) {
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "serializationWriterFactory cannot be nil")
 }
+
+
+func TestMultipartBodyNilByteSliceSupport(t *testing.T) {
+	multipart := NewMultipartBody()
+
+	// 1. var data []byte (nil slice)
+	var nilSlice []byte
+	err := multipart.AddOrReplacePart("binaryPart1", "application/octet-stream", nilSlice)
+	assert.NoError(t, err)
+
+	val, err := multipart.GetPartValue("binaryPart1")
+	assert.NoError(t, err)
+	assert.Equal(t, nilSlice, val)
+
+	// 2. []byte(nil) literal
+	err = multipart.AddOrReplacePart("binaryPart2", "application/octet-stream", []byte(nil))
+	assert.NoError(t, err)
+
+	// 3. empty allocated []byte{}
+	err = multipart.AddOrReplacePart("binaryPart3", "application/octet-stream", []byte{})
+	assert.NoError(t, err)
+
+	// 4. untyped nil should still be rejected
+	err = multipart.AddOrReplacePart("invalidPart", "application/octet-stream", nil)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "content cannot be nil")
+
+	// 5. typed nil pointer should still be rejected
+	var nilParsable *dummyParsable
+	err = multipart.AddOrReplacePart("invalidPart2", "application/json", nilParsable)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "content cannot be nil")
+}

@@ -22,8 +22,8 @@ var (
 
 	errMonthsInDurationUseOverload = errors.New("months are not allowed with the ToDuration method, use the overload instead")
 
-	full = regexp.MustCompile(`P((?P<year>\d+)Y)?((?P<month>\d+)M)?((?P<day>\d+)D)?(T((?P<hour>\d+)H)?((?P<minute>\d+)M)?((?P<second>\d+(?:\.\d+)?)S)?)?`)
-	week = regexp.MustCompile(`P((?P<week>\d+)W)`)
+	full = regexp.MustCompile(`^P((?P<year>\d+)Y)?((?P<month>\d+)M)?((?P<day>\d+)D)?(T((?P<hour>\d+)H)?((?P<minute>\d+)M)?((?P<second>\d+(?:\.\d+)?)S)?)?$`)
+	week = regexp.MustCompile(`^P((?P<week>\d+)W)$`)
 )
 
 type duration struct {
@@ -54,12 +54,14 @@ func durationFromString(dur string) (*duration, error) {
 	}
 
 	d := &duration{}
+	hasField := false
 
 	for i, name := range re.SubexpNames() {
 		part := match[i]
 		if i == 0 || name == "" || part == "" {
 			continue
 		}
+		hasField = true
 
 		val, err := strconv.ParseFloat(part, 64)
 		if err != nil {
@@ -87,6 +89,10 @@ func durationFromString(dur string) (*duration, error) {
 		default:
 			return nil, fmt.Errorf("unknown field %s", name)
 		}
+	}
+
+	if !hasField {
+		return nil, errBadFormat
 	}
 
 	return d, nil

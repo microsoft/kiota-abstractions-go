@@ -201,3 +201,24 @@ func TestMultipartBodyNilByteSliceSupport(t *testing.T) {
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "content cannot be nil")
 }
+
+
+func TestMultipartBodySerializeWithEmptyBinaryPart(t *testing.T) {
+	multipart := NewMultipartBody()
+	mockAdapter := &MockRequestAdapter{
+		SerializationWriterFactory: &errorMockSerializerFactory{},
+	}
+	multipart.SetRequestAdapter(mockAdapter)
+
+	var emptyBytes []byte
+	err := multipart.AddOrReplacePart("file", "application/octet-stream", emptyBytes)
+	assert.NoError(t, err)
+
+	mockWriter := &internal.MockSerializer{
+		CallsCounter: make(map[string]int),
+	}
+
+	err = multipart.Serialize(mockWriter)
+	assert.NoError(t, err)
+	assert.Equal(t, 1, mockWriter.CallsCounter["WriteByteArrayValue"])
+}

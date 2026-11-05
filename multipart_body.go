@@ -56,7 +56,7 @@ func (m *multipartBody) AddOrReplacePart(name string, contentType string, conten
 	if contentType == "" {
 		return errors.New("contentType cannot be empty")
 	}
-	if isNil(content) {
+	if _, ok := content.([]byte); !ok && isNil(content) {
 		return errors.New("content cannot be nil")
 	}
 	normalizedName := normalizePartName(name)

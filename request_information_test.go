@@ -1082,15 +1082,15 @@ func TestSetUriClearsPathParametersAny(t *testing.T) {
 
 func TestItSetsTheRawURLFromPathParametersAny(t *testing.T) {
 	req := NewRequestInformation()
-	req.PathParametersAny[raw_url_key] = "https://rawfromany.com"
-	req.UrlTemplate = "https://someotherurl.com{?select}"
+	req.PathParametersAny[raw_url_key] = "https://example.com/raw"
+	req.UrlTemplate = "https://example.com/templated{?select}"
 	req.AddQueryParameters(QueryParameters{
 		Select_escaped: []string{"somefield", "somefield2"},
 	})
 
 	uri, err := req.GetUri()
 	assert.NoError(t, err)
-	assert.Equal(t, "https://rawfromany.com", uri.String())
+	assert.Equal(t, "https://example.com/raw", uri.String())
 	assert.Empty(t, req.PathParameters)
 	assert.Empty(t, req.PathParametersAny)
 	assert.Empty(t, req.QueryParameters)
@@ -1099,13 +1099,13 @@ func TestItSetsTheRawURLFromPathParametersAny(t *testing.T) {
 
 func TestItSetsTheRawURLFromPathParametersAnyPointer(t *testing.T) {
 	req := NewRequestInformation()
-	raw := "https://rawfrompointer.com"
+	raw := "https://example.com/raw"
 	req.PathParametersAny[raw_url_key] = &raw
-	req.UrlTemplate = "https://someotherurl.com{?select}"
+	req.UrlTemplate = "https://example.com/templated{?select}"
 
 	uri, err := req.GetUri()
 	assert.NoError(t, err)
-	assert.Equal(t, "https://rawfrompointer.com", uri.String())
+	assert.Equal(t, "https://example.com/raw", uri.String())
 	assert.Empty(t, req.PathParametersAny)
 }
 

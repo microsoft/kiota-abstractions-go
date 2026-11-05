@@ -788,15 +788,29 @@ func (request *RequestInformation) normalizeParameters(valueOfValue reflect.Valu
 		enumArr := valueOfValue.Slice(0, valueOfValue.Len())
 		if _, ok := enumArr.Index(0).Interface().(kiotaEnum); ok {
 			// testing the first value is an enum to avoid iterating over the whole array if it's not
-			strRepresentations := make([]string, valueOfValue.Len())
-			for i := range strRepresentations {
-				strRepresentations[i] = enumArr.Index(i).Interface().(kiotaEnum).String()
+			strRepresentations := make([]string, 0, valueOfValue.Len())
+			for i := 0; i < valueOfValue.Len(); i++ {
+				item := enumArr.Index(i).Interface()
+				if !isNil(item) {
+					if enum, ok := item.(kiotaEnum); ok {
+						strRepresentations = append(strRepresentations, enum.String())
+					}
+				}
+			}
+			if len(strRepresentations) == 0 {
+				return nil
 			}
 			return strRepresentations
 		} else {
-			anySlice := make([]any, valueOfValue.Len())
-			for i := range anySlice {
-				anySlice[i] = enumArr.Index(i).Interface()
+			anySlice := make([]any, 0, valueOfValue.Len())
+			for i := 0; i < valueOfValue.Len(); i++ {
+				item := enumArr.Index(i).Interface()
+				if !isNil(item) {
+					anySlice = append(anySlice, item)
+				}
+			}
+			if len(anySlice) == 0 {
+				return nil
 			}
 			return anySlice
 		}

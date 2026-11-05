@@ -22,7 +22,7 @@ var (
 
 	errMonthsInDurationUseOverload = errors.New("months are not allowed with the ToDuration method, use the overload instead")
 
-	full = regexp.MustCompile(`P((?P<year>\d+)Y)?((?P<month>\d+)M)?((?P<day>\d+)D)?(T((?P<hour>\d+)H)?((?P<minute>\d+)M)?((?P<second>\d+(?:\.\d+))S)?)?`)
+	full = regexp.MustCompile(`P((?P<year>\d+)Y)?((?P<month>\d+)M)?((?P<day>\d+)D)?(T((?P<hour>\d+)H)?((?P<minute>\d+)M)?((?P<second>\d+(?:\.\d+)?)S)?)?`)
 	week = regexp.MustCompile(`P((?P<week>\d+)W)`)
 )
 

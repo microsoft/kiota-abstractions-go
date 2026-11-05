@@ -137,3 +137,34 @@ func TestMultipartBodyNilReceiverGuards(t *testing.T) {
 		assert.Empty(t, nilMultipart.GetBoundary())
 	})
 }
+
+func TestMultipartBodyTypedNilSafety(t *testing.T) {
+	multipart := NewMultipartBody()
+	mockWriter := &internal.MockSerializer{
+		CallsCounter: make(map[string]int),
+	}
+
+	// 1. typed nil content in AddOrReplacePart
+	var nilParsable *dummyParsable
+	err := multipart.AddOrReplacePart("part1", "application/json", nilParsable)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "content cannot be nil")
+
+	// 2. typed nil request adapter in Serialize
+	var nilAdapter *MockRequestAdapter
+	multipart.SetRequestAdapter(nilAdapter)
+	err = multipart.Serialize(mockWriter)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "requestAdapter cannot be nil")
+
+	// 3. typed nil serialization writer factory in Serialize
+	var nilFactory *errorMockSerializerFactory
+	mockAdapterWithNilFactory := &MockRequestAdapter{
+		SerializationWriterFactory: nilFactory,
+	}
+	multipart.SetRequestAdapter(mockAdapterWithNilFactory)
+	_ = multipart.AddOrReplacePart("part2", "text/plain", "valid content")
+	err = multipart.Serialize(mockWriter)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "serializationWriterFactory cannot be nil")
+}

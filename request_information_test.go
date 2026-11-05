@@ -1121,3 +1121,22 @@ func TestGetUriWithOnlyPathParametersAnyInitialized(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, "https://example.com/alice", uri.String())
 }
+
+func TestGetSerializationWriterTypedNilSafety(t *testing.T) {
+	req := NewRequestInformation()
+
+	// 1. typed nil request adapter
+	var nilAdapter *MockRequestAdapter
+	err := req.SetContentFromParsable(context.Background(), nilAdapter, "application/json", &dummyParsable{})
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "requestAdapter cannot be nil")
+
+	// 2. typed nil serialization writer factory
+	var nilFactory *errorMockSerializerFactory
+	adapterWithNilFactory := &MockRequestAdapter{
+		SerializationWriterFactory: nilFactory,
+	}
+	err = req.SetContentFromParsable(context.Background(), adapterWithNilFactory, "application/json", &dummyParsable{})
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "factory cannot be nil")
+}

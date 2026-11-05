@@ -1140,3 +1140,73 @@ func TestGetSerializationWriterTypedNilSafety(t *testing.T) {
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "factory cannot be nil")
 }
+
+func TestQueryParametersAnyNormalization(t *testing.T) {
+	req := NewRequestInformation()
+	req.UrlTemplate = "http://localhost/items{?limit,offset,ratio,active,name,ids,status}"
+	limit := int64(10)
+	offset := int32(20)
+	ratio := 1.5
+	active := true
+	name := "test"
+	ids := []int64{1, 2, 3}
+	status := internal.ACTIVE
+
+	req.QueryParametersAny["limit"] = &limit
+	req.QueryParametersAny["offset"] = &offset
+	req.QueryParametersAny["ratio"] = &ratio
+	req.QueryParametersAny["active"] = &active
+	req.QueryParametersAny["name"] = &name
+	req.QueryParametersAny["ids"] = ids
+	req.QueryParametersAny["status"] = status
+
+	uri, err := req.GetUri()
+	assert.NoError(t, err)
+	assert.Contains(t, uri.String(), "limit=10")
+	assert.Contains(t, uri.String(), "offset=20")
+	assert.Contains(t, uri.String(), "ratio=1.5")
+	assert.Contains(t, uri.String(), "active=true")
+	assert.Contains(t, uri.String(), "name=test")
+	assert.Contains(t, uri.String(), "ids=1,2,3")
+	assert.Contains(t, uri.String(), "status=active")
+}
+
+func TestPathParametersAnyStringAndBoolPointerDereferencing(t *testing.T) {
+	req := NewRequestInformation()
+	req.UrlTemplate = "http://localhost/users/{name}/{active}"
+	name := "alice"
+	active := true
+
+	req.PathParametersAny["name"] = &name
+	req.PathParametersAny["active"] = &active
+
+	uri, err := req.GetUri()
+	assert.NoError(t, err)
+	assert.Equal(t, "http://localhost/users/alice/true", uri.String())
+}
+
+func TestTypedNilPointerOmittedInTemplateExpansion(t *testing.T) {
+	req := NewRequestInformation()
+	req.UrlTemplate = "http://localhost/items{?limit,name}"
+	var nilLimit *int64
+	var nilName *string
+
+	req.QueryParametersAny["limit"] = nilLimit
+	req.QueryParametersAny["name"] = nilName
+
+	uri, err := req.GetUri()
+	assert.NoError(t, err)
+	assert.Equal(t, "http://localhost/items", uri.String())
+}
+
+func TestNormalizeParametersWithNilSliceElements(t *testing.T) {
+	req := NewRequestInformation()
+	req.UrlTemplate = "http://localhost/statuses{?statuses*}"
+	s1 := internal.ACTIVE
+
+	req.QueryParametersAny["statuses"] = []*internal.PersonStatus{&s1, nil}
+
+	uri, err := req.GetUri()
+	assert.NoError(t, err)
+	assert.Equal(t, "http://localhost/statuses?statuses=active", uri.String())
+}

@@ -136,14 +136,14 @@ func TestItAddsAnyArrayQueryParameters(t *testing.T) {
 
 func TestItSetsTheRawURL(t *testing.T) {
 	requestInformation := NewRequestInformation()
-	requestInformation.PathParameters[raw_url_key] = "https://someurl.com"
-	requestInformation.UrlTemplate = "https://someotherurl.com{?select}"
+	requestInformation.PathParameters[raw_url_key] = "https://example.com/raw"
+	requestInformation.UrlTemplate = "https://example.com/templated{?select}"
 	requestInformation.AddQueryParameters(QueryParameters{
 		Select_escaped: []string{"somefield", "somefield2"},
 	})
 	uri, err := requestInformation.GetUri()
 	assert.Nil(t, err)
-	assert.Equal(t, "https://someurl.com", uri.String())
+	assert.Equal(t, "https://example.com/raw", uri.String())
 	assert.Equal(t, 0, len(requestInformation.QueryParameters))
 	assert.Equal(t, 0, len(requestInformation.QueryParametersAny))
 }
@@ -1058,4 +1058,85 @@ func TestCastItemNilPointerSliceSafety(t *testing.T) {
 	uriTime, err := reqTime.GetUri()
 	assert.NoError(t, err)
 	assert.Equal(t, "http://localhost/times?times=10%3A00%3A00", uriTime.String())
+}
+
+
+func TestSetUriClearsPathParametersAny(t *testing.T) {
+	req := NewRequestInformation()
+	req.PathParameters["param1"] = "val1"
+	req.PathParametersAny["param2"] = 123
+	req.QueryParameters["q1"] = "test"
+	req.QueryParametersAny["q2"] = true
+
+	targetUrl, err := neturl.Parse("https://example.com/target")
+	assert.NoError(t, err)
+
+	req.SetUri(*targetUrl)
+
+	assert.Equal(t, "https://example.com/target", req.uri.String())
+	assert.Empty(t, req.PathParameters)
+	assert.Empty(t, req.PathParametersAny)
+	assert.Empty(t, req.QueryParameters)
+	assert.Empty(t, req.QueryParametersAny)
+}
+
+func TestItSetsTheRawURLFromPathParametersAny(t *testing.T) {
+	req := NewRequestInformation()
+	req.PathParametersAny[raw_url_key] = "https://example.com/raw"
+	req.UrlTemplate = "https://example.com/templated{?select}"
+	req.AddQueryParameters(QueryParameters{
+		Select_escaped: []string{"somefield", "somefield2"},
+	})
+
+	uri, err := req.GetUri()
+	assert.NoError(t, err)
+	assert.Equal(t, "https://example.com/raw", uri.String())
+	assert.Empty(t, req.PathParameters)
+	assert.Empty(t, req.PathParametersAny)
+	assert.Empty(t, req.QueryParameters)
+	assert.Empty(t, req.QueryParametersAny)
+}
+
+func TestItSetsTheRawURLFromPathParametersAnyPointer(t *testing.T) {
+	req := NewRequestInformation()
+	raw := "https://example.com/raw"
+	req.PathParametersAny[raw_url_key] = &raw
+	req.UrlTemplate = "https://example.com/templated{?select}"
+
+	uri, err := req.GetUri()
+	assert.NoError(t, err)
+	assert.Equal(t, "https://example.com/raw", uri.String())
+	assert.Empty(t, req.PathParametersAny)
+}
+
+func TestGetUriWithOnlyPathParametersAnyInitialized(t *testing.T) {
+	req := &RequestInformation{
+		UrlTemplate:        "https://example.com/{user}",
+		PathParametersAny:  map[string]any{"user": "alice"},
+		QueryParameters:    make(map[string]string),
+		QueryParametersAny: make(map[string]any),
+	}
+
+	uri, err := req.GetUri()
+	assert.NoError(t, err)
+	assert.Equal(t, "https://example.com/alice", uri.String())
+}
+
+func TestGetSerializationWriterTypedNilSafety(t *testing.T) {
+	req := NewRequestInformation()
+
+	// 1. typed nil request adapter
+	var nilAdapter *MockRequestAdapter
+	err := req.SetContentFromParsable(context.Background(), nilAdapter, "application/json", &dummyParsable{})
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "requestAdapter cannot be nil")
+
+	// 2. typed nil serialization writer factory
+	var nilFactory *errorMockSerializerFactory
+	adapterWithNilFactory := &MockRequestAdapter{
+		SerializationWriterFactory: nilFactory,
+	}
+	err = req.SetContentFromParsable(context.Background(), adapterWithNilFactory, "application/json", &dummyParsable{})
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "factory cannot be nil")
 }

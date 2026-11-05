@@ -12,7 +12,7 @@ type BaseRequestBuilder struct {
 
 // NewBaseRequestBuilder creates a new BaseRequestBuilder instance.
 func NewBaseRequestBuilder(requestAdapter RequestAdapter, urlTemplate string, pathParameters map[string]string) *BaseRequestBuilder {
-	if requestAdapter == nil {
+	if isNil(requestAdapter) {
 		panic("requestAdapter cannot be nil")
 	}
 	pathParametersCopy := make(map[string]string)

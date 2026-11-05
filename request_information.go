@@ -94,21 +94,27 @@ func (request *RequestInformation) GetUri() (*u.URL, error) {
 		return request.uri, nil
 	} else if request.UrlTemplate == "" {
 		return nil, errors.New("uri cannot be empty")
-	} else if request.PathParameters == nil {
+	} else if request.PathParameters == nil && request.PathParametersAny == nil {
 		return nil, errors.New("uri template parameters cannot be nil")
 	} else if request.QueryParameters == nil {
 		return nil, errors.New("uri query parameters cannot be nil")
 	} else if request.QueryParametersAny == nil {
 		return nil, errors.New("uri query parameters cannot be nil")
-	} else if request.PathParameters[raw_url_key] != "" {
-		uri, err := u.Parse(request.PathParameters[raw_url_key])
+	} else if rawUrl := request.getRawUrl(); rawUrl != "" {
+		uri, err := u.Parse(rawUrl)
 		if err != nil {
 			return nil, err
 		}
 		request.SetUri(*uri)
 		return request.uri, nil
 	} else {
-		_, baseurlExists := request.PathParameters["baseurl"]
+		var baseurlExists bool
+		if request.PathParameters != nil {
+			_, baseurlExists = request.PathParameters["baseurl"]
+		}
+		if !baseurlExists && request.PathParametersAny != nil {
+			_, baseurlExists = request.PathParametersAny["baseurl"]
+		}
 		if !baseurlExists && strings.Contains(strings.ToLower(request.UrlTemplate), "{+baseurl}") {
 			return nil, errors.New("pathParameters must contain a value for \"baseurl\" for the url to be built")
 		}
@@ -258,6 +264,22 @@ func (request *RequestInformation) sanitizeValue(value any) any {
 	return value
 }
 
+func (request *RequestInformation) getRawUrl() string {
+	if request.PathParameters != nil && request.PathParameters[raw_url_key] != "" {
+		return request.PathParameters[raw_url_key]
+	}
+	if request.PathParametersAny != nil {
+		if val, ok := request.PathParametersAny[raw_url_key]; ok {
+			if s, ok := val.(string); ok && s != "" {
+				return s
+			} else if s, ok := val.(*string); ok && s != nil && *s != "" {
+				return *s
+			}
+		}
+	}
+	return ""
+}
+
 // SetUri updates the URI for the request from a raw URL.
 func (request *RequestInformation) SetUri(url u.URL) {
 	if request == nil {
@@ -266,6 +288,9 @@ func (request *RequestInformation) SetUri(url u.URL) {
 	request.uri = &url
 	for k := range request.PathParameters {
 		delete(request.PathParameters, k)
+	}
+	for k := range request.PathParametersAny {
+		delete(request.PathParametersAny, k)
 	}
 	for k := range request.QueryParameters {
 		delete(request.QueryParameters, k)
@@ -361,19 +386,19 @@ func (request *RequestInformation) setContentAndContentType(writer s.Serializati
 func (request *RequestInformation) getSerializationWriter(requestAdapter RequestAdapter, contentType string, items ...interface{}) (s.SerializationWriter, error) {
 	if contentType == "" {
 		return nil, errors.New("content type cannot be empty")
-	} else if requestAdapter == nil {
+	} else if isNil(requestAdapter) {
 		return nil, errors.New("requestAdapter cannot be nil")
 	} else if len(items) == 0 {
 		return nil, errors.New("items cannot be nil or empty")
 	}
 	factory := requestAdapter.GetSerializationWriterFactory()
-	if factory == nil {
+	if isNil(factory) {
 		return nil, errors.New("factory cannot be nil")
 	}
 	writer, err := factory.GetSerializationWriter(contentType)
 	if err != nil {
 		return nil, err
-	} else if writer == nil {
+	} else if isNil(writer) {
 		return nil, errors.New("writer cannot be nil")
 	} else {
 		return writer, nil

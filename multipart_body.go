@@ -56,7 +56,7 @@ func (m *multipartBody) AddOrReplacePart(name string, contentType string, conten
 	if contentType == "" {
 		return errors.New("contentType cannot be empty")
 	}
-	if content == nil {
+	if _, ok := content.([]byte); !ok && isNil(content) {
 		return errors.New("content cannot be nil")
 	}
 	normalizedName := normalizePartName(name)
@@ -106,11 +106,11 @@ func (m *multipartBody) Serialize(writer serialization.SerializationWriter) erro
 	if writer == nil {
 		return errors.New("writer cannot be nil")
 	}
-	if m.requestAdapter == nil {
+	if isNil(m.requestAdapter) {
 		return errors.New("requestAdapter cannot be nil")
 	}
 	serializationWriterFactory := m.requestAdapter.GetSerializationWriterFactory()
-	if serializationWriterFactory == nil {
+	if isNil(serializationWriterFactory) {
 		return errors.New("serializationWriterFactory cannot be nil")
 	}
 	if len(m.parts) == 0 {

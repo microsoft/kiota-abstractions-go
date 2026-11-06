@@ -130,7 +130,12 @@ func (request *RequestInformation) GetUri() (*u.URL, error) {
 			substitutions[key] = request.sanitizeValue(value)
 		}
 		for key, value := range request.QueryParametersAny {
-			substitutions[key] = request.normalizeParameters(reflect.ValueOf(value), request.sanitizeValue(value), false)
+			sanitized := request.sanitizeValue(value)
+			var val reflect.Value
+			if sanitized != nil {
+				val = reflect.ValueOf(sanitized)
+			}
+			substitutions[key] = request.normalizeParameters(val, sanitized, false)
 		}
 		url, err := stduritemplate.Expand(request.UrlTemplate, substitutions)
 		if err != nil {

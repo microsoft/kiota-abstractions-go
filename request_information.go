@@ -130,7 +130,12 @@ func (request *RequestInformation) GetUri() (*u.URL, error) {
 			substitutions[key] = request.sanitizeValue(value)
 		}
 		for key, value := range request.QueryParametersAny {
-			substitutions[key] = request.sanitizeValue(value)
+			sanitized := request.sanitizeValue(value)
+			var val reflect.Value
+			if sanitized != nil {
+				val = reflect.ValueOf(sanitized)
+			}
+			substitutions[key] = request.normalizeParameters(val, sanitized, false)
 		}
 		url, err := stduritemplate.Expand(request.UrlTemplate, substitutions)
 		if err != nil {
@@ -739,10 +744,12 @@ func (request *RequestInformation) AddQueryParameters(source any) {
 		str, ok := value.(*string)
 		if ok && str != nil {
 			request.QueryParameters[fieldName] = *str
+			continue
 		}
 		bl, ok := value.(*bool)
 		if ok && bl != nil {
 			request.QueryParameters[fieldName] = strconv.FormatBool(*bl)
+			continue
 		}
 		it, ok := value.(*int32)
 		if ok && it != nil {
@@ -781,20 +788,56 @@ func (request *RequestInformation) AddQueryParameters(source any) {
 // []non_interface -> []any (like []int64 -> []any)
 // *numeric -> numeric (like *int64 -> int64)
 func (request *RequestInformation) normalizeParameters(valueOfValue reflect.Value, value any, returnNilIfNotNormalizable bool) any {
-	if valueOfValue.Kind() == reflect.Slice && valueOfValue.Len() > 0 {
-		//type assertions to "enums" don't work if you don't know the enum type in advance, we need to use reflection
-		enumArr := valueOfValue.Slice(0, valueOfValue.Len())
-		if _, ok := enumArr.Index(0).Interface().(kiotaEnum); ok {
-			// testing the first value is an enum to avoid iterating over the whole array if it's not
-			strRepresentations := make([]string, valueOfValue.Len())
-			for i := range strRepresentations {
-				strRepresentations[i] = enumArr.Index(i).Interface().(kiotaEnum).String()
+	if isNil(value) {
+		return nil
+	}
+	if valueOfValue.IsValid() && valueOfValue.Kind() == reflect.Slice && valueOfValue.Len() > 0 {
+		sliceLen := valueOfValue.Len()
+		hasEnum := false
+		allEnums := true
+		hasNonNil := false
+
+		for i := 0; i < sliceLen; i++ {
+			item := valueOfValue.Index(i).Interface()
+			if !isNil(item) {
+				hasNonNil = true
+				if _, ok := item.(kiotaEnum); ok {
+					hasEnum = true
+				} else {
+					allEnums = false
+				}
+			}
+		}
+
+		if !hasNonNil {
+			return nil
+		}
+
+		if hasEnum && allEnums {
+			strRepresentations := make([]string, 0, sliceLen)
+			for i := 0; i < sliceLen; i++ {
+				item := valueOfValue.Index(i).Interface()
+				if !isNil(item) {
+					if enum, ok := item.(kiotaEnum); ok {
+						strRepresentations = append(strRepresentations, enum.String())
+					}
+				}
+			}
+			if len(strRepresentations) == 0 {
+				return nil
 			}
 			return strRepresentations
 		} else {
-			anySlice := make([]any, valueOfValue.Len())
-			for i := range anySlice {
-				anySlice[i] = enumArr.Index(i).Interface()
+			anySlice := make([]any, 0, sliceLen)
+			for i := 0; i < sliceLen; i++ {
+				item := valueOfValue.Index(i).Interface()
+				if !isNil(item) {
+					normalized := request.normalizeParameters(reflect.ValueOf(item), item, false)
+					anySlice = append(anySlice, normalized)
+				}
+			}
+			if len(anySlice) == 0 {
+				return nil
 			}
 			return anySlice
 		}
@@ -804,7 +847,7 @@ func (request *RequestInformation) normalizeParameters(valueOfValue reflect.Valu
 		switch elem := valueOfValue.Elem(); elem.Kind() {
 		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
 			reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64,
-			reflect.Float32, reflect.Float64:
+			reflect.Float32, reflect.Float64, reflect.Bool, reflect.String:
 			return elem.Interface()
 		}
 	}

@@ -1140,3 +1140,151 @@ func TestGetSerializationWriterTypedNilSafety(t *testing.T) {
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "factory cannot be nil")
 }
+
+func TestQueryParametersAnyNormalization(t *testing.T) {
+	req := NewRequestInformation()
+	req.UrlTemplate = "http://localhost/items{?limit,offset,ratio,active,name,ids,status}"
+	limit := int64(10)
+	offset := int32(20)
+	ratio := 1.5
+	active := true
+	name := "test"
+	ids := []int64{1, 2, 3}
+	status := internal.ACTIVE
+
+	req.QueryParametersAny["limit"] = &limit
+	req.QueryParametersAny["offset"] = &offset
+	req.QueryParametersAny["ratio"] = &ratio
+	req.QueryParametersAny["active"] = &active
+	req.QueryParametersAny["name"] = &name
+	req.QueryParametersAny["ids"] = ids
+	req.QueryParametersAny["status"] = status
+
+	uri, err := req.GetUri()
+	assert.NoError(t, err)
+	assert.Contains(t, uri.String(), "limit=10")
+	assert.Contains(t, uri.String(), "offset=20")
+	assert.Contains(t, uri.String(), "ratio=1.5")
+	assert.Contains(t, uri.String(), "active=true")
+	assert.Contains(t, uri.String(), "name=test")
+	assert.Contains(t, uri.String(), "ids=1,2,3")
+	assert.Contains(t, uri.String(), "status=active")
+}
+
+func TestPathParametersAnyStringAndBoolPointerDereferencing(t *testing.T) {
+	req := NewRequestInformation()
+	req.UrlTemplate = "http://localhost/users/{name}/{active}"
+	name := "alice"
+	active := true
+
+	req.PathParametersAny["name"] = &name
+	req.PathParametersAny["active"] = &active
+
+	uri, err := req.GetUri()
+	assert.NoError(t, err)
+	assert.Equal(t, "http://localhost/users/alice/true", uri.String())
+}
+
+func TestTypedNilPointerOmittedInTemplateExpansion(t *testing.T) {
+	req := NewRequestInformation()
+	req.UrlTemplate = "http://localhost/items{?limit,name}"
+	var nilLimit *int64
+	var nilName *string
+
+	req.QueryParametersAny["limit"] = nilLimit
+	req.QueryParametersAny["name"] = nilName
+
+	uri, err := req.GetUri()
+	assert.NoError(t, err)
+	assert.Equal(t, "http://localhost/items", uri.String())
+}
+
+func TestNormalizeParametersWithNilSliceElements(t *testing.T) {
+	s1 := internal.ACTIVE
+	s2 := internal.SUSPENDED
+
+	testCases := []struct {
+		name     string
+		input    any
+		expected string
+	}{
+		{
+			name:     "typed pointer slice trailing nil",
+			input:    []*internal.PersonStatus{&s1, nil},
+			expected: "http://localhost/statuses?statuses=active",
+		},
+		{
+			name:     "typed pointer slice leading nil",
+			input:    []*internal.PersonStatus{nil, &s1},
+			expected: "http://localhost/statuses?statuses=active",
+		},
+		{
+			name:     "any slice trailing nil",
+			input:    []any{internal.ACTIVE, nil},
+			expected: "http://localhost/statuses?statuses=active",
+		},
+		{
+			name:     "any slice leading nil",
+			input:    []any{nil, internal.ACTIVE},
+			expected: "http://localhost/statuses?statuses=active",
+		},
+		{
+			name:     "any slice with pointers and leading nil",
+			input:    []any{nil, &s1},
+			expected: "http://localhost/statuses?statuses=active",
+		},
+		{
+			name:     "any slice with multiple enums and interleaved nils",
+			input:    []any{nil, internal.ACTIVE, nil, s2},
+			expected: "http://localhost/statuses?statuses=active&statuses=suspended",
+		},
+		{
+			name:     "all nil any elements omitted",
+			input:    []any{nil, nil},
+			expected: "http://localhost/statuses",
+		},
+		{
+			name:     "all nil pointer elements omitted",
+			input:    []*internal.PersonStatus{nil, nil},
+			expected: "http://localhost/statuses",
+		},
+		{
+			name:     "mixed slice with enum and string",
+			input:    []any{nil, internal.ACTIVE, "other"},
+			expected: "http://localhost/statuses?statuses=active&statuses=other",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			req := NewRequestInformation()
+			req.UrlTemplate = "http://localhost/statuses{?statuses*}"
+			req.QueryParametersAny["statuses"] = tc.input
+
+			uri, err := req.GetUri()
+			assert.NoError(t, err)
+			assert.Equal(t, tc.expected, uri.String())
+		})
+	}
+}
+
+func TestQueryParametersAnyTimeSliceNormalization(t *testing.T) {
+	req := NewRequestInformation()
+	req.UrlTemplate = "http://localhost/events{?dates*,datesPtr*}"
+
+	t1, err := time.Parse(time.RFC3339, "2022-08-01T00:00:00Z")
+	assert.NoError(t, err)
+	t2, err := time.Parse(time.RFC3339, "2022-08-02T00:00:00Z")
+	assert.NoError(t, err)
+
+	req.QueryParametersAny["dates"] = []time.Time{t1, t2}
+	req.QueryParametersAny["datesPtr"] = []*time.Time{&t1, &t2}
+
+	uri, err := req.GetUri()
+	assert.NoError(t, err)
+	assert.NotNil(t, uri)
+
+	query := uri.Query()
+	assert.Equal(t, []string{"2022-08-01T00:00:00Z", "2022-08-02T00:00:00Z"}, query["dates"])
+	assert.Equal(t, []string{"2022-08-01T00:00:00Z", "2022-08-02T00:00:00Z"}, query["datesPtr"])
+}

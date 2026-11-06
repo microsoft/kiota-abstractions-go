@@ -288,3 +288,59 @@ func TestItNormalizes24MonthsTo2Years(t *testing.T) {
 	assert.Equal(t, 2, duration.Years)
 	assert.Equal(t, "P2Y", result)
 }
+
+func TestItParsesIntegerSeconds(t *testing.T) {
+	duration, err := durationFromString("PT10S")
+	assert.Nil(t, err)
+	assert.Equal(t, 10, duration.Seconds)
+	assert.Equal(t, 0, duration.MilliSeconds)
+	assert.Equal(t, "PT10S", duration.string())
+}
+
+func TestItParsesFractionalSeconds(t *testing.T) {
+	duration, err := durationFromString("PT10.5S")
+	assert.Nil(t, err)
+	assert.Equal(t, 10, duration.Seconds)
+	assert.Equal(t, 500, duration.MilliSeconds)
+}
+
+func TestItParsesCombinedDurationWithIntegerSeconds(t *testing.T) {
+	duration, err := durationFromString("P1DT12H30M45S")
+	assert.Nil(t, err)
+	assert.Equal(t, 1, duration.Days)
+	assert.Equal(t, 12, duration.Hours)
+	assert.Equal(t, 30, duration.Minutes)
+	assert.Equal(t, 45, duration.Seconds)
+}
+
+func TestItRejectsInvalidDurationStrings(t *testing.T) {
+	invalidStrings := []string{
+		"",
+		"P",
+		"PT",
+		"Pinvalid",
+		"PT10Sgarbage",
+		"P2Wextra",
+		"10S",
+	}
+	for _, str := range invalidStrings {
+		d, err := durationFromString(str)
+		assert.Equal(t, errBadFormat, err, "expected error for: "+str)
+		assert.Nil(t, d)
+	}
+}
+
+func TestZeroDurationStringAndRoundTrip(t *testing.T) {
+	d := FromDuration(0)
+	assert.NotNil(t, d)
+	assert.Equal(t, "PT0S", d.String())
+
+	parsed, err := ParseISODuration(d.String())
+	assert.Nil(t, err)
+	assert.NotNil(t, parsed)
+	assert.Equal(t, "PT0S", parsed.String())
+
+	timeDur, err := parsed.ToDuration()
+	assert.Nil(t, err)
+	assert.Equal(t, time.Duration(0), timeDur)
+}

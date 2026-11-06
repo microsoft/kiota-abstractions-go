@@ -133,6 +133,9 @@ func (d *duration) string() string {
 			s.WriteString(fmt.Sprintf("%dS", d.Seconds))
 		}
 	}
+	if s.Len() == 1 {
+		return "PT0S"
+	}
 
 	return s.String()
 }

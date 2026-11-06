@@ -791,14 +791,32 @@ func (request *RequestInformation) normalizeParameters(valueOfValue reflect.Valu
 	if isNil(value) {
 		return nil
 	}
-	if valueOfValue.Kind() == reflect.Slice && valueOfValue.Len() > 0 {
-		//type assertions to "enums" don't work if you don't know the enum type in advance, we need to use reflection
-		enumArr := valueOfValue.Slice(0, valueOfValue.Len())
-		if _, ok := enumArr.Index(0).Interface().(kiotaEnum); ok {
-			// testing the first value is an enum to avoid iterating over the whole array if it's not
-			strRepresentations := make([]string, 0, valueOfValue.Len())
-			for i := 0; i < valueOfValue.Len(); i++ {
-				item := enumArr.Index(i).Interface()
+	if valueOfValue.IsValid() && valueOfValue.Kind() == reflect.Slice && valueOfValue.Len() > 0 {
+		sliceLen := valueOfValue.Len()
+		hasEnum := false
+		allEnums := true
+		hasNonNil := false
+
+		for i := 0; i < sliceLen; i++ {
+			item := valueOfValue.Index(i).Interface()
+			if !isNil(item) {
+				hasNonNil = true
+				if _, ok := item.(kiotaEnum); ok {
+					hasEnum = true
+				} else {
+					allEnums = false
+				}
+			}
+		}
+
+		if !hasNonNil {
+			return nil
+		}
+
+		if hasEnum && allEnums {
+			strRepresentations := make([]string, 0, sliceLen)
+			for i := 0; i < sliceLen; i++ {
+				item := valueOfValue.Index(i).Interface()
 				if !isNil(item) {
 					if enum, ok := item.(kiotaEnum); ok {
 						strRepresentations = append(strRepresentations, enum.String())
@@ -810,11 +828,12 @@ func (request *RequestInformation) normalizeParameters(valueOfValue reflect.Valu
 			}
 			return strRepresentations
 		} else {
-			anySlice := make([]any, 0, valueOfValue.Len())
-			for i := 0; i < valueOfValue.Len(); i++ {
-				item := enumArr.Index(i).Interface()
+			anySlice := make([]any, 0, sliceLen)
+			for i := 0; i < sliceLen; i++ {
+				item := valueOfValue.Index(i).Interface()
 				if !isNil(item) {
-					anySlice = append(anySlice, item)
+					normalized := request.normalizeParameters(reflect.ValueOf(item), item, false)
+					anySlice = append(anySlice, normalized)
 				}
 			}
 			if len(anySlice) == 0 {

@@ -1200,15 +1200,72 @@ func TestTypedNilPointerOmittedInTemplateExpansion(t *testing.T) {
 }
 
 func TestNormalizeParametersWithNilSliceElements(t *testing.T) {
-	req := NewRequestInformation()
-	req.UrlTemplate = "http://localhost/statuses{?statuses*}"
 	s1 := internal.ACTIVE
+	s2 := internal.SUSPENDED
 
-	req.QueryParametersAny["statuses"] = []*internal.PersonStatus{&s1, nil}
+	testCases := []struct {
+		name     string
+		input    any
+		expected string
+	}{
+		{
+			name:     "typed pointer slice trailing nil",
+			input:    []*internal.PersonStatus{&s1, nil},
+			expected: "http://localhost/statuses?statuses=active",
+		},
+		{
+			name:     "typed pointer slice leading nil",
+			input:    []*internal.PersonStatus{nil, &s1},
+			expected: "http://localhost/statuses?statuses=active",
+		},
+		{
+			name:     "any slice trailing nil",
+			input:    []any{internal.ACTIVE, nil},
+			expected: "http://localhost/statuses?statuses=active",
+		},
+		{
+			name:     "any slice leading nil",
+			input:    []any{nil, internal.ACTIVE},
+			expected: "http://localhost/statuses?statuses=active",
+		},
+		{
+			name:     "any slice with pointers and leading nil",
+			input:    []any{nil, &s1},
+			expected: "http://localhost/statuses?statuses=active",
+		},
+		{
+			name:     "any slice with multiple enums and interleaved nils",
+			input:    []any{nil, internal.ACTIVE, nil, s2},
+			expected: "http://localhost/statuses?statuses=active&statuses=suspended",
+		},
+		{
+			name:     "all nil any elements omitted",
+			input:    []any{nil, nil},
+			expected: "http://localhost/statuses",
+		},
+		{
+			name:     "all nil pointer elements omitted",
+			input:    []*internal.PersonStatus{nil, nil},
+			expected: "http://localhost/statuses",
+		},
+		{
+			name:     "mixed slice with enum and string",
+			input:    []any{nil, internal.ACTIVE, "other"},
+			expected: "http://localhost/statuses?statuses=active&statuses=other",
+		},
+	}
 
-	uri, err := req.GetUri()
-	assert.NoError(t, err)
-	assert.Equal(t, "http://localhost/statuses?statuses=active", uri.String())
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			req := NewRequestInformation()
+			req.UrlTemplate = "http://localhost/statuses{?statuses*}"
+			req.QueryParametersAny["statuses"] = tc.input
+
+			uri, err := req.GetUri()
+			assert.NoError(t, err)
+			assert.Equal(t, tc.expected, uri.String())
+		})
+	}
 }
 
 func TestQueryParametersAnyTimeSliceNormalization(t *testing.T) {

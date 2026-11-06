@@ -1210,3 +1210,24 @@ func TestNormalizeParametersWithNilSliceElements(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, "http://localhost/statuses?statuses=active", uri.String())
 }
+
+func TestQueryParametersAnyTimeSliceNormalization(t *testing.T) {
+	req := NewRequestInformation()
+	req.UrlTemplate = "http://localhost/events{?dates*,datesPtr*}"
+
+	t1, err := time.Parse(time.RFC3339, "2022-08-01T00:00:00Z")
+	assert.NoError(t, err)
+	t2, err := time.Parse(time.RFC3339, "2022-08-02T00:00:00Z")
+	assert.NoError(t, err)
+
+	req.QueryParametersAny["dates"] = []time.Time{t1, t2}
+	req.QueryParametersAny["datesPtr"] = []*time.Time{&t1, &t2}
+
+	uri, err := req.GetUri()
+	assert.NoError(t, err)
+	assert.NotNil(t, uri)
+
+	query := uri.Query()
+	assert.Equal(t, []string{"2022-08-01T00:00:00Z", "2022-08-02T00:00:00Z"}, query["dates"])
+	assert.Equal(t, []string{"2022-08-01T00:00:00Z", "2022-08-02T00:00:00Z"}, query["datesPtr"])
+}

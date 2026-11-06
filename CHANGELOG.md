@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.12.1](https://github.com/microsoft/kiota-abstractions-go/compare/v1.12.0...v1.12.1) (2026-11-05)
+
+
+### Bug Fixes
+
+* **abstractions:** add pointer support and nil safety to query parameters and add RemoveRequestOptions ([#308](https://github.com/microsoft/kiota-abstractions-go/issues/308)) ([a69d22c](https://github.com/microsoft/kiota-abstractions-go/commit/a69d22ced3cb5a2f3a30343f90eb521888dd4b83))
+* **abstractions:** clear PathParametersAny in SetUri, support raw_url_key in PathParametersAny, and harden typed nil guards ([#311](https://github.com/microsoft/kiota-abstractions-go/issues/311)) ([5b9790e](https://github.com/microsoft/kiota-abstractions-go/commit/5b9790ebaffec774a21ebc4e45a11b97dadd43a9))
+* **headers:** validate addition in RequestHeaders.TryAdd and delegate AddAll ([#303](https://github.com/microsoft/kiota-abstractions-go/issues/303)) ([840be4e](https://github.com/microsoft/kiota-abstractions-go/commit/840be4ef2049766d97c07fab12b1b6b588e6cbc6))
+* **serialization, store:** invoke onAfterAction in ParseNodeProxyFactory and add nil safety guards ([#309](https://github.com/microsoft/kiota-abstractions-go/issues/309)) ([0871a32](https://github.com/microsoft/kiota-abstractions-go/commit/0871a32918abe9e4a595c2d1ea66dc6fed9668db))
+* **serialization:** add safe type assertions and nil guards to untyped node models ([#305](https://github.com/microsoft/kiota-abstractions-go/issues/305)) ([041c28b](https://github.com/microsoft/kiota-abstractions-go/commit/041c28b1898a677767853d327f2f7834066aaf1f))
+* **serialization:** use pointer receiver on ISODuration setters and normalize 12 months ([#306](https://github.com/microsoft/kiota-abstractions-go/issues/306)) ([d44fa7d](https://github.com/microsoft/kiota-abstractions-go/commit/d44fa7d86df87813e5fdef5ed15c365176f80842))
+
 ## [1.12.0](https://github.com/microsoft/kiota-abstractions-go/compare/v1.11.4...v1.12.0) (2026-10-28)
 
 

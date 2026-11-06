@@ -329,3 +329,18 @@ func TestItRejectsInvalidDurationStrings(t *testing.T) {
 		assert.Nil(t, d)
 	}
 }
+
+func TestZeroDurationStringAndRoundTrip(t *testing.T) {
+	d := FromDuration(0)
+	assert.NotNil(t, d)
+	assert.Equal(t, "PT0S", d.String())
+
+	parsed, err := ParseISODuration(d.String())
+	assert.Nil(t, err)
+	assert.NotNil(t, parsed)
+	assert.Equal(t, "PT0S", parsed.String())
+
+	timeDur, err := parsed.ToDuration()
+	assert.Nil(t, err)
+	assert.Equal(t, time.Duration(0), timeDur)
+}

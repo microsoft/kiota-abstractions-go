@@ -288,3 +288,82 @@ func TestItNormalizes24MonthsTo2Years(t *testing.T) {
 	assert.Equal(t, 2, duration.Years)
 	assert.Equal(t, "P2Y", result)
 }
+
+func TestToDurationPreservesMilliseconds(t *testing.T) {
+	d := NewDuration(0, 0, 0, 0, 0, 1, 500)
+	dur, err := d.ToDuration()
+	assert.NoError(t, err)
+	assert.Equal(t, 1500*time.Millisecond, dur)
+
+	subSecond := NewDuration(0, 0, 0, 0, 0, 0, 450)
+	subDur, err := subSecond.ToDuration()
+	assert.NoError(t, err)
+	assert.Equal(t, 450*time.Millisecond, subDur)
+}
+
+func TestFromDurationToDurationRoundTripMilliseconds(t *testing.T) {
+	expected := 2500 * time.Millisecond
+	isoDur := FromDuration(expected)
+	actual, err := isoDur.ToDuration()
+	assert.NoError(t, err)
+	assert.Equal(t, expected, actual)
+}
+
+func TestCompositeDaysWithTimeDoesNotNormalizeToWeeksOrPanic(t *testing.T) {
+	testCases := []struct {
+		duration *ISODuration
+		expected string
+	}{
+		{
+			duration: NewDuration(0, 0, 7, 1, 0, 0, 0),
+			expected: "P7DT1H",
+		},
+		{
+			duration: NewDuration(0, 0, 14, 0, 30, 0, 0),
+			expected: "P14DT30M",
+		},
+		{
+			duration: NewDuration(0, 0, 21, 0, 0, 45, 0),
+			expected: "P21DT45S",
+		},
+		{
+			duration: NewDuration(0, 0, 28, 2, 15, 30, 0),
+			expected: "P28DT2H15M30S",
+		},
+	}
+
+	for _, tc := range testCases {
+		assert.NotPanics(t, func() {
+			actual := tc.duration.String()
+			assert.Equal(t, tc.expected, actual)
+		})
+	}
+
+	parsed, err := ParseISODuration("P7DT1H")
+	assert.NoError(t, err)
+	assert.NotPanics(t, func() {
+		assert.Equal(t, "P7DT1H", parsed.String())
+	})
+}
+
+func TestCompositeDurationConversionsAndPureWeekPreservation(t *testing.T) {
+	fromDur := FromDuration(7*24*time.Hour + time.Hour)
+	assert.NotPanics(t, func() {
+		assert.Equal(t, "P7DT1H", fromDur.String())
+	})
+
+	composite := NewDuration(0, 0, 7, 2, 30, 0, 0)
+	dur, err := composite.ToDuration()
+	assert.NoError(t, err)
+	expectedDur := 7*24*time.Hour + 2*time.Hour + 30*time.Minute
+	assert.Equal(t, expectedDur, dur)
+
+	pure7 := NewDuration(0, 0, 7, 0, 0, 0, 0)
+	assert.Equal(t, "P1W", pure7.String())
+	pure14 := NewDuration(0, 0, 14, 0, 0, 0, 0)
+	assert.Equal(t, "P2W", pure14.String())
+
+	invalidWeekWithHour := NewDuration(0, 1, 0, 1, 0, 0, 0)
+	_, err = invalidWeekWithHour.ToDuration()
+	assert.ErrorIs(t, err, errWeeksNotAlone)
+}

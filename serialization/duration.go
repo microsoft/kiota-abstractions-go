@@ -160,7 +160,7 @@ func (d *duration) normalize() error {
 		d.Days += d.Hours / HtoD
 		d.Hours %= HtoD
 	}
-	if d.Days >= DtoW && d.Days%DtoW == 0 && d.Months == 0 && d.Years == 0 {
+	if d.Days >= DtoW && d.Days%DtoW == 0 && d.Months == 0 && d.Years == 0 && !d.hasTimePart() {
 		d.Weeks += d.Days / DtoW
 		d.Days = 0
 	}

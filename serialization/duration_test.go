@@ -288,3 +288,23 @@ func TestItNormalizes24MonthsTo2Years(t *testing.T) {
 	assert.Equal(t, 2, duration.Years)
 	assert.Equal(t, "P2Y", result)
 }
+
+func TestToDurationPreservesMilliseconds(t *testing.T) {
+	d := NewDuration(0, 0, 0, 0, 0, 1, 500)
+	dur, err := d.ToDuration()
+	assert.NoError(t, err)
+	assert.Equal(t, 1500*time.Millisecond, dur)
+
+	subSecond := NewDuration(0, 0, 0, 0, 0, 0, 450)
+	subDur, err := subSecond.ToDuration()
+	assert.NoError(t, err)
+	assert.Equal(t, 450*time.Millisecond, subDur)
+}
+
+func TestFromDurationToDurationRoundTripMilliseconds(t *testing.T) {
+	expected := 2500 * time.Millisecond
+	isoDur := FromDuration(expected)
+	actual, err := isoDur.ToDuration()
+	assert.NoError(t, err)
+	assert.Equal(t, expected, actual)
+}

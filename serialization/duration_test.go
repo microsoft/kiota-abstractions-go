@@ -308,3 +308,40 @@ func TestFromDurationToDurationRoundTripMilliseconds(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, expected, actual)
 }
+
+func TestCompositeDaysWithTimeDoesNotNormalizeToWeeksOrPanic(t *testing.T) {
+	testCases := []struct {
+		duration *ISODuration
+		expected string
+	}{
+		{
+			duration: NewDuration(0, 0, 7, 1, 0, 0, 0),
+			expected: "P7DT1H",
+		},
+		{
+			duration: NewDuration(0, 0, 14, 0, 30, 0, 0),
+			expected: "P14DT30M",
+		},
+		{
+			duration: NewDuration(0, 0, 21, 0, 0, 45, 0),
+			expected: "P21DT45S",
+		},
+		{
+			duration: NewDuration(0, 0, 28, 2, 15, 30, 0),
+			expected: "P28DT2H15M30S",
+		},
+	}
+
+	for _, tc := range testCases {
+		assert.NotPanics(t, func() {
+			actual := tc.duration.String()
+			assert.Equal(t, tc.expected, actual)
+		})
+	}
+
+	parsed, err := ParseISODuration("P7DT1H")
+	assert.NoError(t, err)
+	assert.NotPanics(t, func() {
+		assert.Equal(t, "P7DT1H", parsed.String())
+	})
+}

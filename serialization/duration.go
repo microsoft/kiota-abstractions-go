@@ -213,6 +213,7 @@ func (d *duration) toDurationWithMonths(daysInAMonth int) (time.Duration, error)
 	tot += time.Hour * time.Duration(d.Hours)
 	tot += time.Minute * time.Duration(d.Minutes)
 	tot += time.Second * time.Duration(d.Seconds)
+	tot += time.Millisecond * time.Duration(d.MilliSeconds)
 
 	return tot, nil
 }

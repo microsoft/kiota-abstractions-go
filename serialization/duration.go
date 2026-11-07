@@ -184,7 +184,7 @@ func (d *duration) normalize() error {
 }
 
 func (d *duration) hasTimePart() bool {
-	return d.Hours != 0 || d.Minutes != 0 || d.Seconds != 0
+	return d.Hours != 0 || d.Minutes != 0 || d.Seconds != 0 || d.MilliSeconds != 0
 }
 
 func (d *duration) toDuration() (time.Duration, error) {

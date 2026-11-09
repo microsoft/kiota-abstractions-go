@@ -9,6 +9,7 @@ import (
 	"math"
 	"regexp"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -123,7 +124,10 @@ func (d *duration) string() string {
 		if d.Minutes > 0 {
 			s.WriteString(fmt.Sprintf("%dM", d.Minutes))
 		}
-		if d.Seconds > 0 {
+		if d.MilliSeconds > 0 {
+			msStr := strings.TrimRight(fmt.Sprintf("%03d", d.MilliSeconds), "0")
+			s.WriteString(fmt.Sprintf("%d.%sS", d.Seconds, msStr))
+		} else if d.Seconds > 0 {
 			s.WriteString(fmt.Sprintf("%dS", d.Seconds))
 		}
 	}

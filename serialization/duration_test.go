@@ -19,7 +19,7 @@ func TestItNormalizesMS(t *testing.T) {
 	// Assert
 	assert.Equal(t, 1, duration.Seconds)
 	assert.Equal(t, 1, duration.MilliSeconds)
-	assert.Equal(t, "PT1S", result)
+	assert.Equal(t, "PT1.001S", result)
 }
 
 func TestItNormalizesS(t *testing.T) {
@@ -366,4 +366,64 @@ func TestCompositeDurationConversionsAndPureWeekPreservation(t *testing.T) {
 	invalidWeekWithHour := NewDuration(0, 1, 0, 1, 0, 0, 0)
 	_, err = invalidWeekWithHour.ToDuration()
 	assert.ErrorIs(t, err, errWeeksNotAlone)
+}
+
+func TestDurationSerializationWithMilliseconds(t *testing.T) {
+	testCases := []struct {
+		name     string
+		duration *ISODuration
+		expected string
+	}{
+		{
+			name:     "sub-second only",
+			duration: NewDuration(0, 0, 0, 0, 0, 0, 500),
+			expected: "PT0.5S",
+		},
+		{
+			name:     "day with sub-second",
+			duration: NewDuration(0, 0, 1, 0, 0, 0, 500),
+			expected: "P1DT0.5S",
+		},
+		{
+			name:     "seconds and milliseconds",
+			duration: NewDuration(0, 0, 0, 0, 0, 1, 500),
+			expected: "PT1.5S",
+		},
+		{
+			name:     "two-digit millisecond fractional precision",
+			duration: NewDuration(0, 0, 0, 0, 0, 0, 50),
+			expected: "PT0.05S",
+		},
+		{
+			name:     "three-digit millisecond fractional precision",
+			duration: NewDuration(0, 0, 0, 0, 0, 0, 5),
+			expected: "PT0.005S",
+		},
+		{
+			name:     "fractional seconds with composite time",
+			duration: NewDuration(0, 0, 0, 2, 30, 15, 250),
+			expected: "PT2H30M15.25S",
+		},
+		{
+			name:     "full date and time components with fractional seconds",
+			duration: NewDuration(1, 0, 2, 3, 4, 5, 600),
+			expected: "P1Y2DT3H4M5.6S",
+		},
+		{
+			name:     "FromDuration with sub-second duration",
+			duration: FromDuration(500 * time.Millisecond),
+			expected: "PT0.5S",
+		},
+		{
+			name:     "FromDuration with composite sub-second duration",
+			duration: FromDuration(time.Hour + 2*time.Second + 750*time.Millisecond),
+			expected: "PT1H2.75S",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert.Equal(t, tc.expected, tc.duration.String())
+		})
+	}
 }

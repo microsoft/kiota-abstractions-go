@@ -9,6 +9,7 @@ import (
 	"math"
 	"regexp"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -123,7 +124,10 @@ func (d *duration) string() string {
 		if d.Minutes > 0 {
 			s.WriteString(fmt.Sprintf("%dM", d.Minutes))
 		}
-		if d.Seconds > 0 {
+		if d.MilliSeconds > 0 {
+			msStr := strings.TrimRight(fmt.Sprintf("%03d", d.MilliSeconds), "0")
+			s.WriteString(fmt.Sprintf("%d.%sS", d.Seconds, msStr))
+		} else if d.Seconds > 0 {
 			s.WriteString(fmt.Sprintf("%dS", d.Seconds))
 		}
 	}
@@ -160,7 +164,7 @@ func (d *duration) normalize() error {
 		d.Days += d.Hours / HtoD
 		d.Hours %= HtoD
 	}
-	if d.Days >= DtoW && d.Days%DtoW == 0 && d.Months == 0 && d.Years == 0 {
+	if d.Days >= DtoW && d.Days%DtoW == 0 && d.Months == 0 && d.Years == 0 && !d.hasTimePart() {
 		d.Weeks += d.Days / DtoW
 		d.Days = 0
 	}
@@ -184,7 +188,7 @@ func (d *duration) normalize() error {
 }
 
 func (d *duration) hasTimePart() bool {
-	return d.Hours != 0 || d.Minutes != 0 || d.Seconds != 0
+	return d.Hours != 0 || d.Minutes != 0 || d.Seconds != 0 || d.MilliSeconds != 0
 }
 
 func (d *duration) toDuration() (time.Duration, error) {
@@ -213,6 +217,7 @@ func (d *duration) toDurationWithMonths(daysInAMonth int) (time.Duration, error)
 	tot += time.Hour * time.Duration(d.Hours)
 	tot += time.Minute * time.Duration(d.Minutes)
 	tot += time.Second * time.Duration(d.Seconds)
+	tot += time.Millisecond * time.Duration(d.MilliSeconds)
 
 	return tot, nil
 }

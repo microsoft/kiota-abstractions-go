@@ -840,6 +840,9 @@ func TestSetContentFromScalarDirectValueTypesAndByteArray(t *testing.T) {
 		{"pointer int32", ptr(int32(32)), "WriteInt32Value", int32(32)},
 		{"direct int64", int64(64), "WriteInt64Value", int64(64)},
 		{"pointer int64", ptr(int64(64)), "WriteInt64Value", int64(64)},
+		{"direct int", int(42), "WriteInt64Value", int64(42)},
+		{"pointer int", ptr(int(42)), "WriteInt64Value", int64(42)},
+		{"nil pointer int", (*int)(nil), "WriteInt64Value", nil},
 		{"direct float32", float32(3.14), "WriteFloat32Value", float32(3.14)},
 		{"pointer float32", ptr(float32(3.14)), "WriteFloat32Value", float32(3.14)},
 		{"direct float64", float64(6.28), "WriteFloat64Value", float64(6.28)},
@@ -1139,4 +1142,26 @@ func TestGetSerializationWriterTypedNilSafety(t *testing.T) {
 	err = req.SetContentFromParsable(context.Background(), adapterWithNilFactory, "application/json", &dummyParsable{})
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "factory cannot be nil")
+}
+
+func TestItSetsContentFromScalarCollectionInt(t *testing.T) {
+	requestInformation := NewRequestInformation()
+	requestInformation.UrlTemplate = "{+baseurl}/users"
+	requestInformation.Method = POST
+
+	callsCounter := make(map[string]int)
+	requestAdapter := &MockRequestAdapter{
+		SerializationWriterFactory: &internal.MockSerializerFactory{
+			SerializationWriter: &internal.MockSerializer{
+				CallsCounter: callsCounter,
+			},
+		},
+	}
+
+	requestInformation.PathParameters["baseurl"] = "http://localhost"
+
+	vals := []any{10, 20, 30}
+	err := requestInformation.SetContentFromScalarCollection(context.Background(), requestAdapter, "application/json", vals)
+	assert.Nil(t, err)
+	assert.Equal(t, 1, callsCounter["WriteCollectionOfInt64Values"])
 }

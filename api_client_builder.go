@@ -57,6 +57,8 @@ func EnableBackingStoreForSerializationWriterFactory(factory s.SerializationWrit
 		return nil
 	}
 	switch v := factory.(type) {
+	case *store.BackingStoreSerializationWriterProxyFactory:
+		enableBackingStoreForSerializationRegistry(s.DefaultSerializationWriterFactoryInstance)
 	case *s.SerializationWriterFactoryRegistry:
 		enableBackingStoreForSerializationRegistry(v)
 	default:

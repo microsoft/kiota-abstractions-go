@@ -87,6 +87,8 @@ func EnableBackingStoreForParseNodeFactory(factory s.ParseNodeFactory) s.ParseNo
 		return nil
 	}
 	switch v := factory.(type) {
+	case *store.BackingStoreParseNodeFactory:
+		enableBackingStoreForParseNodeRegistry(s.DefaultParseNodeFactoryInstance)
 	case *s.ParseNodeFactoryRegistry:
 		enableBackingStoreForParseNodeRegistry(v)
 	default:

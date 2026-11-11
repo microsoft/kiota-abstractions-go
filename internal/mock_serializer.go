@@ -221,7 +221,10 @@ func (*MockSerializer) WriteCollectionOfInt8Values(key string, collection []int8
 func (*MockSerializer) WriteCollectionOfInt32Values(key string, collection []int32) error {
 	return nil
 }
-func (*MockSerializer) WriteCollectionOfInt64Values(key string, collection []int64) error {
+func (m *MockSerializer) WriteCollectionOfInt64Values(key string, collection []int64) error {
+	if m != nil && m.CallsCounter != nil {
+		m.CallsCounter["WriteCollectionOfInt64Values"]++
+	}
 	return nil
 }
 func (*MockSerializer) WriteCollectionOfFloat32Values(key string, collection []float32) error {

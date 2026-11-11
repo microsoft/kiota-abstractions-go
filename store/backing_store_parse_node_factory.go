@@ -27,6 +27,15 @@ func (b *BackingStoreParseNodeFactory) GetRootParseNode(contentType string, cont
 
 // NewBackingStoreParseNodeFactory Initializes a new instance of BackingStoreParseNodeFactory
 func NewBackingStoreParseNodeFactory(factory serialization.ParseNodeFactory) *BackingStoreParseNodeFactory {
+	if b, ok := factory.(*BackingStoreParseNodeFactory); ok {
+		if b == nil {
+			return nil
+		}
+		return b
+	}
+	if factory == nil {
+		return nil
+	}
 	proxyFactory := serialization.NewParseNodeProxyFactory(factory, func(parsable serialization.Parsable) error {
 		if backedModel, ok := parsable.(BackedModel); ok && backedModel.GetBackingStore() != nil {
 			backedModel.GetBackingStore().SetInitializationCompleted(false)

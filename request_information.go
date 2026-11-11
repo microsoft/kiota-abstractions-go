@@ -518,6 +518,16 @@ func (request *RequestInformation) SetContentFromScalar(ctx context.Context, req
 		err = writer.WriteInt64Value("", i64v)
 	} else if i64v, ok := item.(int64); ok {
 		err = writer.WriteInt64Value("", &i64v)
+	} else if iv, ok := item.(*int); ok {
+		if iv != nil {
+			v64 := int64(*iv)
+			err = writer.WriteInt64Value("", &v64)
+		} else {
+			err = writer.WriteInt64Value("", nil)
+		}
+	} else if iv, ok := item.(int); ok {
+		v64 := int64(iv)
+		err = writer.WriteInt64Value("", &v64)
 	} else if f32v, ok := item.(*float32); ok {
 		err = writer.WriteFloat32Value("", f32v)
 	} else if f32v, ok := item.(float32); ok {
@@ -625,6 +635,14 @@ func (request *RequestInformation) SetContentFromScalarCollection(ctx context.Co
 				}
 			}
 			err = writer.WriteCollectionOfInt64Values("", i64c)
+		} else if _, ok := value.(int); ok {
+			ic := make([]int64, len(items))
+			for i, v := range items {
+				if iv, ok := v.(int); ok {
+					ic[i] = int64(iv)
+				}
+			}
+			err = writer.WriteCollectionOfInt64Values("", ic)
 		} else if _, ok := value.(float32); ok {
 			f32c := make([]float32, len(items))
 			for i, v := range items {

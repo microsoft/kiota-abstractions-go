@@ -40,6 +40,25 @@ func TestEnableBackingStoreForSerializationWriterFactory(t *testing.T) {
 	serialization.DefaultSerializationWriterFactoryInstance.ContentTypeAssociatedFactories = make(map[string]serialization.SerializationWriterFactory)
 }
 
+func TestEnableBackingStoreForSerializationWriterFactoryIdempotent(t *testing.T) {
+	factory := &internal.MockSerializerFactory{}
+
+	wrapped := EnableBackingStoreForSerializationWriterFactory(factory)
+	assert.IsType(t, &store.BackingStoreSerializationWriterProxyFactory{}, wrapped)
+
+	// Second enablement should return the same instance without double wrapping
+	reWrapped := EnableBackingStoreForSerializationWriterFactory(wrapped)
+	assert.Same(t, wrapped, reWrapped)
+
+	// Direct constructor idempotency
+	proxyTyped, ok := wrapped.(*store.BackingStoreSerializationWriterProxyFactory)
+	assert.True(t, ok)
+	directConstructorResult := store.NewBackingStoreSerializationWriterProxyFactory(proxyTyped)
+	assert.Same(t, proxyTyped, directConstructorResult)
+
+	serialization.DefaultSerializationWriterFactoryInstance.ContentTypeAssociatedFactories = make(map[string]serialization.SerializationWriterFactory)
+}
+
 func TestEnableBackingStoreForParseNodeFactory(t *testing.T) {
 	parseNodeRegistry := serialization.DefaultParseNodeFactoryInstance
 	factory := internal.NewMockParseNodeFactory()
@@ -51,6 +70,25 @@ func TestEnableBackingStoreForParseNodeFactory(t *testing.T) {
 
 	EnableBackingStoreForParseNodeFactory(factory)
 	assert.IsType(t, &store.BackingStoreParseNodeFactory{}, parseNodeRegistry.ContentTypeAssociatedFactories[StreamContentType])
+	serialization.DefaultParseNodeFactoryInstance.ContentTypeAssociatedFactories = make(map[string]serialization.ParseNodeFactory)
+}
+
+func TestEnableBackingStoreForParseNodeFactoryIdempotent(t *testing.T) {
+	factory := internal.NewMockParseNodeFactory()
+
+	wrapped := EnableBackingStoreForParseNodeFactory(factory)
+	assert.IsType(t, &store.BackingStoreParseNodeFactory{}, wrapped)
+
+	// Second enablement should return the same instance without double wrapping
+	reWrapped := EnableBackingStoreForParseNodeFactory(wrapped)
+	assert.Same(t, wrapped, reWrapped)
+
+	// Direct constructor idempotency
+	proxyTyped, ok := wrapped.(*store.BackingStoreParseNodeFactory)
+	assert.True(t, ok)
+	directConstructorResult := store.NewBackingStoreParseNodeFactory(proxyTyped)
+	assert.Same(t, proxyTyped, directConstructorResult)
+
 	serialization.DefaultParseNodeFactoryInstance.ContentTypeAssociatedFactories = make(map[string]serialization.ParseNodeFactory)
 }
 

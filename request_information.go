@@ -635,6 +635,14 @@ func (request *RequestInformation) SetContentFromScalarCollection(ctx context.Co
 				}
 			}
 			err = writer.WriteCollectionOfInt64Values("", i64c)
+		} else if _, ok := value.(int); ok {
+			ic := make([]int64, len(items))
+			for i, v := range items {
+				if iv, ok := v.(int); ok {
+					ic[i] = int64(iv)
+				}
+			}
+			err = writer.WriteCollectionOfInt64Values("", ic)
 		} else if _, ok := value.(float32); ok {
 			f32c := make([]float32, len(items))
 			for i, v := range items {

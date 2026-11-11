@@ -73,6 +73,25 @@ func TestEnableBackingStoreForParseNodeFactory(t *testing.T) {
 	serialization.DefaultParseNodeFactoryInstance.ContentTypeAssociatedFactories = make(map[string]serialization.ParseNodeFactory)
 }
 
+func TestEnableBackingStoreForParseNodeFactoryIdempotent(t *testing.T) {
+	factory := internal.NewMockParseNodeFactory()
+
+	wrapped := EnableBackingStoreForParseNodeFactory(factory)
+	assert.IsType(t, &store.BackingStoreParseNodeFactory{}, wrapped)
+
+	// Second enablement should return the same instance without double wrapping
+	reWrapped := EnableBackingStoreForParseNodeFactory(wrapped)
+	assert.Same(t, wrapped, reWrapped)
+
+	// Direct constructor idempotency
+	proxyTyped, ok := wrapped.(*store.BackingStoreParseNodeFactory)
+	assert.True(t, ok)
+	directConstructorResult := store.NewBackingStoreParseNodeFactory(proxyTyped)
+	assert.Same(t, proxyTyped, directConstructorResult)
+
+	serialization.DefaultParseNodeFactoryInstance.ContentTypeAssociatedFactories = make(map[string]serialization.ParseNodeFactory)
+}
+
 // IsType asserts that the specified objects are of the same type.
 func IsNotType(t assert.TestingT, expectedType interface{}, object interface{}, msgAndArgs ...interface{}) bool {
 	if assert.ObjectsAreEqual(reflect.TypeOf(object), reflect.TypeOf(expectedType)) {

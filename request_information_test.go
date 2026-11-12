@@ -1306,3 +1306,50 @@ func TestItAddsZeroValueDirectScalarQueryParameters(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, "https://example.com?search=&active=false&top=0&limit=0&ratio=0", uri.String())
 }
+
+func TestItAddsTemporalScalarQueryParameters(t *testing.T) {
+	since := time.Date(2026, 3, 15, 10, 20, 30, 0, time.UTC)
+	until := since.Add(2 * time.Hour)
+	dateOnly := s.NewDateOnly(time.Date(2026, 3, 15, 0, 0, 0, 0, time.UTC))
+	timeOnly, err := s.ParseTimeOnly("10:20:30")
+	assert.NoError(t, err)
+	duration, err := s.ParseISODuration("PT2H")
+	assert.NoError(t, err)
+
+	type temporalQueryParams struct {
+		Since    time.Time     `uriparametername:"since"`
+		Until    *time.Time    `uriparametername:"until"`
+		Deleted  *time.Time    `uriparametername:"deleted"`
+		Date     s.DateOnly    `uriparametername:"date"`
+		Time     s.TimeOnly    `uriparametername:"time"`
+		Duration s.ISODuration `uriparametername:"duration"`
+	}
+
+	req := NewRequestInformation()
+	req.UrlTemplate = "https://example.com{?since,until,deleted,date,time,duration}"
+	req.AddQueryParameters(temporalQueryParams{
+		Since:    since,
+		Until:    &until,
+		Deleted:  nil,
+		Date:     *dateOnly,
+		Time:     *timeOnly,
+		Duration: *duration,
+	})
+
+	assert.Equal(t, "2026-03-15T10:20:30Z", req.QueryParameters["since"])
+	assert.Equal(t, "2026-03-15T12:20:30Z", req.QueryParameters["until"])
+	_, hasDeleted := req.QueryParameters["deleted"]
+	assert.False(t, hasDeleted)
+	assert.Equal(t, "2026-03-15", req.QueryParameters["date"])
+	assert.Equal(t, "10:20:30", req.QueryParameters["time"])
+	assert.Equal(t, "PT2H", req.QueryParameters["duration"])
+
+	uri, err := req.GetUri()
+	assert.NoError(t, err)
+	assert.Contains(t, uri.String(), "since=2026-03-15T10%3A20%3A30Z")
+	assert.Contains(t, uri.String(), "until=2026-03-15T12%3A20%3A30Z")
+	assert.Contains(t, uri.String(), "date=2026-03-15")
+	assert.Contains(t, uri.String(), "time=10%3A20%3A30")
+	assert.Contains(t, uri.String(), "duration=PT2H")
+	assert.NotContains(t, uri.String(), "deleted=")
+}

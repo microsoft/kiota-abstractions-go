@@ -1165,3 +1165,30 @@ func TestItSetsContentFromScalarCollectionInt(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, 1, callsCounter["WriteCollectionOfInt64Values"])
 }
+
+func TestItAddsDirectStringBoolAndInt32QueryParameters(t *testing.T) {
+	type directScalarParams struct {
+		Search string `uriparametername:"search"`
+		Active bool   `uriparametername:"active"`
+		Top    int32  `uriparametername:"top"`
+	}
+
+	req := NewRequestInformation()
+	req.UrlTemplate = "https://example.com{?search,active,top}"
+	req.AddQueryParameters(directScalarParams{
+		Search: "hello",
+		Active: true,
+		Top:    10,
+	})
+
+	assert.Equal(t, "hello", req.QueryParameters["search"])
+	assert.Equal(t, "true", req.QueryParameters["active"])
+	assert.Equal(t, "10", req.QueryParameters["top"])
+	assert.Nil(t, req.QueryParametersAny["search"])
+	assert.Nil(t, req.QueryParametersAny["active"])
+	assert.Nil(t, req.QueryParametersAny["top"])
+
+	uri, err := req.GetUri()
+	assert.NoError(t, err)
+	assert.Equal(t, "https://example.com?search=hello&active=true&top=10", uri.String())
+}

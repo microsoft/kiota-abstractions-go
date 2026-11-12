@@ -1165,3 +1165,224 @@ func TestItSetsContentFromScalarCollectionInt(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, 1, callsCounter["WriteCollectionOfInt64Values"])
 }
+
+func TestItAddsDirectStringBoolAndInt32QueryParameters(t *testing.T) {
+	type directScalarParams struct {
+		Search string `uriparametername:"search"`
+		Active bool   `uriparametername:"active"`
+		Top    int32  `uriparametername:"top"`
+	}
+
+	req := NewRequestInformation()
+	req.UrlTemplate = "https://example.com{?search,active,top}"
+	req.AddQueryParameters(directScalarParams{
+		Search: "hello",
+		Active: true,
+		Top:    10,
+	})
+
+	assert.Equal(t, "hello", req.QueryParameters["search"])
+	assert.Equal(t, "true", req.QueryParameters["active"])
+	assert.Equal(t, "10", req.QueryParameters["top"])
+	assert.Nil(t, req.QueryParametersAny["search"])
+	assert.Nil(t, req.QueryParametersAny["active"])
+	assert.Nil(t, req.QueryParametersAny["top"])
+
+	uri, err := req.GetUri()
+	assert.NoError(t, err)
+	assert.Equal(t, "https://example.com?search=hello&active=true&top=10", uri.String())
+}
+
+func TestItAddsDirectIntegerQueryParameters(t *testing.T) {
+	type directIntParams struct {
+		I   int    `uriparametername:"i"`
+		I8  int8   `uriparametername:"i8"`
+		I16 int16  `uriparametername:"i16"`
+		I64 int64  `uriparametername:"i64"`
+		U   uint   `uriparametername:"u"`
+		U8  uint8  `uriparametername:"u8"`
+		U16 uint16 `uriparametername:"u16"`
+		U32 uint32 `uriparametername:"u32"`
+		U64 uint64 `uriparametername:"u64"`
+	}
+
+	req := NewRequestInformation()
+	req.UrlTemplate = "https://example.com{?i,i8,i16,i64}"
+	req.AddQueryParameters(directIntParams{
+		I:   -1,
+		I8:  -8,
+		I16: -16,
+		I64: 64,
+		U:   1,
+		U8:  8,
+		U16: 16,
+		U32: 32,
+		U64: 640,
+	})
+
+	assert.Equal(t, int(-1), req.QueryParametersAny["i"])
+	assert.Equal(t, int8(-8), req.QueryParametersAny["i8"])
+	assert.Equal(t, int16(-16), req.QueryParametersAny["i16"])
+	assert.Equal(t, int64(64), req.QueryParametersAny["i64"])
+	assert.Equal(t, uint(1), req.QueryParametersAny["u"])
+	assert.Equal(t, uint8(8), req.QueryParametersAny["u8"])
+	assert.Equal(t, uint16(16), req.QueryParametersAny["u16"])
+	assert.Equal(t, uint32(32), req.QueryParametersAny["u32"])
+	assert.Equal(t, uint64(640), req.QueryParametersAny["u64"])
+
+	uri, err := req.GetUri()
+	assert.NoError(t, err)
+	assert.Equal(t, "https://example.com?i=-1&i8=-8&i16=-16&i64=64", uri.String())
+}
+
+func TestItAddsDirectFloatQueryParameters(t *testing.T) {
+	type directFloatParams struct {
+		Ratio32 float32 `uriparametername:"ratio32"`
+		Ratio64 float64 `uriparametername:"ratio64"`
+	}
+
+	req := NewRequestInformation()
+	req.UrlTemplate = "https://example.com{?ratio32,ratio64}"
+	req.AddQueryParameters(directFloatParams{
+		Ratio32: 1.5,
+		Ratio64: 3.14,
+	})
+
+	assert.Equal(t, float32(1.5), req.QueryParametersAny["ratio32"])
+	assert.Equal(t, 3.14, req.QueryParametersAny["ratio64"])
+
+	uri, err := req.GetUri()
+	assert.NoError(t, err)
+	assert.Equal(t, "https://example.com?ratio32=1.5&ratio64=3.14", uri.String())
+}
+
+func TestItBuildsUriFromMixedDirectScalarQueryParameters(t *testing.T) {
+	type mixedDirectQueryParams struct {
+		Search string  `uriparametername:"search"`
+		Active bool    `uriparametername:"active"`
+		Top    int32   `uriparametername:"top"`
+		Limit  int64   `uriparametername:"limit"`
+		Ratio  float64 `uriparametername:"ratio"`
+	}
+
+	req := NewRequestInformation()
+	req.UrlTemplate = "{+baseurl}/items{?search,active,top,limit,ratio}"
+	req.PathParametersAny["baseurl"] = "https://example.com"
+	req.AddQueryParameters(mixedDirectQueryParams{
+		Search: "hello world",
+		Active: true,
+		Top:    10,
+		Limit:  100,
+		Ratio:  3.14,
+	})
+
+	uri, err := req.GetUri()
+	assert.NoError(t, err)
+	assert.Equal(t, "https://example.com/items?search=hello%20world&active=true&top=10&limit=100&ratio=3.14", uri.String())
+}
+
+func TestItAddsZeroValueDirectScalarQueryParameters(t *testing.T) {
+	type zeroValueParams struct {
+		Search string  `uriparametername:"search"`
+		Active bool    `uriparametername:"active"`
+		Top    int32   `uriparametername:"top"`
+		Limit  int64   `uriparametername:"limit"`
+		Ratio  float64 `uriparametername:"ratio"`
+	}
+
+	req := NewRequestInformation()
+	req.UrlTemplate = "https://example.com{?search,active,top,limit,ratio}"
+	req.AddQueryParameters(zeroValueParams{})
+
+	val, hasSearch := req.QueryParameters["search"]
+	assert.True(t, hasSearch)
+	assert.Equal(t, "", val)
+	assert.Equal(t, "false", req.QueryParameters["active"])
+	assert.Equal(t, "0", req.QueryParameters["top"])
+	assert.Equal(t, int64(0), req.QueryParametersAny["limit"])
+	assert.Equal(t, float64(0), req.QueryParametersAny["ratio"])
+
+	uri, err := req.GetUri()
+	assert.NoError(t, err)
+	assert.Equal(t, "https://example.com?search=&active=false&top=0&limit=0&ratio=0", uri.String())
+}
+
+func TestItAddsTemporalScalarQueryParameters(t *testing.T) {
+	since := time.Date(2026, 3, 15, 10, 20, 30, 0, time.UTC)
+	until := since.Add(2 * time.Hour)
+	dateOnly := s.NewDateOnly(time.Date(2026, 3, 15, 0, 0, 0, 0, time.UTC))
+	timeOnly, err := s.ParseTimeOnly("10:20:30")
+	assert.NoError(t, err)
+	duration, err := s.ParseISODuration("PT2H")
+	assert.NoError(t, err)
+
+	type temporalQueryParams struct {
+		Since    time.Time     `uriparametername:"since"`
+		Until    *time.Time    `uriparametername:"until"`
+		Deleted  *time.Time    `uriparametername:"deleted"`
+		Date     s.DateOnly    `uriparametername:"date"`
+		Time     s.TimeOnly    `uriparametername:"time"`
+		Duration s.ISODuration `uriparametername:"duration"`
+	}
+
+	req := NewRequestInformation()
+	req.UrlTemplate = "https://example.com{?since,until,deleted,date,time,duration}"
+	req.AddQueryParameters(temporalQueryParams{
+		Since:    since,
+		Until:    &until,
+		Deleted:  nil,
+		Date:     *dateOnly,
+		Time:     *timeOnly,
+		Duration: *duration,
+	})
+
+	assert.Equal(t, "2026-03-15T10:20:30Z", req.QueryParameters["since"])
+	assert.Equal(t, "2026-03-15T12:20:30Z", req.QueryParameters["until"])
+	_, hasDeleted := req.QueryParameters["deleted"]
+	assert.False(t, hasDeleted)
+	assert.Equal(t, "2026-03-15", req.QueryParameters["date"])
+	assert.Equal(t, "10:20:30", req.QueryParameters["time"])
+	assert.Equal(t, "PT2H", req.QueryParameters["duration"])
+
+	uri, err := req.GetUri()
+	assert.NoError(t, err)
+	assert.Contains(t, uri.String(), "since=2026-03-15T10%3A20%3A30Z")
+	assert.Contains(t, uri.String(), "until=2026-03-15T12%3A20%3A30Z")
+	assert.Contains(t, uri.String(), "date=2026-03-15")
+	assert.Contains(t, uri.String(), "time=10%3A20%3A30")
+	assert.Contains(t, uri.String(), "duration=PT2H")
+	assert.NotContains(t, uri.String(), "deleted=")
+}
+
+func TestItAddsDirectScalarsViaPointerStructAndNamedNumericTypes(t *testing.T) {
+	type customLimit int64
+	type mixedPointerAndDirectParams struct {
+		Filter     string      `uriparametername:"filter"`
+		Optional   *string     `uriparametername:"optional"`
+		Limit      int64       `uriparametername:"limit"`
+		Custom     customLimit `uriparametername:"custom"`
+		NilPointer *int64      `uriparametername:"nilPointer"`
+	}
+
+	req := NewRequestInformation()
+	req.UrlTemplate = "https://example.com{?filter,optional,limit,nilPointer}"
+	req.AddQueryParameters(&mixedPointerAndDirectParams{
+		Filter:     "enabled",
+		Optional:   nil,
+		Limit:      25,
+		Custom:     customLimit(99),
+		NilPointer: nil,
+	})
+
+	assert.Equal(t, "enabled", req.QueryParameters["filter"])
+	_, hasOptional := req.QueryParameters["optional"]
+	assert.False(t, hasOptional)
+	assert.Equal(t, int64(25), req.QueryParametersAny["limit"])
+	assert.Equal(t, customLimit(99), req.QueryParametersAny["custom"])
+	_, hasNilPointer := req.QueryParametersAny["nilPointer"]
+	assert.False(t, hasNilPointer)
+
+	uri, err := req.GetUri()
+	assert.NoError(t, err)
+	assert.Equal(t, "https://example.com?filter=enabled&limit=25", uri.String())
+}

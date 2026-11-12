@@ -788,7 +788,7 @@ func (request *RequestInformation) AddQueryParameters(source any) {
 // enum -> string (name)
 // []enum -> []string (containing names)
 // []non_interface -> []any (like []int64 -> []any)
-// *numeric -> numeric (like *int64 -> int64)
+// numeric / *numeric -> numeric (like int64 / *int64 -> int64)
 func (request *RequestInformation) normalizeParameters(valueOfValue reflect.Value, value any, returnNilIfNotNormalizable bool) any {
 	if valueOfValue.Kind() == reflect.Slice && valueOfValue.Len() > 0 {
 		//type assertions to "enums" don't work if you don't know the enum type in advance, we need to use reflection
@@ -809,13 +809,8 @@ func (request *RequestInformation) normalizeParameters(valueOfValue reflect.Valu
 		}
 	} else if enum, ok := value.(kiotaEnum); ok {
 		return enum.String()
-	} else if valueOfValue.Kind() == reflect.Pointer && !valueOfValue.IsNil() {
-		switch elem := valueOfValue.Elem(); elem.Kind() {
-		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
-			reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64,
-			reflect.Float32, reflect.Float64:
-			return elem.Interface()
-		}
+	} else if numeric, ok := extractNumericValue(valueOfValue); ok {
+		return numeric
 	}
 
 	if returnNilIfNotNormalizable {
@@ -854,4 +849,23 @@ func formatScalarQueryParameter(value any) (string, bool) {
 		return strconv.FormatInt(int64(v), 10), true
 	}
 	return "", false
+}
+
+// extractNumericValue unwraps pointer and direct integer or floating-point values
+// so normalizeParameters preserves them for URI template expansion.
+func extractNumericValue(v reflect.Value) (any, bool) {
+	if v.Kind() == reflect.Pointer {
+		if v.IsNil() {
+			return nil, false
+		}
+		v = v.Elem()
+	}
+	switch v.Kind() {
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
+		reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64,
+		reflect.Float32, reflect.Float64:
+		return v.Interface(), true
+	default:
+		return nil, false
+	}
 }

@@ -1192,3 +1192,45 @@ func TestItAddsDirectStringBoolAndInt32QueryParameters(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, "https://example.com?search=hello&active=true&top=10", uri.String())
 }
+
+func TestItAddsDirectIntegerQueryParameters(t *testing.T) {
+	type directIntParams struct {
+		I   int    `uriparametername:"i"`
+		I8  int8   `uriparametername:"i8"`
+		I16 int16  `uriparametername:"i16"`
+		I64 int64  `uriparametername:"i64"`
+		U   uint   `uriparametername:"u"`
+		U8  uint8  `uriparametername:"u8"`
+		U16 uint16 `uriparametername:"u16"`
+		U32 uint32 `uriparametername:"u32"`
+		U64 uint64 `uriparametername:"u64"`
+	}
+
+	req := NewRequestInformation()
+	req.UrlTemplate = "https://example.com{?i,i8,i16,i64}"
+	req.AddQueryParameters(directIntParams{
+		I:   -1,
+		I8:  -8,
+		I16: -16,
+		I64: 64,
+		U:   1,
+		U8:  8,
+		U16: 16,
+		U32: 32,
+		U64: 640,
+	})
+
+	assert.Equal(t, int(-1), req.QueryParametersAny["i"])
+	assert.Equal(t, int8(-8), req.QueryParametersAny["i8"])
+	assert.Equal(t, int16(-16), req.QueryParametersAny["i16"])
+	assert.Equal(t, int64(64), req.QueryParametersAny["i64"])
+	assert.Equal(t, uint(1), req.QueryParametersAny["u"])
+	assert.Equal(t, uint8(8), req.QueryParametersAny["u8"])
+	assert.Equal(t, uint16(16), req.QueryParametersAny["u16"])
+	assert.Equal(t, uint32(32), req.QueryParametersAny["u32"])
+	assert.Equal(t, uint64(640), req.QueryParametersAny["u64"])
+
+	uri, err := req.GetUri()
+	assert.NoError(t, err)
+	assert.Equal(t, "https://example.com?i=-1&i8=-8&i16=-16&i64=64", uri.String())
+}

@@ -1280,3 +1280,29 @@ func TestItBuildsUriFromMixedDirectScalarQueryParameters(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, "https://example.com/items?search=hello%20world&active=true&top=10&limit=100&ratio=3.14", uri.String())
 }
+
+func TestItAddsZeroValueDirectScalarQueryParameters(t *testing.T) {
+	type zeroValueParams struct {
+		Search string  `uriparametername:"search"`
+		Active bool    `uriparametername:"active"`
+		Top    int32   `uriparametername:"top"`
+		Limit  int64   `uriparametername:"limit"`
+		Ratio  float64 `uriparametername:"ratio"`
+	}
+
+	req := NewRequestInformation()
+	req.UrlTemplate = "https://example.com{?search,active,top,limit,ratio}"
+	req.AddQueryParameters(zeroValueParams{})
+
+	val, hasSearch := req.QueryParameters["search"]
+	assert.True(t, hasSearch)
+	assert.Equal(t, "", val)
+	assert.Equal(t, "false", req.QueryParameters["active"])
+	assert.Equal(t, "0", req.QueryParameters["top"])
+	assert.Equal(t, int64(0), req.QueryParametersAny["limit"])
+	assert.Equal(t, float64(0), req.QueryParametersAny["ratio"])
+
+	uri, err := req.GetUri()
+	assert.NoError(t, err)
+	assert.Equal(t, "https://example.com?search=&active=false&top=0&limit=0&ratio=0", uri.String())
+}

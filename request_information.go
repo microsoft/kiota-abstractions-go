@@ -754,19 +754,10 @@ func (request *RequestInformation) AddQueryParameters(source any) {
 			request.QueryParametersAny = make(map[string]any)
 		}
 		valueOfValue := reflect.ValueOf(value)
-		str, ok := value.(*string)
-		if ok && str != nil {
-			request.QueryParameters[fieldName] = *str
-		}
-		bl, ok := value.(*bool)
-		if ok && bl != nil {
-			request.QueryParameters[fieldName] = strconv.FormatBool(*bl)
-		}
-		it, ok := value.(*int32)
-		if ok && it != nil {
+		if formatted, ok := formatScalarQueryParameter(value); ok {
 			// rendered into the deprecated QueryParameters map only; QueryParametersAny is
-			// documented to stay empty for it, so don't let it reach normalizeParameters
-			request.QueryParameters[fieldName] = strconv.FormatInt(int64(*it), 10)
+			// documented to stay empty for string, bool, and int32
+			request.QueryParameters[fieldName] = formatted
 			continue
 		}
 		strArr, ok := value.([]string)
@@ -836,4 +827,31 @@ func (request *RequestInformation) normalizeParameters(valueOfValue reflect.Valu
 
 type kiotaEnum interface {
 	String() string
+}
+
+// formatScalarQueryParameter formats string, bool, and int32 query parameters
+// (both direct values and non-nil pointers) for RequestInformation.QueryParameters,
+// keeping QueryParametersAny empty for those types.
+func formatScalarQueryParameter(value any) (string, bool) {
+	switch v := value.(type) {
+	case *string:
+		if v != nil {
+			return *v, true
+		}
+	case string:
+		return v, true
+	case *bool:
+		if v != nil {
+			return strconv.FormatBool(*v), true
+		}
+	case bool:
+		return strconv.FormatBool(v), true
+	case *int32:
+		if v != nil {
+			return strconv.FormatInt(int64(*v), 10), true
+		}
+	case int32:
+		return strconv.FormatInt(int64(v), 10), true
+	}
+	return "", false
 }

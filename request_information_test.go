@@ -1234,3 +1234,24 @@ func TestItAddsDirectIntegerQueryParameters(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, "https://example.com?i=-1&i8=-8&i16=-16&i64=64", uri.String())
 }
+
+func TestItAddsDirectFloatQueryParameters(t *testing.T) {
+	type directFloatParams struct {
+		Ratio32 float32 `uriparametername:"ratio32"`
+		Ratio64 float64 `uriparametername:"ratio64"`
+	}
+
+	req := NewRequestInformation()
+	req.UrlTemplate = "https://example.com{?ratio32,ratio64}"
+	req.AddQueryParameters(directFloatParams{
+		Ratio32: 1.5,
+		Ratio64: 3.14,
+	})
+
+	assert.Equal(t, float32(1.5), req.QueryParametersAny["ratio32"])
+	assert.Equal(t, 3.14, req.QueryParametersAny["ratio64"])
+
+	uri, err := req.GetUri()
+	assert.NoError(t, err)
+	assert.Equal(t, "https://example.com?ratio32=1.5&ratio64=3.14", uri.String())
+}

@@ -1255,3 +1255,28 @@ func TestItAddsDirectFloatQueryParameters(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, "https://example.com?ratio32=1.5&ratio64=3.14", uri.String())
 }
+
+func TestItBuildsUriFromMixedDirectScalarQueryParameters(t *testing.T) {
+	type mixedDirectQueryParams struct {
+		Search string  `uriparametername:"search"`
+		Active bool    `uriparametername:"active"`
+		Top    int32   `uriparametername:"top"`
+		Limit  int64   `uriparametername:"limit"`
+		Ratio  float64 `uriparametername:"ratio"`
+	}
+
+	req := NewRequestInformation()
+	req.UrlTemplate = "{+baseurl}/items{?search,active,top,limit,ratio}"
+	req.PathParametersAny["baseurl"] = "https://example.com"
+	req.AddQueryParameters(mixedDirectQueryParams{
+		Search: "hello world",
+		Active: true,
+		Top:    10,
+		Limit:  100,
+		Ratio:  3.14,
+	})
+
+	uri, err := req.GetUri()
+	assert.NoError(t, err)
+	assert.Equal(t, "https://example.com/items?search=hello%20world&active=true&top=10&limit=100&ratio=3.14", uri.String())
+}

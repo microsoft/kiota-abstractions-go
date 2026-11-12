@@ -1353,3 +1353,36 @@ func TestItAddsTemporalScalarQueryParameters(t *testing.T) {
 	assert.Contains(t, uri.String(), "duration=PT2H")
 	assert.NotContains(t, uri.String(), "deleted=")
 }
+
+func TestItAddsDirectScalarsViaPointerStructAndNamedNumericTypes(t *testing.T) {
+	type customLimit int64
+	type mixedPointerAndDirectParams struct {
+		Filter     string      `uriparametername:"filter"`
+		Optional   *string     `uriparametername:"optional"`
+		Limit      int64       `uriparametername:"limit"`
+		Custom     customLimit `uriparametername:"custom"`
+		NilPointer *int64      `uriparametername:"nilPointer"`
+	}
+
+	req := NewRequestInformation()
+	req.UrlTemplate = "https://example.com{?filter,optional,limit,nilPointer}"
+	req.AddQueryParameters(&mixedPointerAndDirectParams{
+		Filter:     "enabled",
+		Optional:   nil,
+		Limit:      25,
+		Custom:     customLimit(99),
+		NilPointer: nil,
+	})
+
+	assert.Equal(t, "enabled", req.QueryParameters["filter"])
+	_, hasOptional := req.QueryParameters["optional"]
+	assert.False(t, hasOptional)
+	assert.Equal(t, int64(25), req.QueryParametersAny["limit"])
+	assert.Equal(t, customLimit(99), req.QueryParametersAny["custom"])
+	_, hasNilPointer := req.QueryParametersAny["nilPointer"]
+	assert.False(t, hasNilPointer)
+
+	uri, err := req.GetUri()
+	assert.NoError(t, err)
+	assert.Equal(t, "https://example.com?filter=enabled&limit=25", uri.String())
+}

@@ -2,6 +2,29 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.12.2](https://github.com/microsoft/kiota-abstractions-go/compare/v1.12.1...v1.12.2) (2026-11-12)
+
+
+### Bug Fixes
+
+* **abstractions, store:** ensure backing store enablement idempotency and support int scalar serialization ([d0569a4](https://github.com/microsoft/kiota-abstractions-go/commit/d0569a4cc7a28bbbbf06a0543f73f022d885440c))
+* **abstractions:** normalize direct numeric scalar parameters ([8a10b6c](https://github.com/microsoft/kiota-abstractions-go/commit/8a10b6cc93b9ef51a37a93d15e5d8b4c50d13952))
+* **abstractions:** prevent double-wrapping in EnableBackingStoreForParseNodeFactory ([5a5341e](https://github.com/microsoft/kiota-abstractions-go/commit/5a5341e5b13149c46177439d68d6b534c93c3585))
+* **abstractions:** prevent double-wrapping in EnableBackingStoreForSerializationWriterFactory ([d2d17b8](https://github.com/microsoft/kiota-abstractions-go/commit/d2d17b8fe6545a42c402342f88e256fbe6e14e64))
+* **abstractions:** support direct scalar fields in AddQueryParameters ([43b8b50](https://github.com/microsoft/kiota-abstractions-go/commit/43b8b508bf00fd97f6280952a357f8cca6c38b8c))
+* **abstractions:** support direct string, bool, and int32 query parameters ([bf5a589](https://github.com/microsoft/kiota-abstractions-go/commit/bf5a58902aedc1615b949a819c0e1c967e9a7375))
+* **abstractions:** support int and int pointer in RequestInformation.SetContentFromScalar ([b3ad9cc](https://github.com/microsoft/kiota-abstractions-go/commit/b3ad9cc308d727e4fff12ac89753e790225fc357))
+* **abstractions:** support int slices in RequestInformation.SetContentFromScalarCollection ([a729863](https://github.com/microsoft/kiota-abstractions-go/commit/a729863dc345ab20ef68dc5f599aa3d8fa1b3925))
+* **serialization:** account for milliseconds in duration.hasTimePart ([19791c9](https://github.com/microsoft/kiota-abstractions-go/commit/19791c9da46a5f3f9e718ee394ba3375850a1270))
+* **serialization:** anchor ISO duration regexes, support integer seconds, and format zero duration ([1193d38](https://github.com/microsoft/kiota-abstractions-go/commit/1193d38e62d0951c3debf6161c28c9d4de11a3f5))
+* **serialization:** emit fractional seconds when milliseconds are present in duration string ([199428b](https://github.com/microsoft/kiota-abstractions-go/commit/199428b46a6d7b3eca767ba6a3d0b03755701a9a))
+* **serialization:** handle integer seconds in ISO durations and reject component-free strings ([3d1c59e](https://github.com/microsoft/kiota-abstractions-go/commit/3d1c59e9c38da97b5ced693967060fa5236324f1))
+* **serialization:** preserve millisecond precision in ISODuration.ToDuration ([c2ef044](https://github.com/microsoft/kiota-abstractions-go/commit/c2ef044011cdccc5b0ef1c6b3855c88ad4e1e2b5))
+* **serialization:** prevent invalid week normalization and preserve millisecond precision in durations ([6102fb1](https://github.com/microsoft/kiota-abstractions-go/commit/6102fb171e9e0cb70f8109661b854bc1b7959c1c))
+* **serialization:** prevent invalid week normalization on durations with time components ([99c14f4](https://github.com/microsoft/kiota-abstractions-go/commit/99c14f40e5f7e93afe331d1de3e2bef598287728))
+* **store:** make NewBackingStoreParseNodeFactory idempotent ([9605a71](https://github.com/microsoft/kiota-abstractions-go/commit/9605a714c903bd4950e9f3bc26348e15d6102101))
+* **store:** make NewBackingStoreSerializationWriterProxyFactory idempotent ([6b03eee](https://github.com/microsoft/kiota-abstractions-go/commit/6b03eee7608efdbfaac952fcde7beeccf2e7cd20))
+
 ## [1.12.1](https://github.com/microsoft/kiota-abstractions-go/compare/v1.12.0...v1.12.1) (2026-11-05)
 
 

@@ -311,3 +311,45 @@ func TestBackingStoreSerializationWriterProxyFactory_EscapedKeywordAndODataResol
 	assert.Contains(t, writer.writtenNullKeys, "@odata.type")
 	assert.Len(t, writer.writtenNullKeys, 2)
 }
+
+func TestBackingStoreSerializationWriterProxyFactory_FallbackToOriginalKey(t *testing.T) {
+	writer := &mockRecordingSerializationWriter{}
+	factory := NewBackingStoreSerializationWriterProxyFactory(&mockWriterFactoryForStore{writer: writer})
+
+	writerRes, err := factory.GetSerializationWriter("application/json")
+	require.NoError(t, err)
+	require.NotNil(t, writerRes)
+
+	// Model with nil deserializers
+	model := newMockParsableWithDeserializers(nil)
+	model.GetBackingStore().SetInitializationCompleted(true)
+	model.GetBackingStore().Set("customUnmappedKey", nil)
+
+	startAction := writerRes.GetOnStartObjectSerialization()
+	require.NotNil(t, startAction)
+
+	err = startAction(model, writer)
+	require.NoError(t, err)
+
+	assert.Equal(t, []string{"customUnmappedKey"}, writer.writtenNullKeys)
+
+	// Model with non-empty deserializers, but key has no match
+	writer2 := &mockRecordingSerializationWriter{}
+	factory2 := NewBackingStoreSerializationWriterProxyFactory(&mockWriterFactoryForStore{writer: writer2})
+	writerRes2, err := factory2.GetSerializationWriter("application/json")
+	require.NoError(t, err)
+
+	model2 := newMockParsableWithDeserializers(map[string]func(serialization.ParseNode) error{
+		"known_property": func(serialization.ParseNode) error { return nil },
+	})
+	model2.GetBackingStore().SetInitializationCompleted(true)
+	model2.GetBackingStore().Set("unrelatedField", nil)
+
+	startAction2 := writerRes2.GetOnStartObjectSerialization()
+	require.NotNil(t, startAction2)
+
+	err = startAction2(model2, writer2)
+	require.NoError(t, err)
+
+	assert.Equal(t, []string{"unrelatedField"}, writer2.writtenNullKeys)
+}

@@ -284,3 +284,30 @@ func TestBackingStoreSerializationWriterProxyFactory_SnakeCaseResolution(t *test
 
 	assert.Equal(t, []string{"first_name"}, writer.writtenNullKeys)
 }
+
+func TestBackingStoreSerializationWriterProxyFactory_EscapedKeywordAndODataResolution(t *testing.T) {
+	writer := &mockRecordingSerializationWriter{}
+	factory := NewBackingStoreSerializationWriterProxyFactory(&mockWriterFactoryForStore{writer: writer})
+
+	writerRes, err := factory.GetSerializationWriter("application/json")
+	require.NoError(t, err)
+	require.NotNil(t, writerRes)
+
+	model := newMockParsableWithDeserializers(map[string]func(serialization.ParseNode) error{
+		"type":        func(serialization.ParseNode) error { return nil },
+		"@odata.type": func(serialization.ParseNode) error { return nil },
+	})
+	model.GetBackingStore().SetInitializationCompleted(true)
+	model.GetBackingStore().Set("escapedType", nil)
+	model.GetBackingStore().Set("odataType", nil)
+
+	startAction := writerRes.GetOnStartObjectSerialization()
+	require.NotNil(t, startAction)
+
+	err = startAction(model, writer)
+	require.NoError(t, err)
+
+	assert.Contains(t, writer.writtenNullKeys, "type")
+	assert.Contains(t, writer.writtenNullKeys, "@odata.type")
+	assert.Len(t, writer.writtenNullKeys, 2)
+}

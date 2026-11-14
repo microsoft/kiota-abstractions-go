@@ -211,3 +211,52 @@ func TestBackingStoreFactories_NilGuards(t *testing.T) {
 	assert.Error(t, err)
 	assert.Nil(t, writer)
 }
+
+type mockParsableWithDeserializers struct {
+	testBackedModel
+	fields map[string]func(serialization.ParseNode) error
+}
+
+func newMockParsableWithDeserializers(fields map[string]func(serialization.ParseNode) error) *mockParsableWithDeserializers {
+	return &mockParsableWithDeserializers{
+		testBackedModel: *newTestBackedModel(),
+		fields:          fields,
+	}
+}
+
+func (m *mockParsableWithDeserializers) GetFieldDeserializers() map[string]func(serialization.ParseNode) error {
+	return m.fields
+}
+
+type mockRecordingSerializationWriter struct {
+	mockWriterWithCallbacksForStore
+	writtenNullKeys []string
+}
+
+func (m *mockRecordingSerializationWriter) WriteNullValue(key string) error {
+	m.writtenNullKeys = append(m.writtenNullKeys, key)
+	return nil
+}
+
+func TestBackingStoreSerializationWriterProxyFactory_KebabCaseResolution(t *testing.T) {
+	writer := &mockRecordingSerializationWriter{}
+	factory := NewBackingStoreSerializationWriterProxyFactory(&mockWriterFactoryForStore{writer: writer})
+
+	writerRes, err := factory.GetSerializationWriter("application/json")
+	require.NoError(t, err)
+	require.NotNil(t, writerRes)
+
+	model := newMockParsableWithDeserializers(map[string]func(serialization.ParseNode) error{
+		"org-name": func(serialization.ParseNode) error { return nil },
+	})
+	model.GetBackingStore().SetInitializationCompleted(true)
+	model.GetBackingStore().Set("orgName", nil)
+
+	startAction := writerRes.GetOnStartObjectSerialization()
+	require.NotNil(t, startAction)
+
+	err = startAction(model, writer)
+	require.NoError(t, err)
+
+	assert.Equal(t, []string{"org-name"}, writer.writtenNullKeys)
+}

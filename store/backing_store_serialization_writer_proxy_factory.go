@@ -108,5 +108,14 @@ func resolveSerializedKey(k string, deserializers map[string]func(serialization.
 			return propName
 		}
 	}
+	trimmedK := strings.TrimPrefix(normK, "escaped")
+	trimmedK = strings.TrimSuffix(trimmedK, "escaped")
+	if trimmedK != normK && trimmedK != "" {
+		for propName := range deserializers {
+			if normalizeKey(propName) == trimmedK {
+				return propName
+			}
+		}
+	}
 	return k
 }

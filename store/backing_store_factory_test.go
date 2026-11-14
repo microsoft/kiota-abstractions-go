@@ -260,3 +260,27 @@ func TestBackingStoreSerializationWriterProxyFactory_KebabCaseResolution(t *test
 
 	assert.Equal(t, []string{"org-name"}, writer.writtenNullKeys)
 }
+
+func TestBackingStoreSerializationWriterProxyFactory_SnakeCaseResolution(t *testing.T) {
+	writer := &mockRecordingSerializationWriter{}
+	factory := NewBackingStoreSerializationWriterProxyFactory(&mockWriterFactoryForStore{writer: writer})
+
+	writerRes, err := factory.GetSerializationWriter("application/json")
+	require.NoError(t, err)
+	require.NotNil(t, writerRes)
+
+	model := newMockParsableWithDeserializers(map[string]func(serialization.ParseNode) error{
+		"first_name":   func(serialization.ParseNode) error { return nil },
+		"home_address": func(serialization.ParseNode) error { return nil },
+	})
+	model.GetBackingStore().SetInitializationCompleted(true)
+	model.GetBackingStore().Set("firstName", nil)
+
+	startAction := writerRes.GetOnStartObjectSerialization()
+	require.NotNil(t, startAction)
+
+	err = startAction(model, writer)
+	require.NoError(t, err)
+
+	assert.Equal(t, []string{"first_name"}, writer.writtenNullKeys)
+}

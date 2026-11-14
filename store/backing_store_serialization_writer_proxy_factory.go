@@ -2,6 +2,7 @@ package store
 
 import (
 	"errors"
+	"sort"
 	"strings"
 
 	"github.com/microsoft/kiota-abstractions-go/serialization"
@@ -50,12 +51,16 @@ func NewBackingStoreSerializationWriterProxyFactory(factory serialization.Serial
 		}
 		return nil
 	}, func(parsable serialization.Parsable, writer serialization.SerializationWriter) error {
+		if writer == nil {
+			return nil
+		}
 		if backedModel, ok := parsable.(BackedModel); ok && backedModel.GetBackingStore() != nil {
 
 			nilValues := backedModel.GetBackingStore().EnumerateKeysForValuesChangedToNil()
 			if len(nilValues) == 0 {
 				return nil
 			}
+			sort.Strings(nilValues)
 			var deserializers map[string]func(serialization.ParseNode) error
 			if parsable != nil {
 				deserializers = parsable.GetFieldDeserializers()

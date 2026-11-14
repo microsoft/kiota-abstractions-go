@@ -211,3 +211,175 @@ func TestBackingStoreFactories_NilGuards(t *testing.T) {
 	assert.Error(t, err)
 	assert.Nil(t, writer)
 }
+
+type mockParsableWithDeserializers struct {
+	testBackedModel
+	fields map[string]func(serialization.ParseNode) error
+}
+
+func newMockParsableWithDeserializers(fields map[string]func(serialization.ParseNode) error) *mockParsableWithDeserializers {
+	return &mockParsableWithDeserializers{
+		testBackedModel: *newTestBackedModel(),
+		fields:          fields,
+	}
+}
+
+func (m *mockParsableWithDeserializers) GetFieldDeserializers() map[string]func(serialization.ParseNode) error {
+	return m.fields
+}
+
+type mockRecordingSerializationWriter struct {
+	mockWriterWithCallbacksForStore
+	writtenNullKeys []string
+}
+
+func (m *mockRecordingSerializationWriter) WriteNullValue(key string) error {
+	m.writtenNullKeys = append(m.writtenNullKeys, key)
+	return nil
+}
+
+func TestBackingStoreSerializationWriterProxyFactory_KebabCaseResolution(t *testing.T) {
+	writer := &mockRecordingSerializationWriter{}
+	factory := NewBackingStoreSerializationWriterProxyFactory(&mockWriterFactoryForStore{writer: writer})
+
+	writerRes, err := factory.GetSerializationWriter("application/json")
+	require.NoError(t, err)
+	require.NotNil(t, writerRes)
+
+	model := newMockParsableWithDeserializers(map[string]func(serialization.ParseNode) error{
+		"org-name": func(serialization.ParseNode) error { return nil },
+	})
+	model.GetBackingStore().SetInitializationCompleted(true)
+	model.GetBackingStore().Set("orgName", nil)
+
+	startAction := writerRes.GetOnStartObjectSerialization()
+	require.NotNil(t, startAction)
+
+	err = startAction(model, writer)
+	require.NoError(t, err)
+
+	assert.Equal(t, []string{"org-name"}, writer.writtenNullKeys)
+}
+
+func TestBackingStoreSerializationWriterProxyFactory_SnakeCaseResolution(t *testing.T) {
+	writer := &mockRecordingSerializationWriter{}
+	factory := NewBackingStoreSerializationWriterProxyFactory(&mockWriterFactoryForStore{writer: writer})
+
+	writerRes, err := factory.GetSerializationWriter("application/json")
+	require.NoError(t, err)
+	require.NotNil(t, writerRes)
+
+	model := newMockParsableWithDeserializers(map[string]func(serialization.ParseNode) error{
+		"first_name":   func(serialization.ParseNode) error { return nil },
+		"home_address": func(serialization.ParseNode) error { return nil },
+	})
+	model.GetBackingStore().SetInitializationCompleted(true)
+	model.GetBackingStore().Set("firstName", nil)
+
+	startAction := writerRes.GetOnStartObjectSerialization()
+	require.NotNil(t, startAction)
+
+	err = startAction(model, writer)
+	require.NoError(t, err)
+
+	assert.Equal(t, []string{"first_name"}, writer.writtenNullKeys)
+}
+
+func TestBackingStoreSerializationWriterProxyFactory_EscapedKeywordAndODataResolution(t *testing.T) {
+	writer := &mockRecordingSerializationWriter{}
+	factory := NewBackingStoreSerializationWriterProxyFactory(&mockWriterFactoryForStore{writer: writer})
+
+	writerRes, err := factory.GetSerializationWriter("application/json")
+	require.NoError(t, err)
+	require.NotNil(t, writerRes)
+
+	model := newMockParsableWithDeserializers(map[string]func(serialization.ParseNode) error{
+		"type":        func(serialization.ParseNode) error { return nil },
+		"@odata.type": func(serialization.ParseNode) error { return nil },
+	})
+	model.GetBackingStore().SetInitializationCompleted(true)
+	model.GetBackingStore().Set("escapedType", nil)
+	model.GetBackingStore().Set("odataType", nil)
+
+	startAction := writerRes.GetOnStartObjectSerialization()
+	require.NotNil(t, startAction)
+
+	err = startAction(model, writer)
+	require.NoError(t, err)
+
+	assert.Contains(t, writer.writtenNullKeys, "type")
+	assert.Contains(t, writer.writtenNullKeys, "@odata.type")
+	assert.Len(t, writer.writtenNullKeys, 2)
+}
+
+func TestBackingStoreSerializationWriterProxyFactory_FallbackToOriginalKey(t *testing.T) {
+	writer := &mockRecordingSerializationWriter{}
+	factory := NewBackingStoreSerializationWriterProxyFactory(&mockWriterFactoryForStore{writer: writer})
+
+	writerRes, err := factory.GetSerializationWriter("application/json")
+	require.NoError(t, err)
+	require.NotNil(t, writerRes)
+
+	// Model with nil deserializers
+	model := newMockParsableWithDeserializers(nil)
+	model.GetBackingStore().SetInitializationCompleted(true)
+	model.GetBackingStore().Set("customUnmappedKey", nil)
+
+	startAction := writerRes.GetOnStartObjectSerialization()
+	require.NotNil(t, startAction)
+
+	err = startAction(model, writer)
+	require.NoError(t, err)
+
+	assert.Equal(t, []string{"customUnmappedKey"}, writer.writtenNullKeys)
+
+	// Model with non-empty deserializers, but key has no match
+	writer2 := &mockRecordingSerializationWriter{}
+	factory2 := NewBackingStoreSerializationWriterProxyFactory(&mockWriterFactoryForStore{writer: writer2})
+	writerRes2, err := factory2.GetSerializationWriter("application/json")
+	require.NoError(t, err)
+
+	model2 := newMockParsableWithDeserializers(map[string]func(serialization.ParseNode) error{
+		"known_property": func(serialization.ParseNode) error { return nil },
+	})
+	model2.GetBackingStore().SetInitializationCompleted(true)
+	model2.GetBackingStore().Set("unrelatedField", nil)
+
+	startAction2 := writerRes2.GetOnStartObjectSerialization()
+	require.NotNil(t, startAction2)
+
+	err = startAction2(model2, writer2)
+	require.NoError(t, err)
+
+	assert.Equal(t, []string{"unrelatedField"}, writer2.writtenNullKeys)
+}
+
+func TestBackingStoreSerializationWriterProxyFactory_MultiNullResolutionAndOrdering(t *testing.T) {
+	writer := &mockRecordingSerializationWriter{}
+	factory := NewBackingStoreSerializationWriterProxyFactory(&mockWriterFactoryForStore{writer: writer})
+
+	writerRes, err := factory.GetSerializationWriter("application/json")
+	require.NoError(t, err)
+	require.NotNil(t, writerRes)
+
+	model := newMockParsableWithDeserializers(map[string]func(serialization.ParseNode) error{
+		"org-name":    func(serialization.ParseNode) error { return nil },
+		"first_name":  func(serialization.ParseNode) error { return nil },
+		"type":        func(serialization.ParseNode) error { return nil },
+		"@odata.type": func(serialization.ParseNode) error { return nil },
+	})
+	model.GetBackingStore().SetInitializationCompleted(true)
+	model.GetBackingStore().Set("orgName", nil)
+	model.GetBackingStore().Set("firstName", nil)
+	model.GetBackingStore().Set("escapedType", nil)
+	model.GetBackingStore().Set("odataType", nil)
+
+	startAction := writerRes.GetOnStartObjectSerialization()
+	require.NotNil(t, startAction)
+
+	err = startAction(model, writer)
+	require.NoError(t, err)
+
+	expectedKeys := []string{"type", "first_name", "@odata.type", "org-name"}
+	assert.Equal(t, expectedKeys, writer.writtenNullKeys)
+}

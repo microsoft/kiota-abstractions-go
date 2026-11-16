@@ -4,6 +4,7 @@ import (
 	"errors"
 	"sort"
 	"strings"
+	"unicode"
 
 	"github.com/microsoft/kiota-abstractions-go/serialization"
 )
@@ -90,6 +91,10 @@ func normalizeKey(s string) string {
 			b.WriteRune(r)
 		} else if r >= 'A' && r <= 'Z' {
 			b.WriteRune(r + ('a' - 'A'))
+		} else if r > unicode.MaxASCII {
+			if !unicode.IsPunct(r) && !unicode.IsSpace(r) {
+				b.WriteRune(unicode.ToLower(r))
+			}
 		}
 	}
 	return b.String()
@@ -104,6 +109,7 @@ func resolveSerializedKey(k string, deserializers map[string]func(serialization.
 	}
 
 	normK := normalizeKey(k)
+	hasNorm := normK != ""
 	trimmedK := strings.TrimPrefix(normK, "escaped")
 	trimmedK = strings.TrimSuffix(trimmedK, "escaped")
 	hasTrimmed := trimmedK != normK && trimmedK != ""
@@ -113,7 +119,7 @@ func resolveSerializedKey(k string, deserializers map[string]func(serialization.
 
 	for propName := range deserializers {
 		if strings.EqualFold(propName, k) ||
-			normalizeKey(propName) == normK ||
+			(hasNorm && normalizeKey(propName) == normK) ||
 			(hasTrimmed && normalizeKey(propName) == trimmedK) {
 			matchedProp = propName
 			matchCount++

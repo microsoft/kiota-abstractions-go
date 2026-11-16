@@ -453,3 +453,51 @@ func TestBackingStoreSerializationWriterProxyFactory_AmbiguousCollisionRetainsOr
 	// Exact match on "foobar" must resolve to "foobar"
 	assert.Equal(t, []string{"foobar"}, writer3.writtenNullKeys)
 }
+
+func TestBackingStoreSerializationWriterProxyFactory_PreservesUnicodePropertyNames(t *testing.T) {
+	// Case 1: Unrelated Unicode properties (名 vs 姓) must not normalize to empty and collide
+	writer := &mockRecordingSerializationWriter{}
+	factory := NewBackingStoreSerializationWriterProxyFactory(&mockWriterFactoryForStore{writer: writer})
+
+	writerRes, err := factory.GetSerializationWriter("application/json")
+	require.NoError(t, err)
+	require.NotNil(t, writerRes)
+
+	model := newMockParsableWithDeserializers(map[string]func(serialization.ParseNode) error{
+		"姓": func(serialization.ParseNode) error { return nil },
+	})
+	model.GetBackingStore().SetInitializationCompleted(true)
+	model.GetBackingStore().Set("名", nil)
+
+	startAction := writerRes.GetOnStartObjectSerialization()
+	require.NotNil(t, startAction)
+
+	err = startAction(model, writer)
+	require.NoError(t, err)
+
+	// Clearing backing key "名" must retain "名" and never map to unrelated "姓"
+	assert.Equal(t, []string{"名"}, writer.writtenNullKeys)
+
+	// Case 2: Matching Unicode properties with delimiter differences normalize and resolve correctly
+	writer2 := &mockRecordingSerializationWriter{}
+	factory2 := NewBackingStoreSerializationWriterProxyFactory(&mockWriterFactoryForStore{writer: writer2})
+
+	writerRes2, err := factory2.GetSerializationWriter("application/json")
+	require.NoError(t, err)
+	require.NotNil(t, writerRes2)
+
+	model2 := newMockParsableWithDeserializers(map[string]func(serialization.ParseNode) error{
+		"ユーザー_名": func(serialization.ParseNode) error { return nil },
+	})
+	model2.GetBackingStore().SetInitializationCompleted(true)
+	model2.GetBackingStore().Set("ユーザー名", nil)
+
+	startAction2 := writerRes2.GetOnStartObjectSerialization()
+	require.NotNil(t, startAction2)
+
+	err = startAction2(model2, writer2)
+	require.NoError(t, err)
+
+	// "ユーザー名" normalizes and matches "ユーザー_名"
+	assert.Equal(t, []string{"ユーザー_名"}, writer2.writtenNullKeys)
+}

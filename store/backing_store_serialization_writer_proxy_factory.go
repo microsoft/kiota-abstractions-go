@@ -102,25 +102,29 @@ func resolveSerializedKey(k string, deserializers map[string]func(serialization.
 	if _, ok := deserializers[k]; ok {
 		return k
 	}
-	for propName := range deserializers {
-		if strings.EqualFold(propName, k) {
-			return propName
-		}
-	}
+
 	normK := normalizeKey(k)
-	for propName := range deserializers {
-		if normalizeKey(propName) == normK {
-			return propName
-		}
-	}
 	trimmedK := strings.TrimPrefix(normK, "escaped")
 	trimmedK = strings.TrimSuffix(trimmedK, "escaped")
-	if trimmedK != normK && trimmedK != "" {
-		for propName := range deserializers {
-			if normalizeKey(propName) == trimmedK {
-				return propName
+	hasTrimmed := trimmedK != normK && trimmedK != ""
+
+	var matchedProp string
+	matchCount := 0
+
+	for propName := range deserializers {
+		if strings.EqualFold(propName, k) ||
+			normalizeKey(propName) == normK ||
+			(hasTrimmed && normalizeKey(propName) == trimmedK) {
+			matchedProp = propName
+			matchCount++
+			if matchCount > 1 {
+				return k
 			}
 		}
+	}
+
+	if matchCount == 1 {
+		return matchedProp
 	}
 	return k
 }

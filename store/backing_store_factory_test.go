@@ -383,3 +383,73 @@ func TestBackingStoreSerializationWriterProxyFactory_MultiNullResolutionAndOrder
 	expectedKeys := []string{"type", "first_name", "@odata.type", "org-name"}
 	assert.Equal(t, expectedKeys, writer.writtenNullKeys)
 }
+
+func TestBackingStoreSerializationWriterProxyFactory_AmbiguousCollisionRetainsOriginalKey(t *testing.T) {
+	// Case 1: Collision between kebab-case and concatenated lower-case (foo-bar vs foobar)
+	writer := &mockRecordingSerializationWriter{}
+	factory := NewBackingStoreSerializationWriterProxyFactory(&mockWriterFactoryForStore{writer: writer})
+
+	writerRes, err := factory.GetSerializationWriter("application/json")
+	require.NoError(t, err)
+	require.NotNil(t, writerRes)
+
+	model := newMockParsableWithDeserializers(map[string]func(serialization.ParseNode) error{
+		"foo-bar": func(serialization.ParseNode) error { return nil },
+		"foobar":  func(serialization.ParseNode) error { return nil },
+	})
+	model.GetBackingStore().SetInitializationCompleted(true)
+	model.GetBackingStore().Set("fooBar", nil)
+
+	startAction := writerRes.GetOnStartObjectSerialization()
+	require.NotNil(t, startAction)
+
+	err = startAction(model, writer)
+	require.NoError(t, err)
+
+	// Since fooBar ambiguously matches both foo-bar and foobar, the original key fooBar must be retained.
+	assert.Equal(t, []string{"fooBar"}, writer.writtenNullKeys)
+
+	// Case 2: Collision between kebab-case and snake_case (first-name vs first_name)
+	writer2 := &mockRecordingSerializationWriter{}
+	factory2 := NewBackingStoreSerializationWriterProxyFactory(&mockWriterFactoryForStore{writer: writer2})
+	writerRes2, err := factory2.GetSerializationWriter("application/json")
+	require.NoError(t, err)
+
+	model2 := newMockParsableWithDeserializers(map[string]func(serialization.ParseNode) error{
+		"first-name": func(serialization.ParseNode) error { return nil },
+		"first_name": func(serialization.ParseNode) error { return nil },
+	})
+	model2.GetBackingStore().SetInitializationCompleted(true)
+	model2.GetBackingStore().Set("firstName", nil)
+
+	startAction2 := writerRes2.GetOnStartObjectSerialization()
+	require.NotNil(t, startAction2)
+
+	err = startAction2(model2, writer2)
+	require.NoError(t, err)
+
+	// Since firstName ambiguously matches both first-name and first_name, the original key firstName must be retained.
+	assert.Equal(t, []string{"firstName"}, writer2.writtenNullKeys)
+
+	// Case 3: Exact match must always take precedence even when another candidate normalizes to the same value
+	writer3 := &mockRecordingSerializationWriter{}
+	factory3 := NewBackingStoreSerializationWriterProxyFactory(&mockWriterFactoryForStore{writer: writer3})
+	writerRes3, err := factory3.GetSerializationWriter("application/json")
+	require.NoError(t, err)
+
+	model3 := newMockParsableWithDeserializers(map[string]func(serialization.ParseNode) error{
+		"foo-bar": func(serialization.ParseNode) error { return nil },
+		"foobar":  func(serialization.ParseNode) error { return nil },
+	})
+	model3.GetBackingStore().SetInitializationCompleted(true)
+	model3.GetBackingStore().Set("foobar", nil)
+
+	startAction3 := writerRes3.GetOnStartObjectSerialization()
+	require.NotNil(t, startAction3)
+
+	err = startAction3(model3, writer3)
+	require.NoError(t, err)
+
+	// Exact match on "foobar" must resolve to "foobar"
+	assert.Equal(t, []string{"foobar"}, writer3.writtenNullKeys)
+}

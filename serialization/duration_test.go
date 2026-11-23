@@ -1,6 +1,7 @@
 package serialization
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
@@ -482,4 +483,50 @@ func TestZeroDurationStringAndRoundTrip(t *testing.T) {
 	timeDur, err := parsed.ToDuration()
 	assert.Nil(t, err)
 	assert.Equal(t, time.Duration(0), timeDur)
+}
+
+func TestItParsesEveryMillisecondValue(t *testing.T) {
+	for seconds := 0; seconds < 3; seconds++ {
+		for milliSeconds := 0; milliSeconds < 1000; milliSeconds++ {
+			str := fmt.Sprintf("PT%d.%03dS", seconds, milliSeconds)
+			duration, err := durationFromString(str)
+			if !assert.Nil(t, err, str) {
+				continue
+			}
+			assert.Equal(t, seconds, duration.Seconds, str)
+			assert.Equal(t, milliSeconds, duration.MilliSeconds, str)
+		}
+	}
+}
+
+func TestItParsesFractionalSecondsDigitByDigit(t *testing.T) {
+	testCases := []struct {
+		value        string
+		seconds      int
+		milliSeconds int
+	}{
+		{"PT1.001S", 1, 1},
+		{"PT1.1S", 1, 100},
+		{"PT1.01S", 1, 10},
+		{"PT59.999S", 59, 999},
+		{"PT1.0019S", 1, 1},
+		{"PT0.0005S", 0, 0},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.value, func(t *testing.T) {
+			duration, err := ParseISODuration(tc.value)
+			assert.Nil(t, err)
+			assert.Equal(t, tc.seconds, duration.GetSeconds())
+			assert.Equal(t, tc.milliSeconds, duration.GetMilliSeconds())
+		})
+	}
+}
+
+func TestParsedMillisecondsRoundTrip(t *testing.T) {
+	duration, err := ParseISODuration("PT1.001S")
+	assert.Nil(t, err)
+	assert.Equal(t, "PT1.001S", duration.String())
+	converted, err := duration.ToDuration()
+	assert.Nil(t, err)
+	assert.Equal(t, time.Second+time.Millisecond, converted)
 }

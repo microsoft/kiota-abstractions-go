@@ -6,7 +6,6 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"math"
 	"regexp"
 	"strconv"
 	"strings"
@@ -84,9 +83,12 @@ func durationFromString(dur string) (*duration, error) {
 			c := time.Duration(val) * time.Minute
 			d.Minutes = int(c.Minutes())
 		case "second":
-			s, milli := math.Modf(val)
-			d.Seconds = int(s)
-			d.MilliSeconds = int(milli * 1000)
+			seconds, milliSeconds, err := parseSeconds(part)
+			if err != nil {
+				return nil, err
+			}
+			d.Seconds = seconds
+			d.MilliSeconds = milliSeconds
 		default:
 			return nil, fmt.Errorf("unknown field %s", name)
 		}
@@ -97,6 +99,25 @@ func durationFromString(dur string) (*duration, error) {
 	}
 
 	return d, nil
+}
+
+// parseSeconds splits a seconds component such as "1.001" into whole seconds and milliseconds.
+// The fraction is read from its digits rather than through floating point, which would turn
+// 1.001 into 1.000999... and drop a millisecond. Digits beyond milliseconds are truncated.
+func parseSeconds(part string) (int, int, error) {
+	whole, fraction, _ := strings.Cut(part, ".")
+	seconds, err := strconv.Atoi(whole)
+	if err != nil {
+		return 0, 0, err
+	}
+	if fraction == "" {
+		return seconds, 0, nil
+	}
+	milliSeconds, err := strconv.Atoi((fraction + "00")[:3])
+	if err != nil {
+		return 0, 0, err
+	}
+	return seconds, milliSeconds, nil
 }
 
 // String prints out the value passed in.

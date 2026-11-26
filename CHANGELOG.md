@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.12.3](https://github.com/microsoft/kiota-abstractions-go/compare/v1.12.2...v1.12.3) (2026-11-26)
+
+
+### Bug Fixes
+
+* **serialization:** parse duration milliseconds without float rounding ([9ca0a05](https://github.com/microsoft/kiota-abstractions-go/commit/9ca0a05bc29f002266327d6f456700dfc60faea9))
+* **serialization:** parse duration milliseconds without float rounding ([7a71374](https://github.com/microsoft/kiota-abstractions-go/commit/7a7137456fbd5f3457e7552d0f5d777c7065ffdd))
+
 ## [1.12.2](https://github.com/microsoft/kiota-abstractions-go/compare/v1.12.1...v1.12.2) (2026-11-16)
 
 

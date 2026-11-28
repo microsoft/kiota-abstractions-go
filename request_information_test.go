@@ -370,8 +370,20 @@ func TestItNormalizesOnStandardizedTimeParams(t *testing.T) {
 	requestInformation := prepareNormalizedStdTest(arrayValues, singleValue, referenceArray, referenceValue)
 	resultUri, err := requestInformation.GetUri()
 	assert.Nil(t, err)
-	assert.Equal(t, "http://localhost/array/2022-08-01%2000%3A00%3A00%20%2B0000%20UTC,2022-08-02%2000%3A00%3A00%20%2B0000%20UTC/single/2022-08-01T00%3A00%3A00Z/referenceArray/2022-08-01%2000%3A00%3A00%20%2B0000%20UTC,2022-08-02%2000%3A00%3A00%20%2B0000%20UTC/referenceValue/2022-08-01T00%3A00%3A00Z", resultUri.String())
+	assert.Equal(t, "http://localhost/array/2022-08-01T00%3A00%3A00Z,2022-08-02T00%3A00%3A00Z/single/2022-08-01T00%3A00%3A00Z/referenceArray/2022-08-01T00%3A00%3A00Z,2022-08-02T00%3A00%3A00Z/referenceValue/2022-08-01T00%3A00%3A00Z", resultUri.String())
 
+}
+
+func TestItSkipsNilEntriesInTimeSlicePathParameters(t *testing.T) {
+	time1 := time.Date(2022, 8, 1, 0, 0, 0, 0, time.UTC)
+
+	requestInformation := NewRequestInformation()
+	requestInformation.UrlTemplate = "http://localhost/array/{values}"
+	requestInformation.PathParametersAny["values"] = []*time.Time{nil, &time1}
+
+	resultUri, err := requestInformation.GetUri()
+	assert.Nil(t, err)
+	assert.Equal(t, "http://localhost/array/2022-08-01T00%3A00%3A00Z", resultUri.String())
 }
 
 func TestItNormalizesOnStandardizedDurationParams(t *testing.T) {

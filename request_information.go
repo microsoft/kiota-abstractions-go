@@ -124,7 +124,8 @@ func (request *RequestInformation) GetUri() (*u.URL, error) {
 			substitutions[key] = request.sanitizeValue(value)
 		}
 		for key, value := range request.PathParametersAny {
-			substitutions[key] = request.normalizeParameters(reflect.ValueOf(value), request.sanitizeValue(value), false)
+			sanitized := request.sanitizeValue(value)
+			substitutions[key] = request.normalizeParameters(reflect.ValueOf(sanitized), sanitized, false)
 		}
 		for key, value := range request.QueryParameters {
 			substitutions[key] = request.sanitizeValue(value)

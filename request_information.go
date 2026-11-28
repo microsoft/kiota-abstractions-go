@@ -189,16 +189,16 @@ func (request *RequestInformation) sanitizeValue(value any) any {
 
 	switch v := value.(type) {
 	case *time.Time:
-		return v.Format(time.RFC3339)
+		return v.Format(time.RFC3339Nano)
 	case time.Time:
-		return v.Format(time.RFC3339)
+		return v.Format(time.RFC3339Nano)
 	case []*time.Time:
 		return castItem(v, func(t *time.Time) string {
-			return t.Format(time.RFC3339)
+			return t.Format(time.RFC3339Nano)
 		})
 	case []time.Time:
 		return castItem(v, func(t time.Time) string {
-			return t.Format(time.RFC3339)
+			return t.Format(time.RFC3339Nano)
 		})
 	case *s.ISODuration:
 		return v.String()

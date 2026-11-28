@@ -374,6 +374,27 @@ func TestItNormalizesOnStandardizedTimeParams(t *testing.T) {
 
 }
 
+func TestItPreservesFractionalSecondsInTimeParams(t *testing.T) {
+	time1 := time.Date(2022, 8, 1, 20, 34, 58, 123456789, time.UTC)
+	time2 := time.Date(2022, 8, 2, 20, 34, 58, 500000000, time.UTC)
+
+	requestInformation := NewRequestInformation()
+	requestInformation.UrlTemplate = "http://localhost/{single}/{reference}{?since,times*}"
+	requestInformation.PathParametersAny["single"] = time1
+	requestInformation.PathParametersAny["reference"] = &time2
+	requestInformation.AddQueryParameters(struct {
+		Since *time.Time  `uriparametername:"since"`
+		Times []time.Time `uriparametername:"times"`
+	}{
+		Since: &time1,
+		Times: []time.Time{time1, time2},
+	})
+
+	resultUri, err := requestInformation.GetUri()
+	assert.Nil(t, err)
+	assert.Equal(t, "http://localhost/2022-08-01T20%3A34%3A58.123456789Z/2022-08-02T20%3A34%3A58.5Z?since=2022-08-01T20%3A34%3A58.123456789Z&times=2022-08-01T20%3A34%3A58.123456789Z&times=2022-08-02T20%3A34%3A58.5Z", resultUri.String())
+}
+
 func TestItNormalizesOnStandardizedDurationParams(t *testing.T) {
 	duration := s.NewDuration(0, 0, 1, 1, 0, 0, 0)
 	duration1 := s.NewDuration(0, 0, 1, 2, 0, 0, 0)
